@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 1 - Diario de Clases</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PrismJS (Syntax Highlighting) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Quicksand', 'sans-serif'] },
+                    colors: {
+                        kawaii: {
+                            pink: '#FFE4E1', blue: '#E0F7FA', yellow: '#FFF9C4',
+                            green: '#E8F5E9', purple: '#F3E5F5', text: '#3E2723', card: '#FFFFFF'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        body { background-color: #FFF0F5; color: #3E2723; }
+        .content-box { @apply bg-white rounded-[2.5rem] p-8 md:p-12 shadow-lg mb-12 border-2 border-pink-100/50 relative overflow-hidden; }
+        .section-title { @apply text-3xl font-bold mb-8 flex items-center gap-4 border-b-2 pb-4; }
+        
+        pre[class*="language-"] { 
+            border-radius: 1.5rem !important; 
+            margin: 1.5rem 0 !important; 
+            padding: 1.5rem !important;
+            overflow-x: auto !important;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+        }
+        
+        .badge-pink { @apply inline-block bg-pink-100 text-pink-700 font-bold px-4 py-1.5 rounded-xl border border-pink-200 shadow-sm whitespace-nowrap; }
+        .badge-blue { @apply inline-block bg-blue-100 text-blue-700 font-bold px-4 py-1.5 rounded-xl border border-blue-200 shadow-sm whitespace-nowrap; }
+        .badge-green { @apply inline-block bg-emerald-100 text-emerald-700 font-bold px-4 py-1.5 rounded-xl border border-emerald-200 shadow-sm whitespace-nowrap; }
+        .badge-purple { @apply inline-block bg-purple-100 text-purple-700 font-bold px-4 py-1.5 rounded-xl border border-purple-200 shadow-sm whitespace-nowrap; }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen pb-20 text-gray-800">
+    <nav class="max-w-5xl mx-auto px-6 py-8">
+        <a href="index.html" class="inline-flex items-center text-pink-500 hover:text-pink-700 font-bold transition-transform hover:-translate-x-1 bg-white px-6 py-3 rounded-full shadow-md border-2 border-pink-100 text-lg">
+            <i class="fa-solid fa-arrow-left mr-3"></i> Volver al Inicio
+        </a>
+    </nav>
+
+    <header class="max-w-5xl mx-auto px-6 text-center mb-16">
+        <div class="inline-block bg-blue-100 px-6 py-2.5 rounded-full text-blue-700 font-bold text-base mb-6 border-2 border-blue-200 shadow-sm">
+            <i class="fa-solid fa-book text-yellow-500 mr-2"></i> Clase 1
+        </div>
+        <h1 class="text-5xl md:text-6xl font-bold text-pink-600 mb-6 drop-shadow-sm leading-tight">Taller Práctico:<br>Funciones de Fila en SQL</h1>
+        <p class="text-xl md:text-2xl text-gray-700 bg-white inline-flex items-center gap-3 px-8 py-4 rounded-full shadow-md border-2 border-pink-100 mt-4 font-bold mx-auto justify-center">
+            Aprende a formatear y calcular datos desde tu base de datos <i class="fa-solid fa-code text-blue-400 text-2xl"></i>
+        </p>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6">
+        
+        <!-- Contexto -->
+        <section class="content-box">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-yellow-50 rounded-bl-full -z-10 opacity-70"></div>
+            <h2 class="section-title text-yellow-600 border-yellow-200">
+                <i class="fa-solid fa-tv text-yellow-500 bg-yellow-100 p-3 rounded-2xl"></i> Caso Práctico: Plataforma de Streaming
+            </h2>
+            <div class="space-y-6">
+                <p class="text-xl leading-relaxed font-medium text-gray-700">
+                    <strong>¡Bienvenido a tu primer reto de bases de datos!</strong> 🍿 Imagina que trabajas para una plataforma que transmite series por internet, tipo Netflix. 
+                    Actualmente, los datos de los usuarios y de las películas contienen errores comunes: problemas de mayúsculas, clasificaciones con demasiados decimales o fechas mostradas en un formato difícil de leer.
+                </p>
+                <p class="text-xl leading-relaxed font-medium text-gray-700">
+                    Tu objetivo es aprender a usar las <span class="bg-yellow-100 text-yellow-800 font-bold px-3 py-1 rounded-lg border border-yellow-300">Funciones de Fila</span> para corregir y estandarizar esta información al momento de hacer consultas (usando SELECT), <strong>sin tener que modificar la información real que está guardada en las tablas</strong>.
+                </p>
+            </div>
+            
+            <div class="bg-yellow-50 p-8 rounded-[2rem] text-yellow-900 flex flex-col sm:flex-row items-center sm:items-start gap-6 border-2 border-yellow-200 shadow-sm mt-10">
+                <div class="bg-yellow-200 p-4 rounded-full flex-shrink-0">
+                    <i class="fa-solid fa-lightbulb text-4xl text-yellow-600"></i>
+                </div>
+                <div>
+                    <strong class="block text-yellow-700 mb-3 text-2xl font-bold">💡 Concepto Fundamental:</strong> 
+                    <p class="text-lg leading-relaxed font-medium">
+                        Las <strong>funciones de fila</strong> modifican la información fila por fila. Si tenemos 100 usuarios en la base de datos, la función se ejecutará 100 veces, calculando y entregando un valor distinto para cada persona de forma sumamente rápida.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Parte 0 -->
+        <section class="content-box">
+            <h2 class="section-title text-pink-600 border-pink-200">
+                <i class="fa-solid fa-cogs text-pink-500 bg-pink-100 p-3 rounded-2xl"></i> Paso 0: Preparación del Entorno
+            </h2>
+            <p class="mb-8 font-medium text-gray-600 text-xl border-l-4 border-pink-400 pl-4 py-2 bg-pink-50 rounded-r-xl">
+                Antes de empezar con las consultas, abre tu programa SQL (como SQL Developer o DBeaver) y ejecuta los siguientes tres códigos en orden. Esto nos creará unas tablas falsas para practicar. 👇
+            </p>
+            
+            <div class="grid grid-cols-1 gap-8">
+                <!-- Paso 1 -->
+                <div class="bg-white rounded-[2rem] p-8 border-2 border-red-100 shadow-md">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="bg-red-100 text-red-600 w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold shadow-sm">1</div>
+                        <div>
+                            <h3 class="font-bold text-red-600 text-2xl">Limpiar el Espacio</h3>
+                            <p class="text-base text-gray-600 font-medium">Ejecuta esto para borrar tablas creadas anteriormente y empezar desde cero.</p>
+                        </div>
+                    </div>
+                    <pre><code class="language-sql">DROP TABLE visualizaciones;
+DROP TABLE contenidos;
+DROP TABLE usuarios;</code></pre>
+                </div>
+
+                <!-- Paso 2 -->
+                <div class="bg-white rounded-[2rem] p-8 border-2 border-blue-100 shadow-md">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="bg-blue-100 text-blue-600 w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold shadow-sm">2</div>
+                        <div>
+                            <h3 class="font-bold text-blue-600 text-2xl">Crear las Tablas</h3>
+                            <p class="text-base text-gray-600 font-medium">Ejecutando esto crearás las tablas principales de nuestro sistema.</p>
+                        </div>
+                    </div>
+                    <pre><code class="language-sql">CREATE TABLE usuarios (
+    id_usuario NUMBER PRIMARY KEY,
+    nombre VARCHAR2(50),
+    pais VARCHAR2(50),
+    fecha_registro DATE
+);
+
+CREATE TABLE contenidos (
+    id_contenido NUMBER PRIMARY KEY,
+    titulo VARCHAR2(100),
+    genero VARCHAR2(50),
+    duracion_min NUMBER,
+    rating NUMBER(3,1)
+);
+
+CREATE TABLE visualizaciones (
+    id_visualizacion NUMBER PRIMARY KEY,
+    id_usuario NUMBER,
+    id_contenido NUMBER,
+    fecha DATE,
+    progreso NUMBER,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario),
+    FOREIGN KEY (id_contenido) REFERENCES contenidos(id_contenido)
+);</code></pre>
+                </div>
+
+                <!-- Paso 3 -->
+                <div class="bg-white rounded-[2rem] p-8 border-2 border-emerald-100 shadow-md">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="bg-emerald-100 text-emerald-600 w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold shadow-sm">3</div>
+                        <div>
+                            <h3 class="font-bold text-emerald-600 text-2xl">Insertar Información</h3>
+                            <p class="text-base text-gray-600 font-medium">Por último, ejecutamos estos INSERT para llenar las tablas con información para analizar.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <pre><code class="language-sql">INSERT INTO usuarios VALUES (1, 'ana torres', 'Chile', DATE '2023-01-10');
+INSERT INTO usuarios VALUES (2, 'LUIS ROJAS', 'Chile', DATE '2023-03-22');
+INSERT INTO usuarios VALUES (3, 'mika tanaka', 'Japón', DATE '2022-11-05');
+INSERT INTO usuarios VALUES (4, 'john smith', 'USA', DATE '2023-06-30');
+
+INSERT INTO contenidos VALUES (1, 'Attack on Titan', 'Anime', 24, 9.5);
+INSERT INTO contenidos VALUES (2, 'Breaking Bad', 'Drama', 47, 9.7);
+INSERT INTO contenidos VALUES (3, 'Demon Slayer', 'Anime', 23, 8.9);
+INSERT INTO contenidos VALUES (4, 'Stranger Things', 'Sci-Fi', 50, 8.8);
+INSERT INTO contenidos VALUES (5, 'One Piece', 'Anime', 22, 9.0);
+
+INSERT INTO visualizaciones VALUES (1, 1, 1, DATE '2024-01-01', 100);
+INSERT INTO visualizaciones VALUES (2, 1, 3, DATE '2024-01-02', 50);
+INSERT INTO visualizaciones VALUES (3, 2, 2, DATE '2024-01-03', 100);
+INSERT INTO visualizaciones VALUES (4, 3, 1, DATE '2024-01-04', 80);
+INSERT INTO visualizaciones VALUES (5, 4, 4, DATE '2024-01-05', 100);
+INSERT INTO visualizaciones VALUES (6, 2, 5, DATE '2024-01-06', 30);
+INSERT INTO visualizaciones VALUES (7, 3, 3, DATE '2024-01-07', 100);</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Parte 1 -->
+        <section class="content-box">
+            <h2 class="section-title text-blue-600 border-blue-200">
+                <i class="fa-solid fa-font text-blue-500 bg-blue-100 p-3 rounded-2xl"></i> Parte 1 — Dar Formato al Texto
+            </h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-12 items-start">
+                <div class="space-y-6 min-w-0">
+                    <h3 class="font-bold text-gray-800 text-2xl flex items-center border-b-2 border-gray-100 pb-3"><i class="fa-solid fa-book-open text-blue-400 mr-3"></i> 📖 Conceptos Clave</h3>
+                    <p class="text-gray-700 font-medium text-lg leading-relaxed bg-gray-50 p-5 rounded-2xl border border-gray-200">
+                        Como puedes notar, algunos nombres de nuestros usuarios están escritos todos en minúscula o mayúscula. Las funciones de texto nos sirven para "filtrar" visualmente cómo se mostrarán estas letras en nuestro sistema, para que todo se vea más profesional.
+                    </p>
+                    
+                    <div class="space-y-4 pt-2">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-blue-100">
+                            <span class="badge-blue">UPPER()</span>
+                            <span class="text-gray-700 font-medium">Convierte toda la palabra a letras MAYÚSCULAS.</span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-blue-100">
+                            <span class="badge-blue">LOWER()</span>
+                            <span class="text-gray-700 font-medium">Convierte toda la palabra a letras minúsculas.</span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-blue-100">
+                            <span class="badge-blue">INITCAP()</span>
+                            <span class="text-gray-700 font-medium">Transforma el texto para que la primera letra siempre esté en mayúscula. Se usa mucho para Nombres de personas.</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-50 p-6 rounded-[2rem] border-2 border-slate-200 shadow-inner min-w-0 flex flex-col h-full">
+                    <h3 class="font-bold text-slate-800 mb-4 text-2xl flex items-center"><i class="fa-solid fa-play text-blue-500 mr-3"></i> 🔍 Observa los Resultados</h3>
+                    <p class="text-gray-600 font-medium mb-3">Ejecuta el siguiente código en tu programa y examina cómo el sistema modifica cada columna visualmente:</p>
+                    <div class="w-full">
+                        <pre><code class="language-sql">SELECT nombre AS Original,
+       UPPER(nombre) AS Mayusculas,
+       LOWER(nombre) AS Minusculas,
+       INITCAP(nombre) AS Formateado
+FROM usuarios;</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preguntas -->
+            <div class="bg-blue-50/80 p-8 rounded-[2rem] border-2 border-blue-200 mb-12 flex flex-col md:flex-row gap-8 items-center shadow-sm">
+                <div class="bg-white p-6 rounded-full shadow-md flex-shrink-0">
+                    <i class="fa-solid fa-comments text-5xl text-blue-500"></i>
+                </div>
+                <div class="flex-grow">
+                    <h3 class="font-bold text-blue-800 mb-4 text-2xl">🗣️ Reflexión en Parejas</h3>
+                    <p class="text-blue-900 font-medium mb-4">Antes de realizar los ejercicios, discute objetivamente con tus compañeros de clase estas dos preguntas:</p>
+                    <ol class="list-decimal list-inside space-y-4 text-blue-900 font-medium text-lg">
+                        <li class="pl-2 bg-white/60 p-3 rounded-lg border border-blue-100">Imagina descargar en un Excel estos usuarios para luego enviarles un correo directo. ¿Qué impacto negativo en imagen tendría si le enviaras a un cliente un correo donde su nombre aparece escrito como "anA tOrreS"?</li>
+                        <li class="pl-2 bg-white/60 p-3 rounded-lg border border-blue-100">Generalmente en bases de datos tratamos de NO alterar las tablas permanentemente (usando `UPDATE`) si se trata simplemente de mejorar el estilo visual. ¿Por qué crees que no es bueno modificar los datos originales guardados tan a la ligera?</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <!-- Verdadero o Falso -->
+                <div class="border-4 border-solid border-pink-100 bg-pink-50 p-8 rounded-[2rem] shadow-sm relative overflow-visible">
+                    <h3 class="font-bold text-gray-800 mb-6 text-2xl flex items-center"><i class="fa-solid fa-scale-balanced text-pink-500 mr-3"></i> ⚖️ Verdadero o Falso</h3>
+                    <p class="text-gray-700 font-medium mb-6">Lee cada afirmación. Discute con tu compañero para determinar si el enunciado es Verdadero o Falso, <strong>y expliquen el porqué:</strong></p>
+                    
+                    <div class="space-y-6 text-gray-800 font-medium text-lg">
+                        <div class="bg-white p-5 rounded-xl border border-pink-200 shadow-sm flex items-start gap-4">
+                            <i class="fa-regular fa-circle-question text-3xl text-pink-400 mt-1"></i>
+                            <div>
+                                <p class="mb-2">1. Si usamos la función <code>UPPER()</code> de la manera anterior, nuestros datos en la base de datos habrán sido sobreescritos y hemos perdido para siempre las minúsculas originales de esas filas.</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-pink-200 shadow-sm flex items-start gap-4">
+                            <i class="fa-regular fa-circle-question text-3xl text-pink-400 mt-1"></i>
+                            <div>
+                                <p class="mb-2">2. Es una práctica común y recomendada usar la función <code>INITCAP()</code> en un reporte para mejorar la presentación de lectura hacia el usuario final de una aplicación.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Ejercicios -->
+                <div class="bg-slate-800 p-8 rounded-[2rem] shadow-xl text-white relative">
+                    <h3 class="font-bold text-white mb-6 text-2xl flex items-center"><i class="fa-solid fa-laptop-code text-blue-400 mr-3"></i> 💻 Manos a la Obra</h3>
+                    <p class="text-slate-300 font-medium text-lg leading-relaxed mb-6">Es momento de practicar. Deberás escribir el código SQL para darle solución a los siguientes requerimientos:</p>
+                    
+                    <ul class="space-y-6 text-slate-200 text-base">
+                        <li class="bg-slate-700/50 p-5 rounded-xl border-l-4 border-blue-400">
+                            <strong class="text-blue-300 block mb-2 text-lg uppercase"><i class="fa-solid fa-circle-play mr-2"></i> Ejercicio 1</strong>
+                            <p class="mb-3 text-slate-300 font-medium">Recibimos quejas que en la lista de usuarios los nombres carecen totalmente de respeto y profesionalismo visual.</p>
+                            <p class="text-white font-medium bg-slate-800 p-3 rounded">🎯 Tu Misión: Crea una consulta SELECT de la tabla `usuarios` donde proyectes todos los nombres asegurándote de usar la función adecuada para que parezcan verdaderos Nombres Propios.</p>
+                        </li>
+                        <li class="bg-slate-700/50 p-5 rounded-xl border-l-4 border-blue-400">
+                            <strong class="text-blue-300 block mb-2 text-lg uppercase"><i class="fa-solid fa-circle-play mr-2"></i> Ejercicio 2</strong>
+                            <p class="mb-3 text-slate-300 font-medium">Tenemos columnas mezcladas con minúsculas y mayúsculas en nuestra tabla de contenidos.</p>
+                            <p class="text-white font-medium bg-slate-800 p-3 rounded">🎯 Tu Misión: Efectúa un SELECT de la tabla `contenidos`. Esta vez asegúrate que la columna del genero esté forzosamente formateada sólo como minúsculas.</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Parte 2 -->
+        <section class="content-box">
+            <h2 class="section-title text-emerald-600 border-emerald-200">
+                <i class="fa-solid fa-calculator text-emerald-500 bg-emerald-100 p-3 rounded-2xl"></i> Parte 2 — Matemáticas y Números
+            </h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-12 items-start">
+                <div class="space-y-6 min-w-0">
+                    <h3 class="font-bold text-gray-800 text-2xl flex items-center border-b-2 border-gray-100 pb-3"><i class="fa-solid fa-book-open text-emerald-500 mr-3"></i> 📖 Conceptos Clave</h3>
+                    <p class="text-gray-700 font-medium text-lg leading-relaxed bg-gray-50 p-5 rounded-2xl border border-gray-200">
+                        Ocultar decimales muy grandes u obtener rangos de números nos sirve muchísimo al momento de crear precios y definir clasificaciones visuales sin confundir al usuario.
+                    </p>
+                    
+                    <div class="space-y-4 pt-2">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-emerald-100">
+                            <span class="badge-green">ROUND()</span>
+                            <span class="text-gray-700 font-medium">"Redondea". Sigue la regla tradicional (si el decimal es 5 o mayor el número entero inmediato es sumado en uno).</span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-emerald-100">
+                            <span class="badge-green">TRUNC()</span>
+                            <span class="text-gray-700 font-medium">Elimina directamente y sin analizar todos los decimales que le indiquemos recortar, de manera completamente abrupta y precisa.</span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-emerald-100">
+                            <span class="badge-green">MOD(número, divisor)</span>
+                            <span class="text-gray-700 font-medium">No da la división, entrega el "Resto" que sobró de la división de dos datos. Si tomamos el campo como número y '2' como divisor podremos obtener `1` ó `0` según sea todo Par o Inpar.</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-50 p-6 rounded-[2rem] border-2 border-slate-200 shadow-inner min-w-0 flex flex-col h-full">
+                    <h3 class="font-bold text-slate-800 mb-4 text-2xl flex items-center"><i class="fa-solid fa-play text-emerald-500 mr-3"></i> 🔍 Demostración</h3>
+                    <p class="text-gray-600 font-medium mb-3">Ejecuta esto y mira los comportamientos opuestos que surgen de evaluar el mismo número de `rating` que es `9.7`:</p>
+                    <div class="w-full">
+                        <pre><code class="language-sql">SELECT 
+    titulo,
+    rating,
+    ROUND(rating) AS amigable_redondeado,
+    TRUNC(rating) AS numero_cortado
+FROM contenidos;</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-emerald-50 p-8 rounded-[2rem] border-2 border-emerald-200 mb-12 flex flex-col md:flex-row gap-8 items-center shadow-sm">
+                <div class="bg-white p-6 rounded-full shadow-md flex-shrink-0">
+                    <i class="fa-solid fa-laptop-code text-5xl text-emerald-500"></i>
+                </div>
+                <div class="flex-grow">
+                    <h3 class="font-bold text-emerald-800 mb-4 text-2xl">🗣️ Reflexión Comercial</h3>
+                    <p class="text-emerald-900 font-medium mb-4">La correcta implementación de operaciones matemáticas suele valer dinero real a las empresas:</p>
+                    <ol class="list-decimal list-inside space-y-4 text-emerald-900 font-medium text-lg">
+                        <li class="pl-2 bg-white/60 p-3 rounded-lg border border-emerald-100">Analicemos un recibo o adeudo por $7890.9 CLP a pagar. Si automatizas que la empresa procese visualmente el recaudo solo de la variable con TRUNC(), el cobro facturado resultará obligatoriamente exacto sobre los primeros números en un monto de $7890 . Discute qué problema le genera a la legalidad y registros internos perder sistemáticamente aquellos $0.9 a largo plazo.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <!-- Verdadero o Falso -->
+                <div class="border-4 border-solid border-emerald-100 bg-emerald-50 p-8 rounded-[2rem] shadow-sm relative overflow-visible">
+                    <h3 class="font-bold text-gray-800 mb-6 text-2xl flex items-center pl-4"><i class="fa-solid fa-scale-balanced text-emerald-500 mr-3"></i> ⚖️ Verdadero o Falso</h3>
+                    <p class="text-gray-700 font-medium mb-6">Lee estas aseveraciones, decidan entre los dos si creen en su veracidad.</p>
+                    
+                    <div class="space-y-6 text-gray-800 font-medium text-lg">
+                        <div class="bg-white p-5 rounded-xl border border-emerald-200 shadow-sm flex items-start gap-4">
+                            <i class="fa-regular fa-circle-question text-3xl text-emerald-400 mt-1"></i>
+                            <div>
+                                <p class="mb-2">1. Si le entrego a SQL exactamente la cifra `7.9`, los comandos matemáticos `ROUND()` y `TRUNC()` terminarán devolviendo siempre la misma solución numérica 8 sobre cualquier escenario.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Ejercicios -->
+                <div class="bg-emerald-900 p-8 rounded-[2rem] shadow-xl text-white relative">
+                    <h3 class="font-bold text-white mb-6 text-2xl flex items-center"><i class="fa-solid fa-laptop-code text-green-300 mr-3"></i> 💻 Manos a la Obra</h3>
+                    <p class="text-emerald-100 font-medium text-lg leading-relaxed mb-6">Resolvamos el diseño visual propuesto desde la base de datos:</p>
+                    
+                    <ul class="space-y-6 text-emerald-100 text-base">
+                        <li class="bg-emerald-800/80 p-5 rounded-xl border-l-4 border-emerald-400">
+                            <strong class="text-emerald-300 block mb-2 text-lg uppercase"><i class="fa-solid fa-circle-play mr-2"></i> Ejercicio 3</strong>
+                            <p class="mb-3 text-emerald-100 font-medium">El catálogo web requiere ocultar totalmente las fracciones decimales en la duración.</p>
+                            <p class="text-white font-medium bg-emerald-950 p-3 rounded">🎯 Tu Misión: Selecciona la columna "duracion_min". Emplea explícitamente la función de amputar decimales TRUNC() a fin de mostrarla reduciendo cualquier número existente.</p>
+                        </li>
+                        <li class="bg-emerald-800/80 p-5 rounded-xl border-l-4 border-emerald-400">
+                            <strong class="text-emerald-300 block mb-2 text-lg uppercase"><i class="fa-solid fa-circle-play mr-2"></i> Ejercicio 4</strong>
+                            <p class="mb-3 text-emerald-100 font-medium">Buscamos crear una distinción lógica analizando si el minutaje total de contenidos es representativo Par en un número final simple.</p>
+                            <p class="text-white font-medium bg-emerald-950 p-3 rounded">🎯 Tu Misión: Apoyate en la condición `MOD()`. Configúralo dividiendo la métrica de `duracion_min` contra el número divisor de 2.</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Parte 3 -->
+        <section class="content-box">
+            <h2 class="section-title text-purple-600 border-purple-200">
+                <i class="fa-solid fa-calendar-days text-purple-500 bg-purple-100 p-3 rounded-2xl"></i> Parte 3 — Trabajando con Fechas
+            </h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-12 items-start">
+                <div class="space-y-6 min-w-0">
+                    <h3 class="font-bold text-gray-800 text-2xl flex items-center border-b-2 border-gray-100 pb-3"><i class="fa-solid fa-book-open text-purple-400 mr-3"></i> 📖 Conceptos Clave</h3>
+                    <p class="text-gray-700 font-medium text-lg leading-relaxed bg-gray-50 p-5 rounded-2xl border border-gray-200">
+                        Procesar fechas te otorga el mayor potencial de la inteligencia de mercado, desde saber en cuestión de segundos qué día puntual exacto caducará nuestro servicio mensual si lo incrementamos por cortesía.
+                    </p>
+                    
+                    <div class="space-y-4 pt-2">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-purple-100">
+                            <span class="badge-purple">SYSDATE</span>
+                            <span class="text-gray-700 font-medium">Trae sin cálculos adicionales la fecha horaria de tiempo real del día en sí desde el Reloj del servidor de la Base de Datos.</span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-purple-100">
+                            <span class="badge-purple">MONTHS_BETWEEN(A, B)</span>
+                            <span class="text-gray-700 font-medium">Analizando internamente los meses, calcula con total pericia cuánto trecho entre la primera variable contra la segunda hemos concretado en formato de mes.</span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-purple-100">
+                            <span class="badge-purple">ADD_MONTHS(fecha, N)</span>
+                            <span class="text-gray-700 font-medium">Lograrás avazar fácilmente tus años en plazos mensuales a esa fecha exacta introducida solo declarando qué total debes añadir.</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-50 p-6 rounded-[2rem] border-2 border-slate-200 shadow-inner min-w-0 flex flex-col h-full">
+                    <h3 class="font-bold text-slate-800 mb-4 text-2xl flex items-center"><i class="fa-solid fa-play text-purple-500 mr-3"></i> 🔍 Ejemplo Funcional</h3>
+                    <p class="text-gray-600 font-medium mb-3">Ejecuta y verifica la gran precisión de distancia generada del reporte:</p>
+                    <div class="w-full">
+                        <pre><code class="language-sql">SELECT nombre,
+       fecha_registro,
+       SYSDATE AS reporte_dia_actual,
+       MONTHS_BETWEEN(SYSDATE, fecha_registro) AS distancia_meses
+FROM usuarios;</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-purple-50 p-8 rounded-[2rem] border-2 border-purple-200 mb-12 flex flex-col md:flex-row gap-8 items-center shadow-sm">
+                <div class="bg-white p-6 rounded-full shadow-md flex-shrink-0">
+                    <i class="fa-regular fa-clock text-5xl text-purple-500"></i>
+                </div>
+                <div class="flex-grow">
+                    <h3 class="font-bold text-purple-800 mb-4 text-2xl">🗣️ Reflexión en Equipo</h3>
+                    <p class="text-purple-900 font-medium mb-4">Antes de lanzar códigos en servidores formales, dialoguen el contexto lógico de sus horas.</p>
+                    <ol class="list-decimal list-inside space-y-4 text-purple-900 font-medium text-lg">
+                        <li class="pl-2 bg-white/60 p-3 rounded-lg border border-purple-100">Si regalaste al cliente una suscripción de servicio ampliada por la cantidad de "3 meses puntuales", discuta brevemente mediante qué código en `ADD_MONTHS()` lo resolverías fácilmente en tu empresa evitando matemáticas confusas y manuales.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div class="border-4 border-solid border-purple-100 bg-purple-50 p-8 rounded-[2rem] shadow-sm relative overflow-visible">
+                    <h3 class="font-bold text-gray-800 mb-6 text-2xl flex items-center"><i class="fa-solid fa-scale-balanced text-purple-500 mr-3"></i> ⚖️ Verdadero o Falso</h3>
+                    <p class="text-gray-700 font-medium mb-6">Determinen a qué grado están acertadas las frases y declárenlas formalmente.</p>
+                    
+                    <div class="space-y-6 text-gray-800 font-medium text-lg">
+                        <div class="bg-white p-5 rounded-xl border border-purple-200 shadow-sm flex items-start gap-4">
+                            <i class="fa-regular fa-circle-question text-3xl text-purple-400 mt-1"></i>
+                            <div>
+                                <p class="mb-2">1. Si necesitas evaluar una resta contundente entre plazos de fecha y otra, el uso de funciones base de tu SQL Database, como por ejemplo la formula <code>MONTHS_BETWEEN(A, B)</code> es la herramienta diseñada nativamente perfecta al motor Oracle en sí.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-indigo-900 p-8 rounded-[2rem] shadow-xl text-white relative">
+                    <h3 class="font-bold text-white mb-6 text-2xl flex items-center"><i class="fa-solid fa-laptop-code text-purple-400 mr-3"></i> 💻 Manos a la Obra</h3>
+                    <p class="text-indigo-200 font-medium text-lg leading-relaxed mb-6">El área de ventas pidió revisar esto en el transcurso del reporte:</p>
+                    
+                    <ul class="space-y-6 text-indigo-100 text-base">
+                        <li class="bg-indigo-800/80 p-5 rounded-xl border-l-4 border-purple-400">
+                            <strong class="text-purple-300 block mb-2 text-lg uppercase"><i class="fa-solid fa-circle-play mr-2"></i> Ejercicio Práctico 5</strong>
+                            <p class="mb-3 text-indigo-100 font-medium">Buscamos saber la antigüedad de fidelidad, pero tu equipo encontró visualmente muy grosero y feo el hecho que se formaran decimales excesivamente largos e inútiles en la proyección.</p>
+                            <p class="text-white font-medium bg-indigo-950 p-3 rounded">🎯 Tu Misión: Genera esta distancia total mediante `MONTHS_BETWEEN()` pero además encapsulándola ordenadamente en una orden que impida cualquier visualización de carácter decimal usando las matemáticas vistas `TRUNC`.</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+      
+
+        <!-- Parte 6 Transferencia -->
+        <section class="content-box bg-white border-4 border-dashed border-blue-200 relative mt-16 shadow-none">
+            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-white px-8 py-2 rounded-full border-4 border-dashed border-blue-200 text-blue-600 font-bold text-xl shadow-sm whitespace-nowrap">
+                <i class="fa-solid fa-graduation-cap mr-3"></i> Taller Transversal
+            </div>
+            
+            <div class="pt-10">
+                <h2 class="text-4xl font-bold text-blue-600 text-center mb-6">Tu Proyecto Estudiantil</h2>
+                <div class="text-center max-w-4xl mx-auto mb-10">
+                    <p class="text-xl text-gray-700 font-medium bg-blue-50 p-6 rounded-2xl border border-blue-100 leading-relaxed">
+                        Es el turno de transformar el contexto de ejercicios y trasladarlo exitosamente y completamente a tus propios ecosistemas reales y únicos del taller a gran escala.
+                    </p>
+                </div>
+                
+                <div class="bg-blue-600 rounded-[2.5rem] p-10 text-white relative overflow-hidden">
+                    
+                    <h3 class="text-3xl font-bold mb-6 text-center drop-shadow-md">🎯 Instrucciones: Desafía a tu Compañero</h3>
+                    <div class="bg-black/10 p-6 rounded-2xl mb-10 text-lg leading-relaxed font-medium">
+                        <p>
+                            <strong>¡Ponte el sombrero de profe!</strong> Tu misión ahora es guiar a un compañero utilizando la base de datos del <strong>proyecto que tu equipo está desarrollando este semestre</strong>. Asegúrate de tener tus tablas creadas y con datos de prueba, y guíalo paso a paso:
+                        </p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10 mb-8">
+                        <div class="bg-white/10 p-6 rounded-3xl border border-white/20 flex flex-col items-center text-center">
+                            <i class="fa-solid fa-cube text-yellow-300 text-4xl mb-3"></i>
+                            <h4 class="font-bold text-xl mb-2 text-white">1. Pídele usar 2 funciones</h4>
+                            <p class="text-base text-blue-100 font-medium">Dile a tu compañero: <em>"Haz un SELECT a la tabla principal de nuestro proyecto usando al menos dos funciones que aprendimos hoy (por ejemplo, UPPER y ROUND)"</em>.</p>
+                        </div>
+                        <div class="bg-white/10 p-6 rounded-3xl border border-white/20 flex flex-col items-center text-center">
+                            <i class="fa-solid fa-comments text-cyan-300 text-4xl mb-3"></i>
+                            <h4 class="font-bold text-xl mb-2 text-white">2. Analicen la utilidad</h4>
+                            <p class="text-base text-blue-100 font-medium">Conversa con tu colega y pregúntale: <em>"¿Por qué es importante ordenar estos datos en nuestro sistema? ¿Qué pasaría si se los mostramos desordenados y sin formato al cliente?"</em></p>
+                        </div>
+                        <div class="bg-white/10 p-6 rounded-3xl border border-white/20 flex flex-col items-center text-center">
+                            <i class="fa-solid fa-check-double text-emerald-300 text-4xl mb-3"></i>
+                            <h4 class="font-bold text-xl mb-2 text-white">3. Hazle un Verdadero o Falso</h4>
+                            <p class="text-base text-blue-100 font-medium">Invéntate 2 afirmaciones cortas de "Verdadero o Falso" sobre lo que acaban de hacer, y pídele que responda justificando su respuesta. ¡A ver si entendió cómo funcionan las herramientas!</p>
+                        </div>
+                        <div class="bg-white/10 p-6 rounded-3xl border border-white/20 flex flex-col items-center text-center">
+                            <i class="fa-solid fa-keyboard text-orange-300 text-4xl mb-3"></i>
+                            <h4 class="font-bold text-xl mb-2 text-white">4. ¡A programar!</h4>
+                            <p class="text-base text-blue-100 font-medium">Haz que tu compañero escriba el código SQL y lo pruebe en el computador. Si se equivoca, ayúdalo amablemente a encontrar el error hasta que la consulta funcione sin problemas.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Entregable -->
+                    <div class="bg-black/20 backdrop-blur-sm p-6 rounded-2xl border-2 border-dashed border-white/40 text-center mt-8">
+                        <h4 class="text-2xl font-bold mb-3 text-yellow-300"><i class="fa-solid fa-file-code mr-2"></i> ¿Qué deben entregar?</h4>
+                        <p class="text-lg font-medium text-blue-50 leading-relaxed">
+                            Abre un archivo de texto en tu programa y guarda todas las consultas reales que hizo tu compañero. Además, escribe las respuestas de las preguntas teóricas usando comentarios guiados (<code class="bg-black/30 px-2 py-1 rounded">--</code>).<br>
+                            <span class="block mt-4">Sube la actividad en la plataforma con el formato: <strong class="inline-block text-white bg-blue-800/80 px-4 py-2 rounded-xl border border-blue-400 ml-2 shadow-sm"><i class="fa-solid fa-upload mr-2"></i>desafio_nombres.sql</strong></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center bg-white/50 border-t-2 border-pink-100 mt-20 py-12 flex flex-col items-center">
+        <div class="mb-4">
+            <img src="avatar.png" alt="HachiMaki-dev avatar" class="w-28 h-28 rounded-full border-4 border-pink-300 shadow-lg object-cover">
+        </div>
+        <h2 class="text-3xl font-bold text-pink-600 mb-2">HachiMaki-dev</h2>
+        <div class="flex items-center justify-center space-x-2 text-pink-500 text-xl font-bold">
+            <span>Bases de datos aplicada 2</span>
+        </div>
+        <div class="mt-4 bg-pink-200 text-pink-900 font-bold px-6 py-2.5 rounded-full text-base shadow-sm inline-block">
+            DuocUC Puerto Montt 2026
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+</body>
+</html>

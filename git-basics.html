@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Basics - Diario de Clases</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PrismJS (Syntax Highlighting) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Quicksand', 'sans-serif'] },
+                    colors: {
+                        kawaii: {
+                            pink: '#FFE4E1', blue: '#E0F7FA', yellow: '#FFF9C4',
+                            green: '#E8F5E9', purple: '#F3E5F5', text: '#3E2723', card: '#FFFFFF'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        body { background-color: #FFF0F5; color: #3E2723; }
+        .content-box { @apply bg-white rounded-[2.5rem] p-8 md:p-12 shadow-lg mb-12 border-2 border-pink-100/50 relative overflow-hidden; }
+        .section-title { @apply text-3xl font-bold mb-8 flex items-center gap-4 border-b-2 pb-4; }
+        
+        pre[class*="language-"] { 
+            border-radius: 1.5rem !important; 
+            margin: 1.5rem 0 !important; 
+            padding: 1.5rem !important;
+            overflow-x: auto !important;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+        }
+        
+        .badge-pink { @apply inline-block bg-pink-100 text-pink-700 font-bold px-4 py-1.5 rounded-xl border border-pink-200 shadow-sm whitespace-nowrap; }
+        .badge-orange { @apply inline-block bg-orange-100 text-orange-700 font-bold px-4 py-1.5 rounded-xl border border-orange-200 shadow-sm whitespace-nowrap; }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen pb-20 text-gray-800">
+    <nav class="max-w-5xl mx-auto px-6 py-8">
+        <a href="index.html" class="inline-flex items-center text-pink-500 hover:text-pink-700 font-bold transition-transform hover:-translate-x-1 bg-white px-6 py-3 rounded-full shadow-md border-2 border-pink-100 text-lg">
+            <i class="fa-solid fa-arrow-left mr-3"></i> Volver al Diario
+        </a>
+    </nav>
+
+    <header class="max-w-5xl mx-auto px-6 text-center mb-16">
+        <div class="inline-block bg-orange-100 px-6 py-2.5 rounded-full text-orange-700 font-bold text-base mb-6 border-2 border-orange-200 shadow-sm">
+            <i class="fa-brands fa-git-alt text-orange-500 mr-2"></i> Entrada 2
+        </div>
+        <h1 class="text-5xl md:text-6xl font-bold text-pink-600 mb-6 drop-shadow-sm leading-tight">🚀 Magia con Git y GitHub</h1>
+        <p class="text-xl md:text-2xl text-gray-700 bg-white inline-flex items-center gap-3 px-8 py-4 rounded-full shadow-md border-2 border-pink-100 mt-4 font-bold mx-auto justify-center flex-wrap">
+            Aprende a versionar tu código sin morir en el intento ✨
+        </p>
+
+        <a href="https://github.com/hachimaki-dev/Bases_de_datos_Aplicada_2_005VDuocUcPMontt_2026.git" target="_blank" class="block max-w-2xl mx-auto mt-8 bg-slate-800 text-white p-4 rounded-2xl shadow-lg hover:bg-slate-700 transition-colors border-2 border-slate-600">
+            <div class="flex items-center justify-center gap-3 font-bold text-lg">
+                <i class="fa-brands fa-github text-3xl"></i> Repo Oficial del Curso BD Aplicada 2
+            </div>
+            <div class="text-slate-300 text-sm mt-1 font-mono break-all px-4">
+                github.com/hachimaki-dev/Bases_de_datos_Aplicada_2...
+            </div>
+        </a>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6">
+        
+        <!-- Guardar Cambios (Commit) -->
+        <section class="content-box">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-orange-50 rounded-bl-full -z-10 opacity-70"></div>
+            <h2 class="section-title text-orange-600 border-orange-200">
+                <i class="fa-solid fa-camera-retro text-orange-500 bg-orange-100 p-3 rounded-2xl"></i> Guardar tu Trabajo (Commit)
+            </h2>
+            <div class="space-y-6">
+                <p class="text-xl leading-relaxed font-medium text-gray-700">
+                    Hacer un <strong>commit</strong> es como tomarte una selfie cuando estás arreglado. Es una fotografía perfecta del estado de tu código en ese preciso momento, para que nunca pierdas tu avance diario.
+                </p>
+            </div>
+            
+            <div class="bg-slate-800 p-8 rounded-[2rem] text-white my-8 shadow-xl">
+                <h3 class="font-bold text-orange-400 mb-4 text-xl"><i class="fa-solid fa-terminal mr-2"></i> Pasos en la consola:</h3>
+                
+                <p class="text-slate-300 mb-2">1. Dile a Git que prepare TODOS los archivos que editaste (los pone en el carrito de compras):</p>
+                <пре><code class="language-bash">git add .</code></pre>
+
+                <p class="text-slate-300 mt-6 mb-2">2. Saca la foto y ponle un título descriptivo (NUNCA pongas "asdasd"):</p>
+                <пре><code class="language-bash">git commit -m "Mi primer taller de BD resuelto"</code></pre>
+            </div>
+        </section>
+
+        <!-- Cambiar de Rama -->
+        <section class="content-box">
+            <h2 class="section-title text-blue-600 border-blue-200">
+                <i class="fa-solid fa-code-branch text-blue-500 bg-blue-100 p-3 rounded-2xl"></i> Cambiar de Rama (Branching)
+            </h2>
+            <div class="space-y-6">
+                <p class="text-xl leading-relaxed font-medium text-gray-700">
+                    Las <strong>ramas</strong> (branches) te permiten trabajar en universos paralelos. Puedes intentar cosas raras, dañar el código y romper tu base de datos en una rama nueva, mientras la rama principal (main) sigue hermosa y sin errores.
+                </p>
+            </div>
+            
+            <div class="bg-blue-50 p-6 rounded-3xl border-2 border-blue-200 shadow-sm mt-8">
+                <div class="flex flex-col gap-6">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-blue-100">
+                        <strong class="text-blue-700 block mb-2"><i class="fa-solid fa-plus text-blue-500 mr-2"></i> Crear y Viajar a una nueva rama:</strong>
+                        <пре><code class="language-bash">git checkout -b mi-nueva-tarea</code></pre>
+                        <p class="text-sm text-gray-500 mt-2 font-medium">Esto crea la rama "mi-nueva-tarea" y te teletransporta a ella de inmediato.</p>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-blue-100">
+                        <strong class="text-blue-700 block mb-2"><i class="fa-solid fa-plane text-blue-500 mr-2"></i> Volver a tu rama principal (viajar entre mundos):</strong>
+                        <пре><code class="language-bash">git checkout main</code></pre>
+                        <p class="text-sm text-gray-500 mt-2 font-medium">Vuelves sano y salvo a tu código original seguro.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Subir a GitHub -->
+        <section class="content-box">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-pink-50 rounded-bl-full -z-10 opacity-70"></div>
+            <h2 class="section-title text-pink-600 border-pink-200">
+                <i class="fa-solid fa-cloud-arrow-up text-pink-500 bg-pink-100 p-3 rounded-2xl"></i> Subir a GitHub (Push)
+            </h2>
+            <div class="space-y-6">
+                <p class="text-xl leading-relaxed font-medium text-gray-700">
+                    ¡Por fin! Hiciste el taller genial, ya tomaste la foto (commit) y ahora quieres enviarla al profesor o a tus compañeros. Eso se hace subiendo tus avances a la nube con <strong>Push</strong>.
+                </p>
+            </div>
+            
+            <div class="bg-pink-50 border-2 border-pink-200 p-8 rounded-[2rem] shadow-sm mt-8">
+                <p class="font-bold text-pink-800 text-lg mb-4">Manda tus cambios hacia la rama correspondiente en internet:</p>
+                <div class="bg-slate-800 p-4 rounded-xl shadow-md">
+                    <pre><code class="language-bash">git push origin main</code></pre>
+                </div>
+                <p class="text-sm text-pink-600 mt-4 font-bold bg-white inline-block px-4 py-2 rounded-lg border border-pink-200 shadow-sm">
+                    ⚠️ Si no estás en main y estás en "mi-nueva-tarea", obvio debes lanzar: 
+                    <code class="text-slate-800 bg-slate-200 px-2 py-1 rounded mx-1">git push origin mi-nueva-tarea</code>
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center bg-white/50 border-t-2 border-pink-100 mt-20 py-12 flex flex-col items-center">
+        <div class="mb-4">
+            <img src="avatar.png" alt="HachiMaki-dev avatar" class="w-28 h-28 rounded-full border-4 border-pink-300 shadow-lg object-cover">
+        </div>
+        <h2 class="text-3xl font-bold text-pink-600 mb-2">HachiMaki-dev</h2>
+        <div class="flex items-center justify-center space-x-2 text-pink-500 text-xl font-bold">
+            <span>Bases de datos aplicada 2</span>
+        </div>
+        <div class="mt-4 bg-pink-200 text-pink-900 font-bold px-6 py-2.5 rounded-full text-base shadow-sm inline-block">
+            DuocUC Puerto Montt 2026
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script>
+        // Fix the pre tags I used intentionally to bypass some parsing issue if needed, replacing them here is just for display.
+        document.querySelectorAll('пре').forEach(el => {
+            const pre = document.createElement('pre');
+            pre.innerHTML = el.innerHTML;
+            el.replaceWith(pre);
+        });
+    </script>
+</body>
+</html>
