@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 2 - Funciones de Grupo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Quicksand', 'sans-serif'] },
+                    colors: {
+                        kawaii: {
+                            pink: '#FFE4E1', blue: '#E0F7FA', yellow: '#FFF9C4',
+                            green: '#E8F5E9', purple: '#F3E5F5', text: '#3E2723', card: '#FFFFFF'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        body { background-color: #FFF0F5; color: #3E2723; }
+        .content-box { @apply bg-white rounded-[2.5rem] p-8 md:p-12 shadow-lg mb-12 border-2 border-pink-100/50 relative overflow-hidden; }
+        .section-title { @apply text-3xl font-bold mb-8 flex items-center gap-4 border-b-2 pb-4; }
+        pre[class*="language-"] { border-radius: 1.5rem !important; margin: 1.5rem 0 !important; padding: 1.5rem !important; overflow-x: auto !important; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important; }
+        .badge-pink { @apply inline-block bg-pink-100 text-pink-700 font-bold px-4 py-1.5 rounded-xl border border-pink-200 shadow-sm whitespace-nowrap; }
+        .badge-blue { @apply inline-block bg-blue-100 text-blue-700 font-bold px-4 py-1.5 rounded-xl border border-blue-200 shadow-sm whitespace-nowrap; }
+        .badge-green { @apply inline-block bg-emerald-100 text-emerald-700 font-bold px-4 py-1.5 rounded-xl border border-emerald-200 shadow-sm whitespace-nowrap; }
+        .badge-purple { @apply inline-block bg-purple-100 text-purple-700 font-bold px-4 py-1.5 rounded-xl border border-purple-200 shadow-sm whitespace-nowrap; }
+        .badge-teal { @apply inline-block bg-teal-100 text-teal-700 font-bold px-4 py-1.5 rounded-xl border border-teal-200 shadow-sm whitespace-nowrap; }
+        .badge-amber { @apply inline-block bg-amber-100 text-amber-700 font-bold px-4 py-1.5 rounded-xl border border-amber-200 shadow-sm whitespace-nowrap; }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen pb-20 text-gray-800">
+    <nav class="max-w-5xl mx-auto px-6 py-8">
+        <a href="index.html" class="inline-flex items-center text-pink-500 hover:text-pink-700 font-bold transition-transform hover:-translate-x-1 bg-white px-6 py-3 rounded-full shadow-md border-2 border-pink-100 text-lg">
+            <i class="fa-solid fa-arrow-left mr-3"></i> Volver al Inicio
+        </a>
+    </nav>
+
+    <header class="max-w-5xl mx-auto px-6 text-center mb-16">
+        <div class="inline-block bg-teal-100 px-6 py-2.5 rounded-full text-teal-700 font-bold text-base mb-6 border-2 border-teal-200 shadow-sm">
+            <i class="fa-solid fa-book text-yellow-500 mr-2"></i> Clase 2
+        </div>
+        <h1 class="text-5xl md:text-6xl font-bold text-teal-600 mb-6 drop-shadow-sm leading-tight">Taller Práctico:<br>Funciones de Grupo en SQL</h1>
+        <p class="text-xl md:text-2xl text-gray-700 bg-white inline-flex items-center gap-3 px-8 py-4 rounded-full shadow-md border-2 border-teal-100 mt-4 font-bold mx-auto justify-center">
+            Aprende a resumir y analizar datos como un profesional <i class="fa-solid fa-chart-bar text-teal-400 text-2xl"></i>
+        </p>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6">
+
+        <!-- Contexto -->
+        <section class="content-box">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-teal-50 rounded-bl-full -z-10 opacity-70"></div>
+            <h2 class="section-title text-teal-600 border-teal-200">
+                <i class="fa-solid fa-tv text-teal-500 bg-teal-100 p-3 rounded-2xl"></i> Caso Práctico: Reportes del Gerente
+            </h2>
+            <div class="space-y-6">
+                <p class="text-xl leading-relaxed font-medium text-gray-700">
+                    <strong>¡Tu segundo desafío de bases de datos!</strong> 📊 Sigues trabajando en la plataforma de streaming. Esta vez, el gerente llegó con preguntas que no se responden mirando fila por fila: <em>"¿Cuántos usuarios tenemos? ¿Cuál es el rating promedio de nuestros contenidos? ¿Qué género tiene más títulos?"</em>
+                </p>
+                <p class="text-xl leading-relaxed font-medium text-gray-700">
+                    Para responder estas preguntas necesitas las <span class="bg-teal-100 text-teal-800 font-bold px-3 py-1 rounded-lg border border-teal-300">Funciones de Grupo</span> (también llamadas funciones de agregación). Estas funciones toman <strong>muchas filas</strong> y devuelven <strong>un solo resultado resumido</strong>.
+                </p>
+            </div>
+            
+            <div class="bg-teal-50 p-8 rounded-[2rem] text-teal-900 flex flex-col sm:flex-row items-center sm:items-start gap-6 border-2 border-teal-200 shadow-sm mt-10">
+                <div class="bg-teal-200 p-4 rounded-full flex-shrink-0">
+                    <i class="fa-solid fa-lightbulb text-4xl text-teal-600"></i>
+                </div>
+                <div>
+                    <strong class="block text-teal-700 mb-3 text-2xl font-bold">💡 Concepto Fundamental: Analista vs Gerente</strong> 
+                    <p class="text-lg leading-relaxed font-medium">
+                        Hasta ahora eras un <strong>Analista de Datos</strong>: un <code class="bg-white px-1 py-0.5 rounded text-teal-800">SELECT</code> normal trae datos fila por fila (100 filas → 100 resultados). Pero tu gerente no tiene tiempo para leer 100 filas. Él quiere <strong>un resumen</strong>. Las <strong>funciones de grupo</strong> toman <em>todas esas filas</em> y las comprimen en <strong>un solo resultado centralizado</strong> (100 filas → 1 resultado).
+                    </p>
+                    <div class="bg-white p-5 rounded-2xl border border-teal-200 mt-4">
+                        <p class="text-lg font-bold text-teal-800 mb-2"><i class="fa-brands fa-java text-orange-500 mr-2"></i> Analogía con Java (para los que están viendo POO):</p>
+                        <p class="text-base font-medium text-gray-700">Piénsalo así: un <code class="bg-gray-100 px-1 py-0.5 rounded text-blue-600">SELECT</code> normal es como un <code class="bg-gray-100 px-2 py-0.5 rounded">System.out.println(dato)</code> dentro de un ciclo <code class="bg-gray-100 px-2 py-0.5 rounded">for</code>. Una <strong>función de grupo</strong> es como sumar todo en una variable acumuladora invisible y hacer un solo <code class="bg-gray-100 px-2 py-0.5 rounded">println(total)</code> al final del programa.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Paso 0 -->
+        <section class="content-box">
+            <h2 class="section-title text-pink-600 border-pink-200">
+                <i class="fa-solid fa-cogs text-pink-500 bg-pink-100 p-3 rounded-2xl"></i> Paso 0: Preparación del Entorno
+            </h2>
+            <p class="mb-8 font-medium text-gray-600 text-xl border-l-4 border-pink-400 pl-4 py-2 bg-pink-50 rounded-r-xl">
+                Si ya tienes las tablas de la clase anterior (usuarios, contenidos, visualizaciones), puedes saltarte este paso. Si no, ejecuta los 3 bloques en orden 👇
+            </p>
+            
+            <div class="grid grid-cols-1 gap-8">
+                <div class="bg-white rounded-[2rem] p-8 border-2 border-red-100 shadow-md">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="bg-red-100 text-red-600 w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold shadow-sm">1</div>
+                        <div>
+                            <h3 class="font-bold text-red-600 text-2xl">Limpiar el Espacio</h3>
+                            <p class="text-base text-gray-600 font-medium">Ejecuta esto para borrar tablas anteriores.</p>
+                        </div>
+                    </div>
+                    <pre><code class="language-sql">DROP TABLE visualizaciones;
+DROP TABLE contenidos;
+DROP TABLE usuarios;</code></pre>
+                </div>
+
+                <div class="bg-white rounded-[2rem] p-8 border-2 border-blue-100 shadow-md">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="bg-blue-100 text-blue-600 w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold shadow-sm">2</div>
+                        <div>
+                            <h3 class="font-bold text-blue-600 text-2xl">Crear las Tablas</h3>
+                            <p class="text-base text-gray-600 font-medium">Ejecuta esto para crear las tablas del sistema.</p>
+                        </div>
+                    </div>
+                    <pre><code class="language-sql">CREATE TABLE usuarios (
+    id_usuario NUMBER PRIMARY KEY,
+    nombre VARCHAR2(50),
+    pais VARCHAR2(50),
+    fecha_registro DATE
+);
+
+CREATE TABLE contenidos (
+    id_contenido NUMBER PRIMARY KEY,
+    titulo VARCHAR2(100),
+    genero VARCHAR2(50),
+    duracion_min NUMBER,
+    rating NUMBER(3,1)
+);
+
+CREATE TABLE visualizaciones (
+    id_visualizacion NUMBER PRIMARY KEY,
+    id_usuario NUMBER,
+    id_contenido NUMBER,
+    fecha DATE,
+    progreso NUMBER,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario),
+    FOREIGN KEY (id_contenido) REFERENCES contenidos(id_contenido)
+);</code></pre>
+                </div>
+
+                <div class="bg-white rounded-[2rem] p-8 border-2 border-emerald-100 shadow-md">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="bg-emerald-100 text-emerald-600 w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold shadow-sm">3</div>
+                        <div>
+                            <h3 class="font-bold text-emerald-600 text-2xl">Insertar Información</h3>
+                            <p class="text-base text-gray-600 font-medium">Llena las tablas con datos de prueba.</p>
+                        </div>
+                    </div>
+                    <pre><code class="language-sql">INSERT INTO usuarios VALUES (1, 'ana torres', 'Chile', DATE '2023-01-10');
+INSERT INTO usuarios VALUES (2, 'LUIS ROJAS', 'Chile', DATE '2023-03-22');
+INSERT INTO usuarios VALUES (3, 'mika tanaka', 'Japón', DATE '2022-11-05');
+INSERT INTO usuarios VALUES (4, 'john smith', 'USA', DATE '2023-06-30');
+
+INSERT INTO contenidos VALUES (1, 'Attack on Titan', 'Anime', 24, 9.5);
+INSERT INTO contenidos VALUES (2, 'Breaking Bad', 'Drama', 47, 9.7);
+INSERT INTO contenidos VALUES (3, 'Demon Slayer', 'Anime', 23, 8.9);
+INSERT INTO contenidos VALUES (4, 'Stranger Things', 'Sci-Fi', 50, 8.8);
+INSERT INTO contenidos VALUES (5, 'One Piece', 'Anime', 22, 9.0);
+
+INSERT INTO visualizaciones VALUES (1, 1, 1, DATE '2024-01-01', 100);
+INSERT INTO visualizaciones VALUES (2, 1, 3, DATE '2024-01-02', 50);
+INSERT INTO visualizaciones VALUES (3, 2, 2, DATE '2024-01-03', 100);
+INSERT INTO visualizaciones VALUES (4, 3, 1, DATE '2024-01-04', 80);
+INSERT INTO visualizaciones VALUES (5, 4, 4, DATE '2024-01-05', 100);
+INSERT INTO visualizaciones VALUES (6, 2, 5, DATE '2024-01-06', 30);
+INSERT INTO visualizaciones VALUES (7, 3, 3, DATE '2024-01-07', 100);</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Parte 1: Funciones Básicas -->
+        <section class="content-box">
+            <h2 class="section-title text-teal-600 border-teal-200">
+                <i class="fa-solid fa-chart-pie text-teal-500 bg-teal-100 p-3 rounded-2xl"></i> Parte 1 — Construyendo el Resumen Paso a Paso
+            </h2>
+            
+            <p class="text-gray-700 font-medium text-lg leading-relaxed mb-8">
+                Las funciones de grupo son el corazón de los reportes. Vamos a ver cómo armar un reporte gerencial para el catálogo de Contenidos, función por función.
+            </p>
+
+            <!-- Paso 1.1 -->
+            <div class="bg-white p-6 rounded-[2rem] border-2 border-teal-100 shadow-sm mb-6 flex flex-col md:flex-row gap-6 items-center">
+                <div class="md:w-1/2">
+                    <h3 class="font-bold text-teal-700 text-xl border-b-2 border-teal-50 pb-2 mb-3"><span class="bg-teal-100 text-teal-800 px-3 py-1 rounded-lg mr-2">Paso 1</span> La necesidad básica: ¿Cuántos hay?</h3>
+                    <p class="text-gray-600 font-medium mb-4">El gerente pregunta: <em>"¿Tenemos mucho contenido en la plataforma?"</em>. Usaremos <span class="badge-teal text-sm">COUNT()</span> para contar las filas.</p>
+                    <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 shadow-sm">
+                        <p class="text-amber-800 font-bold text-sm"><i class="fa-solid fa-triangle-exclamation mr-2"></i> TIP DE ORO</p>
+                        <p class="text-amber-700 font-medium text-sm mt-1"><code class="bg-white px-1 rounded text-xs font-bold font-mono">COUNT(*)</code> cuenta <strong>todas</strong> las filas. <code class="bg-white px-1 rounded text-xs font-bold font-mono">COUNT(columna)</code> ignora las filas con datos vacíos (NULL).</p>
+                    </div>
+                </div>
+                <div class="md:w-1/2 w-full">
+                    <pre class="!m-0"><code class="language-sql">SELECT COUNT(*) AS total_titulos
+FROM contenidos;</code></pre>
+                </div>
+            </div>
+
+            <!-- Paso 1.2 -->
+            <div class="bg-white p-6 rounded-[2rem] border-2 border-teal-100 shadow-sm mb-6 flex flex-col md:flex-row gap-6 items-center">
+                <div class="md:w-1/2">
+                    <h3 class="font-bold text-teal-700 text-xl border-b-2 border-teal-50 pb-2 mb-3"><span class="bg-teal-100 text-teal-800 px-3 py-1 rounded-lg mr-2">Paso 2</span> Sumando valores numéricos</h3>
+                    <p class="text-gray-600 font-medium leading-relaxed">El gerente es ambicioso y añade: <em>"¿Y si un usuario decidiera ver TODO nuestro catálogo de una sentada, cuántos minutos de su vida gastaría?"</em>.</p>
+                    <p class="text-gray-600 font-medium mt-3 leading-relaxed">Usaremos <span class="badge-teal text-sm">SUM(columna)</span>. Notarás que <strong>podemos poner varias funciones en el mismo `SELECT`</strong> separadas por coma.</p>
+                </div>
+                <div class="md:w-1/2 w-full">
+                    <pre class="!m-0"><code class="language-sql">SELECT 
+    COUNT(*) AS total_titulos,
+    SUM(duracion_min) AS minutos_totales
+FROM contenidos;</code></pre>
+                </div>
+            </div>
+
+            <!-- Paso 1.3 -->
+            <div class="bg-slate-50 p-8 rounded-[2rem] border-2 border-slate-200 shadow-inner mb-12 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-40 h-40 bg-teal-100 rounded-bl-[100px] -z-10 opacity-50"></div>
+                <h3 class="font-bold text-slate-800 text-2xl mb-4 border-b-2 border-slate-200 pb-3 flex items-center"><i class="fa-solid fa-rocket text-teal-500 mr-3"></i> <span class="bg-teal-100 text-teal-800 px-3 py-1 rounded-lg mr-2 text-xl shadow-sm">Paso 3</span> El Reporte Ejecutivo Completo</h3>
+                <p class="text-gray-700 font-medium text-lg mb-6 leading-relaxed">Finalmente, añadimos las métricas restantes que siempre piden en las empresas: el Promedio <span class="badge-teal text-sm">AVG()</span>, el mínimo <span class="badge-teal text-sm">MIN()</span> y el máximo <span class="badge-teal text-sm">MAX()</span>.</p>
+                <div class="bg-white p-4 rounded-2xl mb-6 shadow-sm border border-teal-100">
+                     <p class="text-teal-800 font-bold mb-2">🎯 <strong>Misión: ¡Ejecuta este código!</strong> Observa atentamente cómo las 5 filas originales de la tabla `contenidos` se <strong>comprimen y resumen en una sola fila</strong> de respuestas.</p>
+                </div>
+                <div class="w-full">
+                    <pre><code class="language-sql">SELECT 
+    COUNT(*) AS total_titulos,
+    SUM(duracion_min) AS minutos_totales,
+    ROUND(AVG(rating), 1) AS rating_promedio,
+    MIN(rating) AS peor_rating,
+    MAX(rating) AS mejor_rating
+FROM contenidos;</code></pre>
+                </div>
+            </div>
+
+            <!-- Reflexión -->
+            <div class="bg-teal-50/80 p-8 rounded-[2rem] border-2 border-teal-200 mb-12 flex flex-col md:flex-row gap-8 items-center shadow-sm">
+                <div class="bg-white p-6 rounded-full shadow-md flex-shrink-0">
+                    <i class="fa-solid fa-comments text-5xl text-teal-500"></i>
+                </div>
+                <div class="flex-grow">
+                    <h3 class="font-bold text-teal-800 mb-4 text-2xl">🗣️ Reflexión en Parejas</h3>
+                    <p class="text-teal-900 font-medium mb-4">Antes de hacer los ejercicios, evalúa la utilidad de esto:</p>
+                    <ol class="list-decimal list-inside space-y-4 text-teal-900 font-medium text-lg">
+                        <li class="pl-2 bg-white/60 p-3 rounded-lg border border-teal-100">Si un estudiante te dice: <em>"Escribí `SELECT titulo, COUNT(*) FROM contenidos` para ver el nombre de todos mis títulos y luego el total al ladito"</em>, ¿Por qué crees que Oracle le dará un error y no ejecutará? (Piensa: ¿Al resumir 5 películas en 1 sola fila, cuál de los 5 títulos debería mostrar?).</li>
+                        <li class="pl-2 bg-white/60 p-3 rounded-lg border border-teal-100">En Java, para calcular el promedio necesitas varias líneas de código y un for. En SQL basta con <code class="bg-white px-1 rounded font-mono">AVG(columna)</code>. ¿Cuáles son los riesgos si en lugar de hacer esto en SQL, trataras de descargar millones de registros bancarios a tu Java para promediarlos allá manualmente?</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <!-- Verdadero o Falso -->
+                <div class="border-4 border-solid border-teal-100 bg-teal-50 p-8 rounded-[2rem] shadow-sm relative overflow-visible">
+                    <h3 class="font-bold text-gray-800 mb-6 text-2xl flex items-center"><i class="fa-solid fa-scale-balanced text-teal-500 mr-3"></i> ⚖️ Verdadero o Falso</h3>
+                    <p class="text-gray-700 font-medium mb-6">Discutan y justifiquen cada afirmación:</p>
+                    <div class="space-y-6 text-gray-800 font-medium text-lg">
+                        <div class="bg-white p-5 rounded-xl border border-teal-200 shadow-sm flex items-start gap-4">
+                            <i class="fa-regular fa-circle-question text-3xl text-teal-400 mt-1"></i>
+                            <p>1. Si ejecuto <code>SELECT COUNT(*) FROM usuarios</code>, obtendré una fila por cada usuario en la tabla.</p>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-teal-200 shadow-sm flex items-start gap-4">
+                            <i class="fa-regular fa-circle-question text-3xl text-teal-400 mt-1"></i>
+                            <p>2. Las funciones <code>SUM()</code> y <code>AVG()</code> pueden usarse con columnas de texto como "nombre".</p>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-teal-200 shadow-sm flex items-start gap-4">
+                            <i class="fa-regular fa-circle-question text-3xl text-teal-400 mt-1"></i>
+                            <p>3. <code>MIN()</code> y <code>MAX()</code> solo sirven con números, jamás podrían aplicarse sobre fechas.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Ejercicios -->
+                <div class="bg-slate-800 p-8 rounded-[2rem] shadow-xl text-white relative">
+                    <h3 class="font-bold text-white mb-6 text-2xl flex items-center"><i class="fa-solid fa-laptop-code text-teal-400 mr-3"></i> 💻 Manos a la Obra</h3>
+                    <p class="text-slate-300 font-medium text-lg leading-relaxed mb-6">El gerente necesita estos datos para la reunión de directorio:</p>
+                    <ul class="space-y-6 text-slate-200 text-base">
+                        <li class="bg-slate-700/50 p-5 rounded-xl border-l-4 border-teal-400">
+                            <strong class="text-teal-300 block mb-2 text-lg uppercase"><i class="fa-solid fa-circle-play mr-2"></i> Ejercicio 1</strong>
+                            <p class="mb-3 text-slate-300 font-medium">El gerente pregunta: "¿Cuántos usuarios registrados tenemos en total?"</p>
+                            <p class="text-white font-medium bg-slate-800 p-3 rounded">🎯 Tu Misión: Haz un SELECT usando <code>COUNT(*)</code> sobre la tabla <code>usuarios</code>.</p>
+                        </li>
+                        <li class="bg-slate-700/50 p-5 rounded-xl border-l-4 border-teal-400">
+                            <strong class="text-teal-300 block mb-2 text-lg uppercase"><i class="fa-solid fa-circle-play mr-2"></i> Ejercicio 2</strong>
+                            <p class="mb-3 text-slate-300 font-medium">Necesitamos saber el rating más alto y más bajo de nuestro catálogo, junto con la duración total en minutos de todo el contenido disponible.</p>
+                            <p class="text-white font-medium bg-slate-800 p-3 rounded">🎯 Tu Misión: Haz un SELECT de la tabla <code>contenidos</code> usando <code>MIN()</code>, <code>MAX()</code> y <code>SUM()</code> sobre las columnas correspondientes.</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Parte 2: GROUP BY -->
+        <section class="content-box">
+            <h2 class="section-title text-amber-600 border-amber-200">
+                <i class="fa-solid fa-layer-group text-amber-500 bg-amber-100 p-3 rounded-2xl"></i> Parte 2 — El Misterio del GROUP BY
+            </h2>
+
+            <div class="bg-red-50 border-l-4 border-red-500 p-6 rounded-r-2xl mb-10 shadow-sm">
+                <h3 class="text-red-800 font-bold text-xl mb-3"><i class="fa-solid fa-skull-crossbones mr-2"></i> El Error de Novato N°1</h3>
+                <p class="text-red-900 font-medium mb-4 text-lg">El gerente ahora pide: <em>"Quiero saber cuántos títulos tenemos, pero <strong>separados por género</strong>"</em>. Un estudiante confiado escribe esto en su prueba final:</p>
+                <pre class="!m-0"><code class="language-sql">-- ❌ Esto causa un error trágico en tu evaluación:
+SELECT genero, COUNT(*)
+FROM contenidos;</code></pre>
+                <div class="mt-4 bg-white p-4 rounded-xl border border-red-200">
+                    <p class="text-red-700 font-bold mb-1">¿Por qué explota SQL?</p>
+                    <p class="text-gray-700 font-medium text-base">Imagina la tabla original: Tienes 5 filas de géneros distintos (Anime, Drama...). Pero por otro lado, <code class="bg-gray-100 px-1 rounded font-mono font-bold text-red-800">COUNT(*)</code> es una función de grupo, que quiere devolver <strong>1 sola fila final</strong> con el total (5). SQL entra en pánico existencial: <em>"¿Qué género pongo al lado del número 5 si tengo filas distintas?"</em>.</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-12 items-start">
+                <div class="space-y-6 min-w-0">
+                    <h3 class="font-bold text-gray-800 text-2xl flex items-center border-b-2 border-gray-100 pb-3"><i class="fa-solid fa-key text-amber-500 mr-3"></i> 🔑 La Solución: Agrupar</h3>
+                    <p class="text-gray-700 font-medium text-lg leading-relaxed bg-gray-50 p-5 rounded-2xl border border-gray-200">
+                        La solución es decirle a SQL: <em>"Tranquilo, no sumes toda la tabla junta. Primero <strong>agrupa</strong> las filas por categoría, y luevo cuenta cada paquete por separado"</em>.
+                    </p>
+                    <div class="space-y-4 pt-2">
+                        <div class="flex flex-col gap-4 bg-white p-4 rounded-xl shadow-sm border border-amber-100">
+                            <span class="badge-amber text-lg">GROUP BY columna</span>
+                            <span class="text-gray-700 font-medium">Divide las filas en cajas separadas según los valores. Luego aplica la función de resumen <strong>a cada caja de forma independiente</strong>.</span>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-amber-200 mt-4">
+                        <p class="text-lg font-bold text-amber-800 mb-2"><i class="fa-brands fa-java text-orange-500 mr-2"></i> Analogía Java:</p>
+                        <p class="text-base font-medium text-gray-700">Es como guardar todo en un <code class="bg-gray-100 px-1 rounded font-mono text-blue-600">Map&lt;String, Integer&gt;</code> donde la clave es el género y el valor es la cuenta. <code class="bg-gray-100 px-1 rounded font-mono font-bold">GROUP BY</code> hace ese mapeo automático por ti para que no uses bucles.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-50 p-6 rounded-[2rem] border-2 border-slate-200 shadow-inner min-w-0 flex flex-col h-full">
+                    <h3 class="font-bold text-slate-800 mb-4 text-2xl flex items-center"><i class="fa-solid fa-play text-amber-500 mr-3"></i> 🔍 Demostración Correcta</h3>
+                    <p class="text-gray-600 font-medium mb-3">Ejecuta esto y observa cómo los contenidos se agrupan por género antes de calcular las estadísticas:</p>
+                    <div class="w-full">
+                        <pre><code class="language-sql">SELECT 
+    genero,
+    COUNT(*) AS cantidad_titulos,
+    ROUND(AVG(rating), 1) AS rating_promedio
+FROM contenidos
+GROUP BY genero;</code></pre>
+                    </div>
+                    <div class="bg-amber-100 p-5 rounded-xl border border-amber-300 mt-4 shadow-sm relative overflow-hidden">
+                        <div class="absolute -right-4 -bottom-4 opacity-20"><i class="fa-solid fa-gavel text-6xl text-amber-900"></i></div>
+                        <p class="text-amber-900 font-bold text-lg mb-1 relative z-10"><i class="fa-solid fa-star mr-2 text-amber-600"></i> REGLA DE ORO INQUEBRANTABLE</p>
+                        <p class="text-amber-800 font-medium text-sm leading-relaxed relative z-10">Toda columna de la tabla original que escribas en el <code class="bg-white/50 px-1 rounded font-mono text-amber-900">SELECT</code> y que <strong>NO</strong> tenga una función (como COUNT, SUM) <strong>TIENE QUE ESTAR OBLIGATORIAMENTE</strong> escrita en el <code class="bg-white/50 px-1 rounded font-mono text-amber-900">GROUP BY</code>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-amber-50 p-8 rounded-[2rem] border-2 border-amber-200 mb-12 flex flex-col md:flex-row gap-8 items-center shadow-sm">
+                <div class="bg-white p-6 rounded-full shadow-md flex-shrink-0"><i class="fa-solid fa-comments text-5xl text-amber-500"></i></div>
+                <div class="flex-grow">
+                    <h3 class="font-bold text-amber-800 mb-4 text-2xl">🗣️ Reflexión Estratégica</h3>
+                    <ol class="list-decimal list-inside space-y-4 text-amber-900 font-medium text-lg">
+                        <li class="pl-2 bg-white/60 p-3 rounded-lg border border-amber-100">Spotify publica reportes anuales tipo "Wrapped" mostrando datos como "tu género más escuchado fue Pop con 342 canciones". ¿Qué columna sería el <code class="bg-white px-1 rounded">GROUP BY</code> y qué función de grupo usarían para generar ese dato?</li>
+                        <li class="pl-2 bg-white/60 p-3 rounded-lg border border-amber-100">Si intentas hacer <code class="bg-white px-1 rounded">SELECT genero, titulo, COUNT(*) FROM contenidos GROUP BY genero</code> Oracle dará error. ¿Por qué <code class="bg-white px-1 rounded">titulo</code> rompe la consulta? Piénsalo: si agrupaste por género y Anime tiene 3 títulos... ¿cuál título mostraría?</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div class="border-4 border-solid border-amber-100 bg-amber-50 p-8 rounded-[2rem] shadow-sm">
+                    <h3 class="font-bold text-gray-800 mb-6 text-2xl flex items-center"><i class="fa-solid fa-scale-balanced text-amber-500 mr-3"></i> ⚖️ Verdadero o Falso</h3>
+                    <div class="space-y-6 text-gray-800 font-medium text-lg">
+                        <div class="bg-white p-5 rounded-xl border border-amber-200 shadow-sm flex items-start gap-4">
+                            <i class="fa-regular fa-circle-question text-3xl text-amber-400 mt-1"></i>
+                            <p>1. Si uso <code class="bg-gray-100 px-1 rounded font-mono font-bold text-amber-900">GROUP BY pais</code> y tengo 4 usuarios (2 de Chile, 1 de Japón, 1 de USA), obtendré exactamente 3 filas de resultado, una por cada país único.</p>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-amber-200 shadow-sm flex items-start gap-4">
+                            <i class="fa-regular fa-circle-question text-3xl text-amber-400 mt-1"></i>
+                            <p>2. Recordando el "Error de Novato N°1": ¿Puedo ejecutar <code class="bg-gray-100 px-1 rounded font-mono font-bold text-amber-900">SELECT nombre, COUNT(*) FROM usuarios GROUP BY pais</code> sin que la base de datos explote y me mande un error fatal?</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-amber-900 p-8 rounded-[2rem] shadow-xl text-white">
+                    <h3 class="font-bold text-white mb-6 text-2xl flex items-center"><i class="fa-solid fa-laptop-code text-amber-300 mr-3"></i> 💻 Manos a la Obra</h3>
+                    <ul class="space-y-6 text-amber-100 text-base">
+                        <li class="bg-amber-800/80 p-5 rounded-xl border-l-4 border-amber-400">
+                            <strong class="text-amber-300 block mb-2 text-lg uppercase"><i class="fa-solid fa-circle-play mr-2"></i> Ejercicio 3</strong>
+                            <p class="mb-3 font-medium">El área de marketing necesita saber cuántos usuarios tenemos registrados en cada país.</p>
+                            <p class="text-white font-medium bg-amber-950 p-3 rounded">🎯 Tu Misión: Haz un SELECT de <code>usuarios</code> agrupando por <code>pais</code> y contando cuántos hay en cada uno.</p>
+                        </li>
+                        <li class="bg-amber-800/80 p-5 rounded-xl border-l-4 border-amber-400">
+                            <strong class="text-amber-300 block mb-2 text-lg uppercase"><i class="fa-solid fa-circle-play mr-2"></i> Ejercicio 4</strong>
+                            <p class="mb-3 font-medium">El equipo de contenidos quiere ver el rating promedio, la duración mínima y máxima de cada género en el catálogo.</p>
+                            <p class="text-white font-medium bg-amber-950 p-3 rounded">🎯 Tu Misión: Haz un SELECT de <code>contenidos</code> agrupando por <code>genero</code>, mostrando <code>AVG(rating)</code> redondeado, <code>MIN(duracion_min)</code> y <code>MAX(duracion_min)</code>.</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Parte 3: HAVING -->
+        <section class="content-box">
+            <h2 class="section-title text-rose-600 border-rose-200">
+                <i class="fa-solid fa-shield-halved text-rose-500 bg-rose-100 p-3 rounded-2xl"></i> Parte 3 — Filtrar Grupos: El Escudo "HAVING"
+            </h2>
+            
+            <div class="bg-red-50 border-l-4 border-red-500 p-6 rounded-r-2xl mb-10 shadow-sm relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 opacity-10"><i class="fa-solid fa-bomb text-8xl text-red-900"></i></div>
+                <h3 class="text-red-800 font-bold text-xl mb-3 relative z-10"><i class="fa-solid fa-skull-crossbones mr-2"></i> El Error de Novato N°2</h3>
+                <p class="text-red-900 font-medium mb-4 text-lg relative z-10">El gerente se pone exigente: <em>"Quiero ver la lista de géneros y su total de títulos, pero <strong>solo muéstrame los géneros que tengan MÁS de 2 títulos</strong>"</em>. Un estudiante recuerda que el <code class="bg-red-100 px-1 rounded font-mono font-bold">WHERE</code> sirve para filtrar y escribe:</p>
+                <div class="w-full relative z-10">
+                    <pre class="!m-0"><code class="language-sql">-- ❌ Falla fatal: "Group function is not allowed here"
+SELECT genero, COUNT(*)
+FROM contenidos
+WHERE COUNT(*) > 2
+GROUP BY genero;</code></pre>
+                </div>
+                <div class="mt-4 bg-white p-4 rounded-xl border border-red-200 shadow-sm relative z-10">
+                    <p class="text-red-700 font-bold mb-1">¿Por qué explota SQL de nuevo?</p>
+                    <p class="text-gray-700 font-medium text-base">Para entender la furia de Oracle, debes conocer su mayor secreto: <strong>Cómo lee realmente el código</strong>. El motor rudo de la base de datos <em>no lee de arriba a abajo</em> como tú.</p>
+                </div>
+            </div>
+
+            <!-- Orden de Ejecución Movido Aquí -->
+            <div class="bg-slate-800 p-8 rounded-[2rem] border-2 border-slate-700 shadow-xl mb-12 text-white relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 opacity-10"><i class="fa-solid fa-cogs text-9xl text-white"></i></div>
+                <h3 class="font-bold text-cyan-400 mb-6 text-2xl relative z-10"><i class="fa-solid fa-code mr-2"></i> El Orden de Ejecución (Memorízalo)</h3>
+                <p class="text-slate-300 font-medium mb-6 text-lg relative z-10">SQL procesa tu bloque en este orden estricto. Es la llave para desbloquear tu nivel 'Experto':</p>
+                <div class="flex flex-col md:flex-row flex-wrap gap-4 items-center text-lg font-bold relative z-10">
+                    <div class="bg-blue-600 px-5 py-3 rounded-xl shadow-lg border border-blue-400">1. FROM <span class="block text-xs font-medium text-blue-200 mt-1">Busca la tabla</span></div>
+                    <i class="fa-solid fa-arrow-right text-slate-500 text-xl hidden md:block"></i>
+                    <i class="fa-solid fa-arrow-down text-slate-500 text-xl block md:hidden"></i>
+                    <div class="bg-yellow-600 px-5 py-3 rounded-xl shadow-lg border border-yellow-400">2. WHERE <span class="block text-xs font-medium text-yellow-100 mt-1">Filtra filas sueltas</span></div>
+                    <i class="fa-solid fa-arrow-right text-slate-500 text-xl hidden md:block"></i>
+                    <i class="fa-solid fa-arrow-down text-slate-500 text-xl block md:hidden"></i>
+                    <div class="bg-amber-600 px-5 py-3 rounded-xl shadow-lg border border-amber-400">3. GROUP BY <span class="block text-xs font-medium text-amber-100 mt-1">Arma los paquetes</span></div>
+                    <i class="fa-solid fa-arrow-right text-slate-500 text-xl hidden md:block"></i>
+                    <i class="fa-solid fa-arrow-down text-slate-500 text-xl block md:hidden"></i>
+                    <div class="bg-rose-600 px-5 py-3 rounded-xl shadow-lg border border-rose-400 shadow-[0_0_15px_rgba(225,29,72,0.6)]">4. HAVING <span class="block text-xs font-medium text-rose-100 mt-1">Filtra los paquetes</span></div>
+                    <i class="fa-solid fa-arrow-right text-slate-500 text-xl hidden md:block"></i>
+                    <i class="fa-solid fa-arrow-down text-slate-500 text-xl block md:hidden"></i>
+                    <div class="bg-teal-600 px-5 py-3 rounded-xl shadow-lg border border-teal-400">5. SELECT <span class="block text-xs font-medium text-teal-100 mt-1">Calcula métricas</span></div>
+                </div>
+                <div class="bg-slate-700/80 p-5 rounded-xl border border-slate-600 mt-8 relative z-10">
+                    <p class="text-white font-medium text-base"><i class="fa-solid fa-lightbulb text-yellow-400 text-xl mr-2"></i> <strong>Pista del error:</strong> Observa los pasos 2 y 3. El <code class="bg-slate-800 text-yellow-400 px-1 rounded font-mono font-bold">WHERE</code> se ejecuta <strong>ANTES</strong> que el GROUP BY. En el Paso 2, las filas aún están sueltas... ¡por ende SQL no tiene ni idea de cuánto es el COUNT(*)! Por eso lanza el error rojo.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-12 items-start">
+                <div class="space-y-6 min-w-0">
+                    <h3 class="font-bold text-gray-800 text-2xl flex items-center border-b-2 border-gray-100 pb-3"><i class="fa-solid fa-check-circle text-rose-500 mr-3"></i> 🔑 La Solución Definitiva</h3>
+                    <p class="text-gray-700 font-medium text-lg leading-relaxed bg-gray-50 p-5 rounded-2xl border border-gray-200">
+                        Para filtrar grupos basándonos en sus cálculos internos (como <code class="bg-white px-1 rounded font-mono text-rose-600 font-bold">COUNT</code>, <code class="bg-white px-1 rounded font-mono text-rose-600 font-bold">SUM</code>), debes usar la barrera que se ejecuta <strong>después del Paso 3</strong>. ¡Saluda a <code class="bg-rose-100 px-2 py-0.5 rounded font-mono font-bold text-rose-800">HAVING</code>!
+                    </p>
+                    <div class="space-y-4 pt-2">
+                        <div class="flex flex-col gap-4 bg-white p-4 rounded-xl shadow-sm border border-rose-100">
+                            <span class="badge-pink text-lg shadow-sm">HAVING condición</span>
+                            <span class="text-gray-700 font-medium">Literalmente es el "WHERE de los paquetes". Aplica condiciones <strong>después</strong> de agrupar.</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-50 p-6 rounded-[2rem] border-2 border-slate-200 shadow-inner min-w-0 flex flex-col h-full">
+                    <h3 class="font-bold text-slate-800 mb-4 text-2xl flex items-center"><i class="fa-solid fa-play text-rose-500 mr-3"></i> 🔍 Demostración Exitosa</h3>
+                    <p class="text-gray-600 font-medium mb-3">Reescribamos la consulta fallida del estudiante usando el protector <code class="bg-gray-200 px-1 rounded font-mono font-bold text-gray-800">HAVING</code>:</p>
+                    <div class="w-full">
+                        <pre><code class="language-sql">-- ✔️ ¡Funciona maravilloso! Solo géneros con > 2 títulos
+SELECT genero, COUNT(*) AS cantidad
+FROM contenidos
+GROUP BY genero
+HAVING COUNT(*) > 2;</code></pre>
+                    </div>
+                    <div class="w-full mt-4">
+                        <p class="text-gray-600 font-medium mb-2 text-sm">💡 Puedes mezclar AMBAS: <code class="bg-gray-200 px-1 rounded font-mono font-bold text-gray-800">WHERE</code> filtra filas de 1 en 1, <code class="bg-gray-200 px-1 rounded font-mono font-bold text-gray-800">HAVING</code> filtra los grupos resultantes:</p>
+                        <pre><code class="language-sql">-- Contenidos top (rating>9), ordenados en grupos,
+-- mostrando SOLO grupos gordos (>1 título)
+SELECT genero, COUNT(*) AS cantidad
+FROM contenidos
+WHERE rating > 9
+GROUP BY genero
+HAVING COUNT(*) > 1;</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-rose-50 p-8 rounded-[2rem] border-2 border-rose-200 mb-12 flex flex-col md:flex-row gap-8 items-center shadow-sm">
+                <div class="bg-white p-6 rounded-full shadow-md flex-shrink-0"><i class="fa-solid fa-comments text-5xl text-rose-500"></i></div>
+                <div class="flex-grow">
+                    <h3 class="font-bold text-rose-800 mb-4 text-2xl">🗣️ Reflexión Crítica</h3>
+                    <ol class="list-decimal list-inside space-y-4 text-rose-900 font-medium text-lg">
+                        <li class="pl-2 bg-white/60 p-3 rounded-lg border border-rose-100">Un compañero escribió <code class="bg-white px-1 rounded">WHERE COUNT(*) > 2</code> y Oracle le lanzó un error. ¿Por qué no funciona? ¿Qué debería usar en su lugar?</li>
+                        <li class="pl-2 bg-white/60 p-3 rounded-lg border border-rose-100">YouTube Analytics muestra "Top países con más de 1.000 vistas". ¿Cómo crees que construyen ese filtro internamente? Piensa en el orden: primero agrupan por país, luego filtran con...</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div class="border-4 border-solid border-rose-100 bg-rose-50 p-8 rounded-[2rem] shadow-sm">
+                    <h3 class="font-bold text-gray-800 mb-6 text-2xl flex items-center"><i class="fa-solid fa-scale-balanced text-rose-500 mr-3"></i> ⚖️ Verdadero o Falso</h3>
+                    <div class="space-y-6 text-gray-800 font-medium text-lg">
+                        <div class="bg-white p-5 rounded-xl border border-rose-200 shadow-sm flex items-start gap-4">
+                            <i class="fa-regular fa-circle-question text-3xl text-rose-400 mt-1"></i>
+                            <p>1. Recordando el "Error de Novato N°2": Puedo usar alegremente <code class="bg-gray-100 px-1 rounded font-mono font-bold">WHERE AVG(rating) > 9</code> en mi código y funcionará de maravilla.</p>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-rose-200 shadow-sm flex items-start gap-4">
+                            <i class="fa-regular fa-circle-question text-3xl text-rose-400 mt-1"></i>
+                            <p>2. Aunque la primera palabra que escribo es <code class="bg-gray-100 px-1 rounded font-mono font-bold text-teal-700">SELECT</code>, en realidad es el paso N°5 que ejecuta el motor de la base de datos.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-rose-900 p-8 rounded-[2rem] shadow-xl text-white">
+                    <h3 class="font-bold text-white mb-6 text-2xl flex items-center"><i class="fa-solid fa-laptop-code text-rose-300 mr-3"></i> 💻 Manos a la Obra</h3>
+                    <ul class="space-y-6 text-rose-100 text-base">
+                        <li class="bg-rose-800/80 p-5 rounded-xl border-l-4 border-rose-400">
+                            <strong class="text-rose-300 block mb-2 text-lg uppercase"><i class="fa-solid fa-circle-play mr-2"></i> Ejercicio 5</strong>
+                            <p class="mb-3 font-medium">El gerente solo quiere ver los géneros que tienen más de 1 título en el catálogo.</p>
+                            <p class="text-white font-medium bg-rose-950 p-3 rounded">🎯 Tu Misión: Haz un SELECT con <code>GROUP BY genero</code> y filtra con <code>HAVING COUNT(*) > 1</code>.</p>
+                        </li>
+                        <li class="bg-rose-800/80 p-5 rounded-xl border-l-4 border-rose-400">
+                            <strong class="text-rose-300 block mb-2 text-lg uppercase"><i class="fa-solid fa-circle-play mr-2"></i> Ejercicio 6</strong>
+                            <p class="mb-3 font-medium">Queremos ver los usuarios que han visto más de 1 contenido. Necesitamos su <code>id_usuario</code> y la cantidad de visualizaciones.</p>
+                            <p class="text-white font-medium bg-rose-950 p-3 rounded">🎯 Tu Misión: Haz un SELECT de <code>visualizaciones</code>, agrupa por <code>id_usuario</code> y usa <code>HAVING</code> para mostrar solo quienes vieron más de 1 contenido.</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Casos Reales -->
+        <section class="content-box">
+            <h2 class="section-title text-indigo-600 border-indigo-200">
+                <i class="fa-solid fa-globe text-indigo-500 bg-indigo-100 p-3 rounded-2xl"></i> Casos Reales: ¿Dónde se Usan Estas Funciones?
+            </h2>
+            <p class="text-gray-700 font-medium text-lg mb-8 bg-indigo-50 p-5 rounded-2xl border border-indigo-100">
+                Las funciones de grupo no son solo teoría de clase. <strong>Cada empresa del mundo real que maneje datos las usa diariamente</strong>. Aquí tienes ejemplos reales documentados:
+            </p>
+            
+            <div class="overflow-x-auto rounded-2xl border-2 border-indigo-100 shadow-md mb-10">
+                <table class="w-full text-left">
+                    <thead class="bg-indigo-600 text-white">
+                        <tr>
+                            <th class="p-4 font-bold text-lg rounded-tl-xl">Empresa / Caso</th>
+                            <th class="p-4 font-bold text-lg">Funciones Usadas</th>
+                            <th class="p-4 font-bold text-lg rounded-tr-xl">Ejemplo Real</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-700 font-medium">
+                        <tr class="bg-white border-b border-indigo-50">
+                            <td class="p-4"><strong>Spotify Wrapped</strong><br><span class="text-sm text-gray-500">Reporte anual de cada usuario</span></td>
+                            <td class="p-4"><span class="badge-teal">COUNT</span> <span class="badge-amber">GROUP BY</span></td>
+                            <td class="p-4">"Escuchaste 4.231 canciones en 2025. Tu género top fue K-Pop con 892 reproducciones."</td>
+                        </tr>
+                        <tr class="bg-indigo-50/30 border-b border-indigo-50">
+                            <td class="p-4"><strong>Netflix</strong><br><span class="text-sm text-gray-500">Recomendaciones y Top 10</span></td>
+                            <td class="p-4"><span class="badge-teal">COUNT</span> <span class="badge-teal">AVG</span> <span class="badge-pink">HAVING</span></td>
+                            <td class="p-4">El Top 10 semanal se calcula agrupando visualizaciones por título y filtrando los más vistos con HAVING.</td>
+                        </tr>
+                        <tr class="bg-white border-b border-indigo-50">
+                            <td class="p-4"><strong>Bancos / Fintech</strong><br><span class="text-sm text-gray-500">Reportes de transacciones</span></td>
+                            <td class="p-4"><span class="badge-teal">SUM</span> <span class="badge-teal">AVG</span> <span class="badge-amber">GROUP BY</span></td>
+                            <td class="p-4">"Tu gasto promedio mensual fue $85.000 CLP." Se agrupa por mes y se calcula AVG(monto).</td>
+                        </tr>
+                        <tr class="bg-indigo-50/30 border-b border-indigo-50">
+                            <td class="p-4"><strong>YouTube Analytics</strong><br><span class="text-sm text-gray-500">Dashboard de creadores</span></td>
+                            <td class="p-4"><span class="badge-teal">SUM</span> <span class="badge-teal">MAX</span> <span class="badge-amber">GROUP BY</span></td>
+                            <td class="p-4">"Tu video con más vistas fue X con 1.2M. Total de horas vistas este mes: 45.000." Todo con SUM y MAX agrupado por video.</td>
+                        </tr>
+                        <tr class="bg-white">
+                            <td class="p-4"><strong>E-Commerce (Amazon, MercadoLibre)</strong><br><span class="text-sm text-gray-500">Ventas por categoría</span></td>
+                            <td class="p-4"><span class="badge-teal">COUNT</span> <span class="badge-teal">SUM</span> <span class="badge-pink">HAVING</span></td>
+                            <td class="p-4">"Categorías con más de 10.000 ventas este mes." GROUP BY categoría + HAVING COUNT(*) > 10000.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-200">
+                <h3 class="font-bold text-indigo-800 mb-3 text-xl"><i class="fa-solid fa-link mr-2"></i> Fuentes y Lecturas Recomendadas</h3>
+                <ul class="space-y-2 text-indigo-700 font-medium">
+                    <li><i class="fa-solid fa-arrow-up-right-from-square mr-2 text-indigo-400"></i> <a href="https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/Aggregate-Functions.html" target="_blank" class="underline hover:text-indigo-900">Oracle Docs: Aggregate Functions (Documentación oficial)</a></li>
+                    <li><i class="fa-solid fa-arrow-up-right-from-square mr-2 text-indigo-400"></i> <a href="https://www.w3schools.com/sql/sql_groupby.asp" target="_blank" class="underline hover:text-indigo-900">W3Schools: SQL GROUP BY (Tutorial interactivo)</a></li>
+                    <li><i class="fa-solid fa-arrow-up-right-from-square mr-2 text-indigo-400"></i> <a href="https://mode.com/sql-tutorial/sql-aggregate-functions" target="_blank" class="underline hover:text-indigo-900">Mode Analytics: Aggregate Functions en la vida real</a></li>
+                    <li><i class="fa-solid fa-arrow-up-right-from-square mr-2 text-indigo-400"></i> <a href="https://engineering.atspotify.com/2024/11/the-what-and-why-of-spotify-wrappeds-technical-backend/" target="_blank" class="underline hover:text-indigo-900">Spotify Engineering Blog: Cómo se construye el Wrapped</a></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Cheat Sheet -->
+        <section class="content-box bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-white">
+            <h2 class="section-title text-cyan-400 border-slate-600">
+                <i class="fa-solid fa-bolt text-cyan-400 bg-slate-700 p-3 rounded-2xl"></i> 📋 Cheat Sheet — Resumen Rápido
+            </h2>
+            <p class="text-slate-300 font-medium text-lg mb-8">Guarda esta tabla como referencia. Contiene todo lo que aprendiste hoy en un solo lugar:</p>
+            
+            <div class="overflow-x-auto rounded-2xl border border-slate-600 shadow-lg mb-8">
+                <table class="w-full text-left">
+                    <thead class="bg-cyan-700">
+                        <tr>
+                            <th class="p-4 font-bold text-lg text-white">Función / Cláusula</th>
+                            <th class="p-4 font-bold text-lg text-white">Sintaxis</th>
+                            <th class="p-4 font-bold text-lg text-white">¿Qué Hace?</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-slate-200 font-medium">
+                        <tr class="border-b border-slate-700 bg-slate-800/50">
+                            <td class="p-4 text-cyan-300 font-bold">COUNT(*)</td>
+                            <td class="p-4"><code class="bg-slate-700 px-2 py-1 rounded text-sm">SELECT COUNT(*) FROM tabla</code></td>
+                            <td class="p-4">Cuenta todas las filas (incluye NULLs)</td>
+                        </tr>
+                        <tr class="border-b border-slate-700">
+                            <td class="p-4 text-cyan-300 font-bold">SUM(col)</td>
+                            <td class="p-4"><code class="bg-slate-700 px-2 py-1 rounded text-sm">SELECT SUM(duracion) FROM tabla</code></td>
+                            <td class="p-4">Suma todos los valores numéricos</td>
+                        </tr>
+                        <tr class="border-b border-slate-700 bg-slate-800/50">
+                            <td class="p-4 text-cyan-300 font-bold">AVG(col)</td>
+                            <td class="p-4"><code class="bg-slate-700 px-2 py-1 rounded text-sm">SELECT AVG(rating) FROM tabla</code></td>
+                            <td class="p-4">Calcula el promedio aritmético</td>
+                        </tr>
+                        <tr class="border-b border-slate-700">
+                            <td class="p-4 text-cyan-300 font-bold">MIN(col)</td>
+                            <td class="p-4"><code class="bg-slate-700 px-2 py-1 rounded text-sm">SELECT MIN(precio) FROM tabla</code></td>
+                            <td class="p-4">Encuentra el valor más bajo</td>
+                        </tr>
+                        <tr class="border-b border-slate-700 bg-slate-800/50">
+                            <td class="p-4 text-cyan-300 font-bold">MAX(col)</td>
+                            <td class="p-4"><code class="bg-slate-700 px-2 py-1 rounded text-sm">SELECT MAX(precio) FROM tabla</code></td>
+                            <td class="p-4">Encuentra el valor más alto</td>
+                        </tr>
+                        <tr class="border-b border-slate-700">
+                            <td class="p-4 text-amber-300 font-bold">GROUP BY</td>
+                            <td class="p-4"><code class="bg-slate-700 px-2 py-1 rounded text-sm">... GROUP BY columna</code></td>
+                            <td class="p-4">Divide filas en grupos antes de agregar</td>
+                        </tr>
+                        <tr class="bg-slate-800/50">
+                            <td class="p-4 text-rose-300 font-bold">HAVING</td>
+                            <td class="p-4"><code class="bg-slate-700 px-2 py-1 rounded text-sm">... HAVING COUNT(*) > N</code></td>
+                            <td class="p-4">Filtra grupos (WHERE de los grupos)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+
+        <!-- Taller Transversal -->
+        <section class="content-box bg-white border-4 border-dashed border-teal-200 relative mt-16 shadow-none">
+            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-white px-8 py-2 rounded-full border-4 border-dashed border-teal-200 text-teal-600 font-bold text-xl shadow-sm whitespace-nowrap">
+                <i class="fa-solid fa-graduation-cap mr-3"></i> Taller Transversal
+            </div>
+            
+            <div class="pt-10">
+                <h2 class="text-4xl font-bold text-teal-600 text-center mb-6">Tu Proyecto Estudiantil</h2>
+                <div class="text-center max-w-4xl mx-auto mb-10">
+                    <p class="text-xl text-gray-700 font-medium bg-teal-50 p-6 rounded-2xl border border-teal-100 leading-relaxed">
+                        Ahora traslada todo lo aprendido a las tablas reales de tu proyecto semestral. Las funciones de grupo son <strong>esenciales</strong> para cualquier sistema que necesite reportes o estadísticas.
+                    </p>
+                </div>
+                
+                <div class="bg-teal-600 rounded-[2.5rem] p-10 text-white relative overflow-hidden">
+                    <h3 class="text-3xl font-bold mb-6 text-center drop-shadow-md">🎯 Instrucciones: Desafía a tu Compañero</h3>
+                    <div class="bg-black/10 p-6 rounded-2xl mb-10 text-lg leading-relaxed font-medium">
+                        <p>
+                            <strong>¡Ahora tú eres el DBA!</strong> Usa la base de datos de <strong>tu proyecto semestral</strong> con tablas reales y datos de prueba. Guía a tu compañero paso a paso:
+                        </p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10 mb-8">
+                        <div class="bg-white/10 p-6 rounded-3xl border border-white/20 flex flex-col items-center text-center">
+                            <i class="fa-solid fa-chart-simple text-yellow-300 text-4xl mb-3"></i>
+                            <h4 class="font-bold text-xl mb-2 text-white">1. Reporte con funciones básicas</h4>
+                            <p class="text-base text-teal-100 font-medium">Pídele que haga un SELECT usando <em>al menos 3 funciones de grupo distintas</em> (COUNT, SUM, AVG, MIN o MAX) sobre una tabla de tu proyecto.</p>
+                        </div>
+                        <div class="bg-white/10 p-6 rounded-3xl border border-white/20 flex flex-col items-center text-center">
+                            <i class="fa-solid fa-layer-group text-cyan-300 text-4xl mb-3"></i>
+                            <h4 class="font-bold text-xl mb-2 text-white">2. Agrupa con GROUP BY</h4>
+                            <p class="text-base text-teal-100 font-medium">Dile que agrupe los datos por alguna columna relevante (categoría, tipo, estado, etc.) y que cuente cuántos registros hay en cada grupo.</p>
+                        </div>
+                        <div class="bg-white/10 p-6 rounded-3xl border border-white/20 flex flex-col items-center text-center">
+                            <i class="fa-solid fa-filter text-rose-300 text-4xl mb-3"></i>
+                            <h4 class="font-bold text-xl mb-2 text-white">3. Filtra con HAVING</h4>
+                            <p class="text-base text-teal-100 font-medium">Ahora pídele que filtre los grupos: "Muéstrame solo las categorías que tengan más de X registros". Que use <code class="bg-black/20 px-2 py-0.5 rounded">HAVING</code>.</p>
+                        </div>
+                        <div class="bg-white/10 p-6 rounded-3xl border border-white/20 flex flex-col items-center text-center">
+                            <i class="fa-solid fa-check-double text-emerald-300 text-4xl mb-3"></i>
+                            <h4 class="font-bold text-xl mb-2 text-white">4. Verdadero o Falso creativo</h4>
+                            <p class="text-base text-teal-100 font-medium">Invéntale 2 afirmaciones de V/F sobre GROUP BY y HAVING. Debe responder y justificar. ¡A ver si entendió la diferencia entre WHERE y HAVING!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-black/20 backdrop-blur-sm p-6 rounded-2xl border-2 border-dashed border-white/40 text-center mt-8">
+                        <h4 class="text-2xl font-bold mb-3 text-yellow-300"><i class="fa-solid fa-file-code mr-2"></i> ¿Qué deben entregar?</h4>
+                        <p class="text-lg font-medium text-teal-50 leading-relaxed">
+                            Guarda todas las consultas SQL que hizo tu compañero en un archivo. Incluye las respuestas teóricas usando comentarios (<code class="bg-black/30 px-2 py-1 rounded">--</code>).<br>
+                            <span class="block mt-4">Sube la actividad con el formato: <strong class="inline-block text-white bg-teal-800/80 px-4 py-2 rounded-xl border border-teal-400 ml-2 shadow-sm"><i class="fa-solid fa-upload mr-2"></i>desafio_grupos.sql</strong></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center bg-white/50 border-t-2 border-pink-100 mt-20 py-12 flex flex-col items-center">
+        <div class="mb-4">
+            <img src="avatar.png" alt="HachiMaki-dev avatar" class="w-28 h-28 rounded-full border-4 border-pink-300 shadow-lg object-cover">
+        </div>
+        <h2 class="text-3xl font-bold text-pink-600 mb-2">HachiMaki-dev</h2>
+        <div class="flex items-center justify-center space-x-2 text-pink-500 text-xl font-bold">
+            <span>Bases de datos aplicada 2</span>
+        </div>
+        <div class="mt-4 bg-pink-200 text-pink-900 font-bold px-6 py-2.5 rounded-full text-base shadow-sm inline-block">
+            DuocUC Puerto Montt 2026
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+</body>
+</html>

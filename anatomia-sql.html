@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anatomía SQL - Traductor Visual Progresivo</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Quicksand', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8fafc; color: #1e293b; overflow-x: hidden; scroll-behavior: smooth; }
+        .sql-code { font-family: 'Fira Code', monospace; font-size: 1.1rem; line-height: 1.8; }
+        
+        /* Ocultar niveles por defecto */
+        .level-section {
+            opacity: 0;
+            transform: translateY(20px);
+            display: none;
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .level-section.active {
+            display: block;
+        }
+        .level-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Estilos del editor falso */
+        .editor-box {
+            background-color: #0f172a;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+            border: 1px solid #334155;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        .editor-header {
+            background-color: #1e293b;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid #334155;
+        }
+        .editor-content {
+            padding: 1.5rem;
+            color: #f8fafc;
+        }
+        
+        .t-keyword { color: #f472b6; font-weight: bold; } /* pink-400 */
+        .t-function { color: #60a5fa; } /* blue-400 */
+        .t-column { color: #e2e8f0; } /* slate-200 */
+        .t-alias { color: #fcd34d; } /* amber-300 */
+        .t-number { color: #a78bfa; } /* purple-400 */
+
+        /* Animación de error en quizes */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake-error { animation: shake 0.4s ease-in-out; }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen pb-32 pt-8">
+
+    <!-- Navbar -->
+    <nav class="absolute top-6 left-6 z-50">
+        <a href="index.html" class="inline-flex items-center text-slate-500 hover:text-slate-700 font-bold transition-transform hover:-translate-x-1 bg-white px-6 py-3 rounded-full shadow-md border-2 border-slate-100 text-lg">
+            <i class="fa-solid fa-arrow-left mr-3"></i> Menú
+        </a>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-6 relative z-10 pt-16">
+        
+        <!-- Header -->
+        <header class="text-center mb-16">
+            <div class="inline-flex items-center gap-2 bg-violet-100 text-violet-700 px-5 py-2 rounded-full font-bold mb-4 shadow-sm border border-violet-200">
+                <i class="fa-solid fa-stairs"></i> Guía Progresiva
+            </div>
+            <h1 class="text-5xl md:text-6xl font-extrabold text-slate-800 mb-6 drop-shadow-sm">
+                Descodificando <span class="text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-fuchsia-500">SQL</span>
+            </h1>
+            <p class="text-xl text-slate-600 font-medium leading-relaxed bg-white p-8 rounded-3xl shadow-sm border border-slate-100 relative">
+                <i class="fa-solid fa-quote-left absolute top-4 left-4 text-slate-200 text-4xl"></i>
+                Ver una consulta gigante te vuela la cabeza porque intentas leerla de arriba a abajo. Para entender SQL, debes separar "qué hace" de "cómo se escribe".<br><br>
+                Desbloquearemos el código paso a paso superando pequeños desafíos de lógica. ¡Comencemos!
+            </p>
+        </header>
+
+        <!-- Contenedor Principal Lúdico -->
+        <main id="game-container" class="space-y-12">
+
+            <!-- NIVEL 1: FROM -->
+            <section id="level-1" class="level-section active visible">
+                <div class="bg-white rounded-[2rem] p-8 border-4 border-slate-100 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-red-500 text-white font-bold px-6 py-2 rounded-bl-2xl shadow-md">Fase 1</div>
+                    <h2 class="text-3xl font-extrabold text-slate-800 mb-4 flex items-center">
+                        <span class="bg-red-100 text-red-500 w-12 h-12 rounded-full flex items-center justify-center mr-4"><i class="fa-solid fa-warehouse"></i></span>
+                        El Catálogo (FROM)
+                    </h2>
+                    
+                    <div class="text-lg text-slate-600 font-medium mb-6">
+                        SQL parece escribir el <code class="bg-slate-100 px-2 rounded font-mono text-pink-500">SELECT</code> al principio, pero en su mente, lo primero que lee es el <strong class="text-red-500">FROM</strong>. No puedes organizar un inventario de películas si primero no decides a qué bodega o catálogo vas a entrar.
+                    </div>
+
+                    <div class="editor-box">
+                        <div class="editor-header">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div><div class="w-3 h-3 rounded-full bg-yellow-500"></div><div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <div class="editor-content sql-code text-center text-2xl font-bold opacity-50" id="code-snippet-1">
+                            <span class="t-keyword">FROM</span> <span class="t-column">contenidos</span>
+                        </div>
+                    </div>
+
+                    <!-- Mini Quiz 1 -->
+                    <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 mt-8" id="quiz-block-1">
+                        <h3 class="font-bold text-slate-700 mb-4 text-center"><i class="fa-solid fa-circle-question text-blue-500 mr-2"></i> Reto para avanzar:</h3>
+                        <p class="text-center font-medium text-slate-600 mb-6">Si tuvieras que organizar un reporte de inventario en tu plataforma, ¿a qué lugar físico corresponde el <strong>FROM</strong>?</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <button onclick="checkAnswer(1, this, false)" class="quiz-btn bg-white border-2 border-slate-200 hover:border-slate-400 text-slate-700 font-bold py-4 rounded-xl transition-all hover:-translate-y-1 shadow-sm">La impresora (El reporte final)</button>
+                            <button onclick="checkAnswer(1, this, false)" class="quiz-btn bg-white border-2 border-slate-200 hover:border-slate-400 text-slate-700 font-bold py-4 rounded-xl transition-all hover:-translate-y-1 shadow-sm">Las repisas de exhibición (Los filtros)</button>
+                            <button onclick="checkAnswer(1, this, true)" class="quiz-btn bg-white border-2 border-slate-200 hover:border-blue-400 text-slate-700 font-bold py-4 rounded-xl transition-all hover:-translate-y-1 shadow-sm">La gran bodega central (El catálogo maestro)</button>
+                        </div>
+                        <div id="feedback-1" class="hidden text-center font-bold text-lg mt-6"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- NIVEL 2: GROUP BY -->
+            <section id="level-2" class="level-section">
+                <!-- Flecha conectora -->
+                <div class="flex justify-center -mt-6 mb-6 relative z-0">
+                    <div class="w-1 h-12 bg-slate-300"></div>
+                </div>
+                
+                <div class="bg-white rounded-[2rem] p-8 border-4 border-slate-100 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-orange-500 text-white font-bold px-6 py-2 rounded-bl-2xl shadow-md">Fase 2</div>
+                    <h2 class="text-3xl font-extrabold text-slate-800 mb-4 flex items-center">
+                        <span class="bg-orange-100 text-orange-500 w-12 h-12 rounded-full flex items-center justify-center mr-4"><i class="fa-solid fa-layer-group"></i></span>
+                        Los Estantes (GROUP BY)
+                    </h2>
+                    
+                    <div class="text-lg text-slate-600 font-medium mb-6">
+                        Una vez dentro de la bodega, sacar miles de cintas sueltas es caótico. El segundo paso mental de SQL es acomodarlas en <strong class="text-orange-500">Estantes (Agrupar)</strong>. Toma las películas sueltas y las organiza en pasillos separados por género (El pasillo de <em>Terror</em>, el de <em>Comedia</em>).
+                    </div>
+
+                    <div class="editor-box">
+                        <div class="editor-header">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div><div class="w-3 h-3 rounded-full bg-yellow-500"></div><div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <div class="editor-content sql-code flex flex-col items-center">
+                            <div class="opacity-50"><span class="t-keyword">FROM</span> <span class="t-column">contenidos</span></div>
+                            <div class="text-2xl font-bold mt-2"><span class="t-keyword">GROUP BY</span> <span class="t-column">genero</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Mini Quiz 2 (V/F) -->
+                    <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 mt-8" id="quiz-block-2">
+                        <h3 class="font-bold text-slate-700 mb-4 text-center"><i class="fa-solid fa-circle-question text-orange-500 mr-2"></i> Verdadero o Falso:</h3>
+                        <p class="text-center font-medium text-slate-600 mb-6 bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                            "Si mi tabla tiene 1,000 películas, pero solo existen 5 géneros distintos. Al hacer <code class="text-orange-500">GROUP BY genero</code>, la tabla resultante se encogerá a mostrar como máximo 5 grandes estantes (que representan 5 filas de resultados)."
+                        </p>
+                        
+                        <div class="flex justify-center gap-6">
+                            <button onclick="checkAnswer(2, this, true)" class="w-40 bg-white border-2 border-emerald-200 hover:border-emerald-500 hover:bg-emerald-50 text-emerald-700 font-bold py-3 rounded-xl transition-all shadow-sm"><i class="fa-solid fa-check mr-2"></i> VERDADERO</button>
+                            <button onclick="checkAnswer(2, this, false)" class="w-40 bg-white border-2 border-rose-200 hover:border-rose-500 hover:bg-rose-50 text-rose-700 font-bold py-3 rounded-xl transition-all shadow-sm"><i class="fa-solid fa-xmark mr-2"></i> FALSO</button>
+                        </div>
+                        <div id="feedback-2" class="hidden text-center font-bold text-lg mt-6"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- NIVEL 3: SELECT & FUNCIONES -->
+            <section id="level-3" class="level-section">
+                <!-- Flecha conectora -->
+                <div class="flex justify-center -mt-6 mb-6 relative z-0">
+                    <div class="w-1 h-12 bg-slate-300"></div>
+                </div>
+                
+                <div class="bg-white rounded-[2rem] p-8 border-4 border-slate-100 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-emerald-500 text-white font-bold px-6 py-2 rounded-bl-2xl shadow-md">Fase 3</div>
+                    <h2 class="text-3xl font-extrabold text-slate-800 mb-4 flex items-center">
+                        <span class="bg-emerald-100 text-emerald-500 w-12 h-12 rounded-full flex items-center justify-center mr-4"><i class="fa-solid fa-clipboard-list"></i></span>
+                        El Reporte de Inventario (SELECT)
+                    </h2>
+                    
+                    <div class="text-lg text-slate-600 font-medium mb-6">
+                        Finalmente imprimimos el reporte. El <strong class="text-emerald-500">SELECT</strong> es tu libreta de apuntes cuando caminas por los estantes: sólo te <strong>enseña</strong> las etiquetas de las repisas y aplica matemáticas <em>hacia adentro</em> de cada estante (contando, sumando).
+                    </div>
+
+                    <div class="editor-box text-left">
+                        <div class="editor-header">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div><div class="w-3 h-3 rounded-full bg-yellow-500"></div><div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <div class="editor-content sql-code">
+                            <div class="text-2xl font-bold mb-4">
+                                <span class="t-keyword">SELECT</span> <span class="t-column">genero</span>,<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-function">COUNT</span><span class="t-column">(*)</span>,<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-function">SUM</span><span class="t-column">(duracion_min)</span>
+                            </div>
+                            <div class="opacity-50"><span class="t-keyword">FROM</span> <span class="t-column">contenidos</span></div>
+                            <div class="opacity-50"><span class="t-keyword">GROUP BY</span> <span class="t-column">genero</span>;</div>
+                        </div>
+                    </div>
+
+                    <!-- Mini Quiz 3 (Relacionar) -->
+                    <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 mt-8" id="quiz-block-3">
+                        <h3 class="font-bold text-slate-700 mb-4 text-center"><i class="fa-solid fa-circle-question text-emerald-500 mr-2"></i> Traduce para la Jefatura:</h3>
+                        <p class="text-center font-medium text-slate-600 mb-6">¿Qué significa exactamente escribir <code>COUNT(*)</code> versus <code>SUM(duracion_min)</code> en el ticket?</p>
+                        
+                        <div class="space-y-4">
+                            <button onclick="checkAnswer(3, this, false)" class="w-full text-left bg-white border-2 border-slate-200 hover:border-slate-400 text-slate-700 font-bold p-4 rounded-xl transition-all hover:bg-slate-50 shadow-sm leading-relaxed">
+                                <i class="fa-regular fa-circle mr-3 text-slate-400"></i> COUNT suma los minutos de cinta. SUM cuenta cuántas películas individuales hay.
+                            </button>
+                            <button onclick="checkAnswer(3, this, true)" class="w-full text-left bg-white border-2 border-slate-200 hover:border-emerald-400 text-slate-700 font-bold p-4 rounded-xl transition-all hover:bg-emerald-50 shadow-sm leading-relaxed">
+                                <i class="fa-regular fa-circle mr-3 text-slate-400"></i> COUNT anota la "cantidad total" de películas individuales apiladas en el estante. SUM suma exclusivamente todo el tiempo (duración) de esas cintas combinadas.
+                            </button>
+                        </div>
+                        <div id="feedback-3" class="hidden text-center font-bold text-lg mt-6"></div>
+                    </div>
+                </div>
+            </section>
+
+             <!-- NIVEL 4: ANIDAR (LA CEBOLLA) -->
+             <section id="level-4" class="level-section">
+                 <!-- Flecha conectora -->
+                <div class="flex justify-center -mt-6 mb-6 relative z-0">
+                    <div class="w-1 h-12 bg-slate-300"></div>
+                </div>
+
+                <div class="bg-white rounded-[2rem] p-8 border-4 border-slate-100 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-purple-500 text-white font-bold px-6 py-2 rounded-bl-2xl shadow-md">Fase 4</div>
+                    <h2 class="text-3xl font-extrabold text-slate-800 mb-4 flex items-center">
+                        <span class="bg-purple-100 text-purple-500 w-12 h-12 rounded-full flex items-center justify-center mr-4"><i class="fa-solid fa-layer-group"></i></span>
+                        La Cebolla (Funciones)
+                    </h2>
+                    
+                    <div class="text-lg text-slate-600 font-medium mb-6">
+                        SQL permite anidar funciones (poner una dentro de otra). Como una cebolla o una muñeca rusa, <strong>el cerebro debe leerlas de ADENTRO hacia AFUERA.</strong>
+                    </div>
+
+                    <div class="bg-purple-50 border-2 border-purple-200 rounded-2xl p-6 text-center mb-8 relative">
+                        <code class="text-xl md:text-2xl font-bold font-mono block mb-2">
+                            <span class="text-purple-600">ROUND</span>( <span class="text-blue-500">AVG</span>(rating), 1 )
+                        </code>
+                        <div class="text-sm font-medium text-slate-500 mt-4 flex items-center justify-center">
+                            <span>1º Capa Interna -> Promedio</span> <i class="fa-solid fa-arrow-right mx-3"></i> <span>2º Capa Externa -> Redondear</span>
+                        </div>
+                    </div>
+
+                    <!-- Mini Quiz 4 -->
+                    <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6" id="quiz-block-4">
+                        <h3 class="font-bold text-slate-700 mb-4 text-center"><i class="fa-solid fa-circle-question text-purple-500 mr-2"></i> Aplica la regla:</h3>
+                        <p class="text-center font-medium text-slate-600 mb-6">Si necesitas convertir a MAYÚSCULAS el recorte de las 3 primeras letras de un Nombre... ¿Cuál sintaxis anidada lo lee "de adentro hacia afuera"?</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button onclick="checkAnswer(4, this, false)" class="quiz-btn bg-white border-2 border-slate-200 hover:border-slate-400 text-slate-700 font-bold py-4 rounded-xl transition-all shadow-sm">
+                                <code>SUBSTR( UPPER(nombre), 1, 3 )</code>
+                            </button>
+                            <button onclick="checkAnswer(4, this, true)" class="quiz-btn bg-white border-2 border-slate-200 hover:border-purple-400 text-slate-700 font-bold py-4 rounded-xl transition-all shadow-sm">
+                                <code>UPPER( SUBSTR(nombre, 1, 3) )</code>
+                            </button>
+                        </div>
+                        <div id="feedback-4" class="hidden text-center font-bold text-lg mt-6"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- NIVEL 5: LA BESTIA FINAL -->
+            <section id="level-5" class="level-section pb-20">
+                <!-- Flecha conectora -->
+                <div class="flex justify-center -mt-6 mb-6 relative z-0">
+                    <div class="w-1 h-32 bg-slate-400"></div>
+                </div>
+
+                <div class="bg-[#24292e] text-white rounded-[2rem] p-8 border-4 border-fuchsia-500 shadow-[0_0_40px_rgba(217,70,239,0.3)] relative overflow-hidden">
+                    <div class="absolute -right-20 -top-20 opacity-10">
+                        <i class="fa-solid fa-dragon text-[20rem]"></i>
+                    </div>
+                    
+                    <h2 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-rose-400 mb-4 text-center drop-shadow-lg">
+                        Batalla Final: La Consulta Completa
+                    </h2>
+                    <p class="text-center font-medium text-slate-300 text-lg mb-8 max-w-2xl mx-auto">
+                        Has superado todas las fases. Ya no deberías sentir pánico al ver todo combinado. Demuestra que puedes traducirlo.
+                    </p>
+
+                    <div class="editor-box mb-10 shadow-[0_0_20px_black] border-slate-700 bg-black">
+                        <div class="editor-header bg-[#1b2127]">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div><div class="w-3 h-3 rounded-full bg-yellow-500"></div><div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            <span class="text-slate-500 text-xs font-mono ml-4">labestia.sql</span>
+                        </div>
+                        <div class="editor-content sql-code">
+<!-- CÓDIGO FINAL COMPLETO -->
+<span class="t-keyword">SELECT</span> 
+    <span class="t-column">genero</span>,
+    <span class="t-function">COUNT</span><span class="t-column">(*)</span> <span class="t-keyword">AS</span> <span class="t-alias">cantidad</span>,
+    <span class="t-function">ROUND</span><span class="t-column">(</span><span class="t-function">AVG</span><span class="t-column">(rating), </span><span class="t-number">1</span><span class="t-column">)</span> <span class="t-keyword">AS</span> <span class="t-alias">rating_promedio</span>,
+    <span class="t-function">SUM</span><span class="t-column">(duracion_min)</span> <span class="t-keyword">AS</span> <span class="t-alias">minutos_totales</span>
+<span class="t-keyword">FROM</span> <span class="t-column">contenidos</span>
+<span class="t-keyword">GROUP BY</span> <span class="t-column">genero</span>;
+                        </div>
+                    </div>
+
+                    <!-- Gran Traductor Quiz -->
+                    <div id="quiz-block-5" class="relative z-10 bg-[#1f2937] p-8 rounded-2xl border border-slate-600">
+                        <h3 class="text-2xl font-bold text-white mb-6 text-center">¿Cuál es la traducción exacta en lenguaje humano?</h3>
+                        
+                        <div class="space-y-4">
+                            <button onclick="checkFinalAnswer(this, false)" class="w-full text-left bg-[#2d3748] border-2 border-[#4a5568] hover:border-fuchsia-400 text-slate-200 font-medium p-5 rounded-xl transition-all hover:bg-[#323d4f] hover:text-white group">
+                                <span class="block text-fuchsia-400 font-bold mb-1 opacity-60 group-hover:opacity-100">A</span>
+                                "Agrupa las películas, y muéstrame el género, cuánto dura la película más larga y el promedio de notas de todas mis películas unidas sin redondear."
+                            </button>
+                            
+                            <button onclick="checkFinalAnswer(this, true)" class="w-full text-left bg-[#2d3748] border-2 border-[#4a5568] hover:border-emerald-400 text-slate-200 font-medium p-5 rounded-xl transition-all hover:bg-[#323d4f] hover:text-white group">
+                                <span class="block text-emerald-400 font-bold mb-1 opacity-60 group-hover:opacity-100">B</span>
+                                "Ve a la bodega de contenidos, acomoda las cintas en estantes separados por género. Para cada estante dime: el nombre del género, cuántas películas individuales hay, el promedio de nota de ese estante cortado a 1 decimal y suma la duración de todas las cintas de esa repisa."
+                            </button>
+
+                            <button onclick="checkFinalAnswer(this, false)" class="w-full text-left bg-[#2d3748] border-2 border-[#4a5568] hover:border-fuchsia-400 text-slate-200 font-medium p-5 rounded-xl transition-all hover:bg-[#323d4f] hover:text-white group">
+                                <span class="block text-fuchsia-400 font-bold mb-1 opacity-60 group-hover:opacity-100">C</span>
+                                "Cuenta todos los géneros que existen, promedia el rating general de la base de datos a 1 decimal y suma el tiempo de la tabla completa ignorando el GROUP BY."
+                            </button>
+                        </div>
+                        
+                        <!-- Mensaje Victoria y Boton -->
+                        <div id="victory-panel" class="hidden mt-8 text-center animate-fade-in">
+                            <h3 class="text-3xl font-extrabold text-emerald-400 mb-2"><i class="fa-solid fa-trophy text-yellow-500 mr-2"></i> ¡ERES INVENCIBLE!</h3>
+                            <p class="text-slate-300 font-medium mb-8">Has aprendido a pensar lógicamente antes de aporrear el teclado. SQL es tu aliado ahora.</p>
+                            
+                            <a href="clase-2.html" class="inline-flex items-center text-slate-900 font-extrabold bg-gradient-to-r from-yellow-300 to-amber-500 hover:from-yellow-400 hover:to-amber-600 transition-colors px-10 py-5 rounded-full shadow-[0_0_30px_rgba(251,191,36,0.5)] text-xl transform hover:scale-105 duration-300">
+                                Desbloqueado: Ir a Clase 2 (Grupos) <i class="fa-solid fa-unlock ml-3 mt-1 text-2xl"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Scripts de Interacción -->
+    <script>
+        // Smooth scroll padding issue fix
+        document.documentElement.style.scrollPaddingTop = "100px";
+
+        const successMessages = [
+            "¡Exacto! Tienes madera de DBA.",
+            "¡Le diste en el clavo!",
+            "Esa es la actitud. Sigamos.",
+            "¡Súper! Tu lógica SQL crece a pasos agigantados."
+        ];
+
+        function checkAnswer(level, buttonElement, isCorrect) {
+            const quizBlock = document.getElementById('quiz-block-' + level);
+            const feedbackId = 'feedback-' + level;
+            const feedbackDiv = document.getElementById(feedbackId);
+            
+            // Restablecer estilos
+            const buttons = quizBlock.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-rose-50', 'border-rose-400', 'text-rose-700', 'bg-emerald-50', 'border-emerald-400', 'text-emerald-700', 'shake-error');
+                btn.classList.add('bg-white');
+            });
+
+            if (isCorrect) {
+                // Estado correcto
+                buttonElement.classList.replace('bg-white', 'bg-emerald-50');
+                buttonElement.classList.replace('border-slate-200', 'border-emerald-400');
+                
+                const randomMsg = successMessages[Math.floor(Math.random() * successMessages.length)];
+                feedbackDiv.innerHTML = `<span class="text-emerald-600"><i class="fa-solid fa-circle-check mr-2 text-xl"></i> ${randomMsg}</span>`;
+                feedbackDiv.classList.remove('hidden');
+
+                // Deshabilitar botones de este nivel
+                buttons.forEach(btn => { btn.disabled = true; btn.classList.add('opacity-70', 'cursor-not-allowed'); });
+                buttonElement.classList.remove('opacity-70');
+
+                // Mostrar siguiente nivel suavemente
+                const nextLevelId = 'level-' + (level + 1);
+                const nextLevel = document.getElementById(nextLevelId);
+                
+                if (nextLevel) {
+                    setTimeout(() => {
+                        nextLevel.classList.add('active'); // Muestra bloque (display:block)
+                        // Pequeño delay para permitir que el display surta efecto antes de cambiar opacity
+                        setTimeout(() => {
+                            nextLevel.classList.add('visible');
+                            nextLevel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 50);
+                    }, 800);
+                }
+
+            } else {
+                // Estado incorrecto
+                buttonElement.classList.replace('bg-white', 'bg-rose-50');
+                buttonElement.classList.replace('border-slate-200', 'border-rose-400');
+                buttonElement.classList.remove('shake-error'); // reset anim
+                void buttonElement.offsetWidth; // trigger reflow
+                buttonElement.classList.add('shake-error');
+
+                feedbackDiv.innerHTML = `<span class="text-rose-600"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Mmm... piensa bien el orden de ejecución. Inténtalo de nuevo.</span>`;
+                feedbackDiv.classList.remove('hidden');
+            }
+        }
+
+        function checkFinalAnswer(buttonElement, isCorrect) {
+            const quizBlock = document.getElementById('quiz-block-5');
+            const buttons = quizBlock.querySelectorAll('button');
+            
+            buttons.forEach(btn => {
+                btn.classList.remove('border-rose-500', 'bg-rose-900', 'border-emerald-400', 'bg-[#1b4332]', 'shake-error');
+            });
+
+            if(isCorrect) {
+                buttonElement.classList.add('border-emerald-400', 'bg-[#1b4332]');
+                buttonElement.querySelector('span').classList.replace('text-emerald-400', 'text-white');
+                buttons.forEach(btn => { btn.disabled = true; btn.classList.add('opacity-50', 'pointer-events-none'); });
+                buttonElement.classList.remove('opacity-50');
+
+                // Lluvia de confeti épica
+                const duration = 3 * 1000;
+                const animationEnd = Date.now() + duration;
+                const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+                function randomInRange(min, max) {
+                  return Math.random() * (max - min) + min;
+                }
+
+                const interval = setInterval(function() {
+                  const timeLeft = animationEnd - Date.now();
+                  if (timeLeft <= 0) { return clearInterval(interval); }
+                  const particleCount = 50 * (timeLeft / duration);
+                  confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+                  confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+                }, 250);
+
+                // Mostrar botón de victoria
+                setTimeout(() => {
+                    document.getElementById('victory-panel').classList.remove('hidden');
+                    document.getElementById('victory-panel').scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }, 500);
+
+            } else {
+                buttonElement.classList.add('border-rose-500', 'bg-[#3e1f29]', 'shake-error');
+            }
+        }
+    </script>
+</body>
+</html>

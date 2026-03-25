@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repaso Interactivo - Funciones de Fila</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Quicksand', 'sans-serif'] },
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
+        
+        .question-card, .drag-item, .drop-zone {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .drag-item { cursor: grab; user-select: none; }
+        .drag-item:active { cursor: grabbing; transform: scale(0.95); }
+        .drag-item.dragging { opacity: 0.5; transform: scale(1.05); }
+
+        .drop-zone { min-height: 4rem; border: 3px dashed #cbd5e1; transition: background-color 0.2s, border-color 0.2s; }
+        .drop-zone.drag-over { background-color: #f1f5f9; border-color: #6366f1; }
+        .drop-zone.filled { border-style: solid; border-color: #e2e8f0; background-color: white; padding: 0.5rem; }
+
+        .btn-option {
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .btn-option:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .btn-option:active:not(:disabled) { transform: translateY(0); }
+        
+        /* Animaciones para correct/incorrect (Múltiple/VF) */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .animate-shake { animation: shake 0.4s ease-in-out; }
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .animate-pop { animation: pop 0.4s ease-in-out; }
+
+        .hidden-level { display: none !important; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen pb-20 flex justify-center pt-8">
+
+    <!-- Navbar -->
+    <nav class="absolute top-6 left-6 z-50">
+        <a href="index.html" class="inline-flex items-center text-indigo-500 hover:text-indigo-700 font-bold transition-transform hover:-translate-x-1 bg-white px-6 py-3 rounded-full shadow-md border-2 border-indigo-100 text-lg">
+            <i class="fa-solid fa-arrow-left mr-3"></i> Menú
+        </a>
+    </nav>
+
+    <div class="max-w-4xl w-full px-6 relative z-10 w-full">
+        
+        <!-- Header -->
+        <header class="text-center mb-10 pt-16">
+            <div class="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-5 py-2 rounded-full font-bold mb-4 shadow-sm">
+                <i class="fa-solid fa-gamepad"></i> Misión Intermedia
+            </div>
+            <h1 class="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 mb-4 drop-shadow-sm">
+                Desafío: Conocimiento SQL
+            </h1>
+            <p class="text-xl text-gray-600 font-medium">Demuestra que dominas la Clase 1 antes de pasar al Nivel 2.</p>
+            
+            <div class="mt-8 flex justify-center gap-4">
+                <div class="bg-white px-6 py-3 rounded-2xl shadow border-2 border-slate-100 font-bold flex items-center gap-3">
+                    <i class="fa-solid fa-star text-yellow-400 text-2xl"></i>
+                    <span class="text-2xl text-slate-800" id="score-display">0</span>
+                    <span class="text-slate-500 text-sm">/ 100 Pts</span>
+                </div>
+                <div class="bg-white px-6 py-3 rounded-2xl shadow border-2 border-slate-100 font-bold flex items-center gap-3">
+                    <i class="fa-solid fa-bolt text-indigo-500 text-2xl"></i>
+                    <span class="text-xl text-slate-800">Nivel <span id="level-display">1</span></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Progress Bar -->
+        <div class="bg-slate-200 h-4 w-full rounded-full mb-10 overflow-hidden shadow-inner">
+            <div id="progress-bar" class="h-full bg-gradient-to-r from-indigo-400 to-pink-500 w-[0%] transition-all duration-500 ease-out"></div>
+        </div>
+
+        <main id="game-container" class="relative bg-white rounded-[2.5rem] shadow-xl border-4 border-white overflow-hidden min-h-[500px] p-8 md:p-12 mb-10 fade-in">
+            <!-- Background Decoration -->
+            <div class="absolute -right-20 -top-20 bg-indigo-50 w-64 h-64 rounded-full opacity-50 z-0 pointer-events-none"></div>
+            <div class="absolute -left-20 -bottom-20 bg-pink-50 w-48 h-48 rounded-full opacity-50 z-0 pointer-events-none"></div>
+
+            <!-- Contenedor relativo para el Z-index de los niveles -->
+            <div class="relative z-10 w-full h-full">
+
+                <!-- ==== NIVEL 1: SELECCIÓN MÚLTIPLE ==== -->
+                <div id="level-1" class="level-section">
+                    <div class="text-center mb-8">
+                        <span class="bg-indigo-100 text-indigo-600 font-bold px-4 py-1.5 rounded-full text-sm uppercase tracking-wide">Fase 1: Múltiple Opción</span>
+                        <h2 class="text-3xl font-bold text-slate-800 mt-4 leading-tight question-text" id="q1-text">
+                            ¿Qué función transforma la palabra <code>'maría'</code> en <code>'María'</code>?
+                        </h2>
+                        <p class="text-slate-500 mt-2 font-medium">Piensa en nombres propios.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="q1-options">
+                        <button onclick="checkMultipleChoice(this, false, 1)" class="btn-option bg-white hover:bg-slate-50 border-2 border-slate-200 p-6 rounded-2xl text-xl font-bold text-slate-700 text-left flex items-center group">
+                            <span class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-500 transition-colors mr-4">A</span> UPPER()
+                        </button>
+                        <button onclick="checkMultipleChoice(this, true, 1)" class="btn-option bg-white hover:bg-slate-50 border-2 border-slate-200 p-6 rounded-2xl text-xl font-bold text-slate-700 text-left flex items-center group relative overflow-hidden">
+                            <span class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-500 transition-colors mr-4 relative z-10">B</span> <span class="relative z-10">INITCAP()</span>
+                        </button>
+                        <button onclick="checkMultipleChoice(this, false, 1)" class="btn-option bg-white hover:bg-slate-50 border-2 border-slate-200 p-6 rounded-2xl text-xl font-bold text-slate-700 text-left flex items-center group">
+                            <span class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-500 transition-colors mr-4">C</span> LOWER()
+                        </button>
+                        <button onclick="checkMultipleChoice(this, false, 1)" class="btn-option bg-white hover:bg-slate-50 border-2 border-slate-200 p-6 rounded-2xl text-xl font-bold text-slate-700 text-left flex items-center group">
+                            <span class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-500 transition-colors mr-4">D</span> CAPITALIZE()
+                        </button>
+                    </div>
+                    
+                    <div id="q1-feedback" class="mt-8 text-center hidden">
+                        <p class="text-xl font-bold mb-4 message-text"></p>
+                        <button onclick="nextQuestion(1)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">Siguiente Pregunta <i class="fa-solid fa-arrow-right ml-2"></i></button>
+                    </div>
+                </div>
+
+                <div id="level-1-q2" class="level-section hidden-level fade-in">
+                    <div class="text-center mb-8">
+                        <span class="bg-indigo-100 text-indigo-600 font-bold px-4 py-1.5 rounded-full text-sm uppercase tracking-wide">Fase 1: Múltiple Opción</span>
+                        <h2 class="text-3xl font-bold text-slate-800 mt-4 leading-tight">
+                            Si el sistema necesita calcular cuántos meses de antigüedad tiene un cliente registrado, uso:
+                        </h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button onclick="checkMultipleChoice(this, false, 2)" class="btn-option bg-white hover:bg-slate-50 border-2 border-slate-200 p-6 rounded-2xl text-xl font-bold text-slate-700 text-left flex items-center group">
+                            <span class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-100 mr-4">A</span> GET_MONTHS()
+                        </button>
+                        <button onclick="checkMultipleChoice(this, false, 2)" class="btn-option bg-white hover:bg-slate-50 border-2 border-slate-200 p-6 rounded-2xl text-xl font-bold text-slate-700 text-left flex items-center group">
+                            <span class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-100 mr-4">B</span> ADD_MONTHS(fecha_registro, SYSDATE)
+                        </button>
+                        <button onclick="checkMultipleChoice(this, true, 2)" class="btn-option bg-white hover:bg-slate-50 border-2 border-slate-200 p-6 rounded-2xl text-xl font-bold text-slate-700 text-left flex items-center group">
+                            <span class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-100 mr-4">C</span> MONTHS_BETWEEN(SYSDATE, fecha_registro)
+                        </button>
+                        <button onclick="checkMultipleChoice(this, false, 2)" class="btn-option bg-white hover:bg-slate-50 border-2 border-slate-200 p-6 rounded-2xl text-xl font-bold text-slate-700 text-left flex items-center group">
+                            <span class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-100 mr-4">D</span> SYSDATE(meses)
+                        </button>
+                    </div>
+                    
+                    <div id="q2-feedback" class="mt-8 text-center hidden">
+                        <p class="text-xl font-bold mb-4 message-text"></p>
+                        <button onclick="nextLevel(2)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">Avanzar al Nivel 2 <i class="fa-solid fa-bolt ml-2 text-yellow-300"></i></button>
+                    </div>
+                </div>
+
+                <!-- ==== NIVEL 2: VERDADERO / FALSO ==== -->
+                <div id="level-2" class="level-section hidden-level fade-in">
+                    <div class="text-center mb-10">
+                        <span class="bg-purple-100 text-purple-600 font-bold px-4 py-1.5 rounded-full text-sm uppercase tracking-wide">Fase 2: Veredicto Rápido</span>
+                        <div class="bg-slate-50 border-2 border-slate-200 rounded-3xl p-8 mt-8 shadow-sm relative">
+                            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-white rounded-full p-2 shadow-sm border border-slate-100">
+                                <i class="fa-solid fa-scale-balanced text-3xl text-purple-500"></i>
+                            </div>
+                            <h2 class="text-2xl md:text-3xl font-bold text-slate-800 leading-relaxed mt-4" id="vf-question">
+                                Las Funciones de Fila realizan cálculos procesando la tabla entera devolviendo obligatoriamente un solo resultado en total.
+                            </h2>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row justify-center gap-6" id="vf-buttons">
+                        <button onclick="checkVF(false)" class="btn-option flex-1 bg-white hover:bg-rose-50 border-2 border-rose-200 text-rose-600 p-6 rounded-2xl text-2xl font-bold flex flex-col items-center justify-center gap-2 group">
+                            <div class="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center text-3xl group-hover:scale-110 transition-transform"><i class="fa-solid fa-xmark"></i></div>
+                            Falso
+                        </button>
+                        <button onclick="checkVF(true)" class="btn-option flex-1 bg-white hover:bg-emerald-50 border-2 border-emerald-200 text-emerald-600 p-6 rounded-2xl text-2xl font-bold flex flex-col items-center justify-center gap-2 group">
+                            <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center text-3xl group-hover:scale-110 transition-transform"><i class="fa-solid fa-check"></i></div>
+                            Verdadero
+                        </button>
+                    </div>
+                    
+                    <div id="vf-feedback" class="mt-8 text-center hidden">
+                        <p class="text-xl font-bold mb-4 message-text"></p>
+                        <button onclick="nextLevel(3)" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">Avanzar al Nivel Final <i class="fa-solid fa-flag-checkered ml-2"></i></button>
+                    </div>
+                </div>
+
+                <!-- ==== NIVEL 3: DRAG & DROP ==== -->
+                <div id="level-3" class="level-section hidden-level fade-in">
+                    <div class="text-center mb-8">
+                        <span class="bg-pink-100 text-pink-600 font-bold px-4 py-1.5 rounded-full text-sm uppercase tracking-wide">Fase 3: El Cableado Final</span>
+                        <h2 class="text-2xl font-bold text-slate-800 mt-4">Arrastra cada Pieza SQL a su zona correspondiente</h2>
+                        <p class="text-slate-500 font-medium">Empareja el código con su comportamiento.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-8 md:gap-4 md:grid-cols-12 max-w-5xl mx-auto">
+                        <!-- Draggable Items (Origin) -->
+                        <div class="md:col-span-5 bg-slate-50 rounded-3xl p-6 border-2 border-slate-200 shadow-inner flex flex-col gap-4" id="drag-source">
+                            <div draggable="true" id="item-mod" class="drag-item bg-white border-2 border-pink-300 shadow-md p-4 rounded-xl flex items-center font-bold text-slate-700 text-lg">
+                                <i class="fa-solid fa-grip-vertical text-slate-300 mr-3 text-xl cursor-grab"></i> 
+                                <span class="bg-pink-100 text-pink-700 px-3 py-1 rounded-lg border border-pink-200 font-mono">MOD(rut_cliente, 2)</span>
+                            </div>
+                            
+                            <div draggable="true" id="item-trunc" class="drag-item bg-white border-2 border-indigo-300 shadow-md p-4 rounded-xl flex items-center font-bold text-slate-700 text-lg">
+                                <i class="fa-solid fa-grip-vertical text-slate-300 mr-3 text-xl cursor-grab"></i> 
+                                <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg border border-indigo-200 font-mono">TRUNC(9.99)</span>
+                            </div>
+                            
+                            <div draggable="true" id="item-sysdate" class="drag-item bg-white border-2 border-emerald-300 shadow-md p-4 rounded-xl flex items-center font-bold text-slate-700 text-lg">
+                                <i class="fa-solid fa-grip-vertical text-slate-300 mr-3 text-xl cursor-grab"></i> 
+                                <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg border border-emerald-200 font-mono">SYSDATE</span>
+                            </div>
+                        </div>
+
+                        <!-- Drop Zones (Targets) -->
+                        <div class="md:col-span-7 flex flex-col gap-4">
+                            <!-- Target 1 -->
+                            <div class="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                                <div class="bg-slate-100 px-4 py-2 border-b border-slate-200 font-medium text-slate-700 text-sm">
+                                    <i class="fa-solid fa-clock text-emerald-500 mr-2"></i>"Extrae el tiempo actual dinámico que tiene registrado la máquina del motor SQL al momento del SELECT."
+                                </div>
+                                <div class="drop-zone p-4 bg-slate-50/50 m-2 rounded-xl flex items-center justify-center text-slate-400 font-medium border-dashed" data-correct="item-sysdate">
+                                    Suelta aquí el bloque correspondiente
+                                </div>
+                            </div>
+                            
+                            <!-- Target 2 -->
+                            <div class="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                                <div class="bg-slate-100 px-4 py-2 border-b border-slate-200 font-medium text-slate-700 text-sm">
+                                    <i class="fa-solid fa-scissors text-indigo-500 mr-2"></i>"Cortará los decimales abruptamente entregando el número 9 entero, ignorando la regla matemática."
+                                </div>
+                                <div class="drop-zone p-4 bg-slate-50/50 m-2 rounded-xl flex items-center justify-center text-slate-400 font-medium border-dashed" data-correct="item-trunc">
+                                    Suelta aquí el bloque correspondiente
+                                </div>
+                            </div>
+
+                            <!-- Target 3 -->
+                            <div class="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                                <div class="bg-slate-100 px-4 py-2 border-b border-slate-200 font-medium text-slate-700 text-sm">
+                                    <i class="fa-solid fa-divide text-pink-500 mr-2"></i>"Sirve para verificar si el contenido o ID numérico final es representativo Par o Impar separando flujos."
+                                </div>
+                                <div class="drop-zone p-4 bg-slate-50/50 m-2 rounded-xl flex items-center justify-center text-slate-400 font-medium border-dashed" data-correct="item-mod">
+                                    Suelta aquí el bloque correspondiente
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 text-center">
+                        <button id="btn-check-drag" onclick="checkDragAndDrop()" class="bg-slate-400 text-white font-bold py-3 px-10 rounded-full shadow-md cursor-not-allowed transition-colors" disabled>Verificar Conexiones</button>
+                        <p id="drag-feedback" class="mt-4 text-lg font-bold hidden"></p>
+                    </div>
+                </div>
+
+                <!-- ==== PANTALLA FINAL ==== -->
+                <div id="final-screen" class="level-section hidden-level fade-in text-center py-10">
+                    <div class="inline-flex justify-center items-center w-32 h-32 bg-yellow-100 rounded-full mb-6 border-4 border-yellow-300 shadow-xl">
+                        <i class="fa-solid fa-trophy text-6xl text-yellow-500"></i>
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-extrabold text-slate-800 mb-4">¡Simulación Completada!</h2>
+                    <p class="text-2xl text-slate-600 font-medium mb-8">Puntaje Final: <strong id="final-score" class="text-indigo-600">0</strong> / 100</p>
+                    
+                    <div id="final-message-container" class="bg-slate-50 p-6 rounded-2xl max-w-xl mx-auto border-2 mb-10 text-lg font-medium leading-relaxed">
+                        <!-- JS fills this -->
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="clase-1.html" class="bg-white hover:bg-slate-50 text-slate-700 border-2 border-slate-300 font-bold py-4 px-8 rounded-full shadow-sm transition-transform hover:-translate-y-1">
+                            <i class="fa-solid fa-rotate-left mr-2"></i> Repasar Clase 1
+                        </a>
+                        <a href="clase-2.html" id="btn-next-class" class="bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-600 hover:to-indigo-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transition-transform hover:-translate-y-1 relative overflow-hidden group hidden">
+                            <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                            <span class="relative z-10"><i class="fa-solid fa-unlock text-yellow-300 mr-2"></i> Iniciar Clase 2: Grupos</span>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Lógica del Juego -->
+    <script>
+        let score = 0;
+        let answeredQuestions = 0;
+        const ptsPerQ1 = 15; // Q1 = 15, Q2 = 15
+        const ptsVF = 30;    // VF = 30
+        const ptsDrag = 40;  // Drag = 40. Total = 100.
+        
+        function updateScore(points) {
+            score += points;
+            const el = document.getElementById('score-display');
+            el.innerText = score;
+            el.classList.add('animate-pop');
+            setTimeout(() => el.classList.remove('animate-pop'), 400);
+            updateProgress();
+        }
+
+        function updateProgress() {
+            // Nivel 1 = 2 preguntas (33%), Nivel 2 = 1 pregunta (66%), Nivel 3 = drag (100%)
+            const pct = (answeredQuestions / 4) * 100; 
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+        }
+
+        /* --- NIVEL 1: SELECCIÓN MÚLTIPLE --- */
+        function checkMultipleChoice(btnEl, isCorrect, questionNum) {
+            const containerId = questionNum === 1 ? 'level-1' : 'level-1-q2';
+            const buttons = document.querySelectorAll(`#${containerId} .btn-option`);
+            
+            // Disable all buttons in this question
+            buttons.forEach(b => {
+                b.disabled = true;
+                b.classList.remove('hover:bg-slate-50', 'group');
+                b.style.opacity = '0.7';
+            });
+
+            const feedback = document.getElementById(`q${questionNum}-feedback`);
+            const msg = feedback.querySelector('.message-text');
+            
+            if (isCorrect) {
+                // Correct styling
+                btnEl.style.opacity = '1';
+                btnEl.classList.add('bg-emerald-50', 'border-emerald-300', 'text-emerald-800');
+                btnEl.classList.remove('bg-white', 'border-slate-200');
+                btnEl.querySelector('span').classList.add('bg-emerald-500', 'text-white');
+                btnEl.classList.add('animate-pop');
+                
+                msg.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-500 mr-2"></i> ¡Exacto! Muy bien hecho.';
+                msg.classList.add('text-emerald-600');
+                createMiniConfetti();
+                updateScore(ptsPerQ1);
+            } else {
+                // Incorrect styling
+                btnEl.style.opacity = '1';
+                btnEl.classList.add('bg-rose-50', 'border-rose-300', 'text-rose-800', 'animate-shake');
+                btnEl.classList.remove('bg-white', 'border-slate-200');
+                btnEl.querySelector('span').classList.add('bg-rose-500', 'text-white');
+                
+                // Highlight correct one
+                const correctBtn = Array.from(buttons).find(b => b.getAttribute('onclick').includes('true'));
+                correctBtn.style.opacity = '1';
+                correctBtn.classList.add('border-emerald-400', 'border-4');
+                
+                msg.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-500 mr-2"></i> Fallaste. Revisa la opción remarcada verde.';
+                msg.classList.add('text-rose-600');
+            }
+            
+            answeredQuestions++;
+            updateProgress();
+            feedback.classList.remove('hidden');
+            feedback.classList.add('fade-in');
+        }
+
+        function nextQuestion(num) {
+            document.getElementById(`level-1`).classList.add('hidden-level');
+            document.getElementById(`level-1-q2`).classList.remove('hidden-level');
+        }
+        
+        function nextLevel(num) {
+            document.querySelectorAll('.level-section').forEach(el => el.classList.add('hidden-level'));
+            document.getElementById(`level-${num}`).classList.remove('hidden-level');
+            document.getElementById('level-display').innerText = num;
+        }
+
+        /* --- NIVEL 2: VERDADERO / FALSO --- */
+        function checkVF(userAnswer) {
+            const isCorrect = userAnswer === false; // The affirmation is false. Row funcs do NOT return 1 result in total.
+            
+            document.querySelectorAll('#vf-buttons .btn-option').forEach(b => b.disabled = true);
+            const feedback = document.getElementById('vf-feedback');
+            const msg = feedback.querySelector('.message-text');
+            
+            if (isCorrect) {
+                msg.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-500 mr-2"></i> ¡Correcto! Las funciones de fila devuelven un valor POR CADA FILA que existe (100 filas = 100 resultados). Las de grupo devuelven 1.';
+                msg.classList.add('text-emerald-600');
+                createMiniConfetti();
+                updateScore(ptsVF);
+            } else {
+                document.getElementById('vf-buttons').classList.add('animate-shake');
+                msg.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-500 mr-2"></i> ERROR CRÍTICO. Si hay 100 filas, una función de fila hace 100 cálculos y devuelve 100 resultados distintos en la grilla final.';
+                msg.classList.add('text-rose-600');
+            }
+            
+            answeredQuestions++;
+            updateProgress();
+            feedback.classList.remove('hidden');
+            feedback.classList.add('fade-in');
+        }
+
+        /* --- NIVEL 3: DRAG AND DROP NATIVO --- */
+        const draggables = document.querySelectorAll('.drag-item');
+        const dropZones = document.querySelectorAll('.drop-zone');
+        let draggedItem = null;
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', () => {
+                draggedItem = draggable;
+                setTimeout(() => draggable.classList.add('dragging'), 0);
+            });
+            draggable.addEventListener('dragend', () => {
+                draggedItem = null;
+                draggable.classList.remove('dragging');
+                checkIfAllDropped();
+            });
+        });
+
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', e => {
+                e.preventDefault();
+                zone.classList.add('drag-over');
+            });
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('drag-over');
+            });
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                
+                // Si la zona ya tiene algo, lo devolvemos al origen
+                if (zone.children.length > 0) {
+                    const existingItem = zone.children[0];
+                    document.getElementById('drag-source').appendChild(existingItem);
+                }
+                
+                zone.appendChild(draggedItem);
+                zone.classList.add('filled', 'border-emerald-300');
+                zone.classList.remove('border-dashed');
+                
+                // Reset styling for empty zones to dashed
+                document.querySelectorAll('.drop-zone').forEach(z => {
+                    if (z.children.length === 0) {
+                        z.classList.remove('filled', 'border-emerald-300');
+                        z.classList.add('border-dashed');
+                    }
+                });
+            });
+        });
+
+        // Permitir volver a dejarlos en el source
+        const source = document.getElementById('drag-source');
+        source.addEventListener('dragover', e => e.preventDefault());
+        source.addEventListener('drop', e => {
+            e.preventDefault();
+            source.appendChild(draggedItem);
+            checkIfAllDropped();
+        });
+
+        function checkIfAllDropped() {
+            let numDropped = 0;
+            dropZones.forEach(z => { if(z.children.length > 0) numDropped++; });
+            
+            const btn = document.getElementById('btn-check-drag');
+            if (numDropped === 3) {
+                btn.disabled = false;
+                btn.classList.add('bg-indigo-600', 'hover:bg-indigo-700', 'cursor-pointer');
+                btn.classList.remove('bg-slate-400', 'cursor-not-allowed');
+            } else {
+                btn.disabled = true;
+                btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700', 'cursor-pointer');
+                btn.classList.add('bg-slate-400', 'cursor-not-allowed');
+            }
+        }
+
+        function checkDragAndDrop() {
+            let correctCount = 0;
+            
+            dropZones.forEach(zone => {
+                const requiredId = zone.getAttribute('data-correct');
+                const childId = zone.children[0].id;
+                
+                if (requiredId === childId) {
+                    correctCount++;
+                    zone.classList.add('bg-emerald-50', 'border-emerald-400');
+                    zone.classList.remove('bg-slate-50/50', 'border-slate-200');
+                } else {
+                    zone.classList.add('bg-rose-50', 'border-rose-400');
+                    zone.classList.remove('bg-slate-50/50', 'border-slate-200');
+                    zone.children[0].classList.add('animate-shake');
+                }
+            });
+
+            const fb = document.getElementById('drag-feedback');
+            fb.classList.remove('hidden');
+            
+            // disable dragging
+            draggables.forEach(d => d.setAttribute('draggable', 'false'));
+            document.getElementById('btn-check-drag').style.display = 'none';
+
+            if (correctCount === 3) {
+                fb.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-500 mr-2"></i> ¡Cableado Perfecto!';
+                fb.classList.add('text-emerald-600');
+                updateScore(ptsDrag);
+            } else {
+                fb.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-500 mr-2"></i> Tuviste ${3 - correctCount} piezas mal conectadas.`;
+                fb.classList.add('text-amber-600');
+            }
+
+            answeredQuestions++;
+            updateProgress();
+            
+            setTimeout(() => { showFinalScreen(); }, 2000);
+        }
+
+        /* --- FINAL --- */
+        function showFinalScreen() {
+            document.querySelectorAll('.level-section').forEach(el => el.classList.add('hidden-level'));
+            document.getElementById('final-screen').classList.remove('hidden-level');
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('progress-bar').style.width = '100%';
+
+            const msgContainer = document.getElementById('final-message-container');
+            const btnNext = document.getElementById('btn-next-class');
+
+            if (score === 100) {
+                msgContainer.classList.add('border-emerald-200', 'text-emerald-800');
+                msgContainer.innerHTML = '🌟 <strong>¡PERFECCIÓN ABSOLUTA!</strong> Tienes un dominio total sobre las funciones que operan fila por fila y entiendes la mecánica detrás del motor SQL. Tienes el permiso DBA otorgado para aventurarte al conocimiento complejo: Las Funciones de Agrupación.';
+                btnNext.classList.remove('hidden');
+                btnNext.classList.add('inline-flex');
+                triggerBigConfetti();
+            } else if (score > 60) {
+                msgContainer.classList.add('border-amber-200', 'text-amber-800');
+                msgContainer.innerHTML = '👍 <strong>¡Aprobado con detalles!</strong> Entiendes los conceptos base, pero aún dudas con algunas mecánicas importantes (quizás la teoría fundamental frente a Java). Puedes avanzar, pero te recomendamos leer rápido la Clase 1 si sientes que algo no cuadra más adelante.';
+                btnNext.classList.remove('hidden');
+                btnNext.classList.add('inline-flex');
+                createMiniConfetti();
+            } else {
+                msgContainer.classList.add('border-rose-200', 'text-rose-800');
+                msgContainer.innerHTML = '🛑 <strong>Alerta de Seguridad en BBDD</strong>. Modificar millones de datos sin entender que ROUND afecta decimales o que COUNT de grupo es distinto a un for_each es peligroso. Te invitamos a leer la Clase 1 nuevamente, no pases a Grupos aún.';
+            }
+        }
+
+        /* --- CONFETTI EFFECTS --- */
+        function createMiniConfetti() {
+            confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 }, colors: ['#6366f1', '#ec4899', '#10b981'] });
+        }
+        function triggerBigConfetti() {
+            const duration = 3000;
+            const end = Date.now() + duration;
+            (function frame() {
+                confetti({
+                    particleCount: 5, angle: 60, spread: 55, origin: { x: 0 },
+                    colors: ['#6366f1', '#ec4899', '#fde047']
+                });
+                confetti({
+                    particleCount: 5, angle: 120, spread: 55, origin: { x: 1 },
+                    colors: ['#6366f1', '#ec4899', '#fde047']
+                });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+    </script>
+</body>
+</html>

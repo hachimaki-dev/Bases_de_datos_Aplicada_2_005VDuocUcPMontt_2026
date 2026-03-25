@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Ahora Tú! - Proyecto Semestral</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Quicksand', 'sans-serif'] },
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
+        .mail-card { transition: all 0.3s ease; }
+        .mail-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen pb-20 pt-8">
+
+    <!-- Navbar -->
+    <nav class="absolute top-6 left-6 z-50">
+        <a href="index.html" class="inline-flex items-center text-slate-500 hover:text-slate-700 font-bold transition-transform hover:-translate-x-1 bg-white px-6 py-3 rounded-full shadow-md border-2 border-slate-100 text-lg">
+            <i class="fa-solid fa-arrow-left mr-3"></i> Menú
+        </a>
+    </nav>
+
+    <div class="max-w-5xl mx-auto px-6 relative z-10">
+        
+        <!-- Header -->
+        <header class="text-center mb-16 pt-16">
+            <div class="inline-flex items-center gap-2 bg-rose-100 text-rose-700 px-5 py-2 rounded-full font-bold mb-4 shadow-sm border border-rose-200">
+                <i class="fa-solid fa-laptop-code"></i> Evaluación Autónoma
+            </div>
+            <h1 class="text-5xl md:text-6xl font-extrabold text-slate-800 mb-6 drop-shadow-sm">
+                ¡Ahora Tú! <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-orange-400">El DBA eres tú.</span>
+            </h1>
+            <p class="text-xl text-slate-600 font-medium max-w-3xl mx-auto leading-relaxed bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                Llegó tu primer día de trabajo. En la vida real, los jefes no dicen <em>"Estimado, hágame un SELECT con un INNER JOIN agrupado por RUT y un HAVING mayor a 10"</em>. Los jefes piden informes urgentes de negocio y <strong>tú debes traducir ese problema a código SQL.</strong><br><br>
+                Aplica esto a las tablas de <strong>TU proyecto semestral.</strong>
+            </p>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            
+            <!-- Bandeja de Entrada -->
+            <div class="lg:col-span-7 space-y-6">
+                <h2 class="text-3xl font-bold text-slate-800 flex items-center mb-6">
+                    <i class="fa-solid fa-inbox text-rose-500 bg-rose-100 p-3 rounded-xl mr-4"></i> Bandeja de Entrada Simulada
+                </h2>
+
+                <!-- Correo 1 -->
+                <article class="bg-white rounded-2xl p-6 border-l-8 border-l-emerald-400 shadow-sm border border-slate-100 mail-card relative">
+                    <div class="absolute top-6 right-6 text-sm text-slate-400 font-bold"><i class="fa-solid fa-paperclip"></i> Hace 5 min</div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold">GF</div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 leading-tight">G. Finanzas</h3>
+                            <p class="text-xs text-slate-500">Para: dba.junior@empresa.cl</p>
+                        </div>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2 text-slate-700">Asunto: Limpieza urgente de reportes</h4>
+                    <div class="bg-slate-50 p-4 rounded-xl text-slate-600 mb-4 border border-slate-100 text-sm leading-relaxed font-medium">
+                        "¡Hola! Necesito imprimir el listado de todos nuestros clientes/usuarios/productos (la tabla principal que manejes). Pero el sistema viejo guardó algunos nombres en minúsculas y otros en mayúsculas.<br><br>Necesito que saques una vista donde el Nombre Completo o Descripción salga impecable, <strong>todo en mayúsculas</strong>, y si hay un campo de rut/código, muéstralo normal pero usando un alias."
+                    </div>
+                    
+                    <!-- Ayuda Paso a Paso -->
+                    <div class="mt-4 border-t border-slate-100 pt-4">
+                        <button onclick="toggleHelp('help1')" class="text-indigo-600 font-bold text-sm hover:text-indigo-800 transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> ¿No sabes por dónde empezar? (Paso a Pasito)
+                        </button>
+                        <div id="help1" class="hidden mt-4 space-y-3">
+                            <div class="step-card bg-indigo-50 border border-indigo-100 p-4 rounded-xl text-sm font-medium text-slate-700 relative">
+                                <span class="absolute -top-3 -left-3 bg-indigo-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">1</span>
+                                <strong>La Tabla Base:</strong> ¿De qué tabla de tu proyecto vas a sacar a estas personas/productos? Escribe tu clásico <code class="bg-white px-1 rounded text-indigo-600">SELECT * FROM tu_tabla;</code> en tu Oracle developer y ejecútalo para ver qué columnas tienes.
+                            </div>
+                            <button onclick="unlockStep('help1-2', this)" class="w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold py-2 rounded-xl text-sm transition-colors">👍 Ya lo hice, dame el siguiente paso</button>
+                            
+                            <div id="help1-2" class="step-card hidden bg-indigo-50 border border-indigo-100 p-4 rounded-xl text-sm font-medium text-slate-700 relative opacity-0 transform translate-y-2 transition-all duration-500">
+                                <span class="absolute -top-3 -left-3 bg-indigo-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">2</span>
+                                <strong>El Select (Proyección):</strong> Reemplaza el asterisco `*` por la columna real del nombre. Ahora, envuelve esa columna con la función de fila que transforma todo a mayúsculas (<code class="bg-white px-1 rounded text-indigo-600">UPPER</code>). Ponle un Alias elegante usando <code class="bg-white px-1 rounded text-indigo-600">AS</code>.
+                            </div>
+                            <button id="btn-help1-3" onclick="unlockStep('help1-3', this)" class="hidden w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold py-2 rounded-xl text-sm transition-colors opacity-0 transform translate-y-2 transition-all duration-500 delay-100">👍 ¡Súper! Uno más</button>
+                            
+                            <div id="help1-3" class="step-card hidden bg-emerald-50 border border-emerald-100 p-4 rounded-xl text-sm font-medium text-emerald-800 relative opacity-0 transform translate-y-2 transition-all duration-500">
+                                <span class="absolute -top-3 -left-3 bg-emerald-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-check"></i></span>
+                                <strong>El Toque Final:</strong> Agrega tu otra columna (RUT o ID) en el SELECT separada por coma. Si te animas a combinar funciones, prueba a anidar un <code class="bg-white px-1 rounded text-emerald-600">TRIM()</code> o <code class="bg-white px-1 rounded text-emerald-600">REPLACE()</code> para quitar espacios. ¡Y listo! ¡Ejecuta!
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Correo 2 -->
+                <article class="bg-white rounded-2xl p-6 border-l-8 border-l-blue-400 shadow-sm border border-slate-100 mail-card relative">
+                    <div class="absolute top-6 right-6 text-sm text-slate-400 font-bold"><i class="fa-solid fa-star text-yellow-400"></i> Hace 1 hr</div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold"><i class="fa-solid fa-user-tie"></i></div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 leading-tight">Gerente General</h3>
+                            <p class="text-xs text-slate-500">Para: dba.junior@empresa.cl</p>
+                        </div>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2 text-slate-700">Asunto: URGENTE: Reunión de inversionistas 📊</h4>
+                    <div class="bg-slate-50 p-4 rounded-xl text-slate-600 mb-4 border border-slate-100 text-sm leading-relaxed font-medium">
+                        "En 30 minutos tengo reunión. Entrégame en **UNA SOLA FILA** el resumen vital de nuestro sistema:<br><br>
+                        1. ¿Cuántos registros totales tenemos en la tabla principal (Ej: Total pacientes, usuarios, ventas)?<br>
+                        2. ¿Cuál es el promedio histórico de la columna numérica más importante (edad, sueldo, precio, nota)?<br>
+                        3. Dame también el mínimo y el máximo de esa métrica. ¡Todo en una sola Request (Query)!"
+                    </div>
+                    
+                    <!-- Ayuda Paso a Paso 2 -->
+                    <div class="mt-4 border-t border-slate-100 pt-4">
+                        <button onclick="toggleHelp('help2')" class="text-indigo-600 font-bold text-sm hover:text-indigo-800 transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> ¿No sabes por dónde empezar? (Paso a Pasito)
+                        </button>
+                        <div id="help2" class="hidden mt-4 space-y-3">
+                            <div class="step-card bg-indigo-50 border border-indigo-100 p-4 rounded-xl text-sm font-medium text-slate-700 relative">
+                                <span class="absolute -top-3 -left-3 bg-indigo-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">1</span>
+                                <strong>La Tabla:</strong> Igual que antes, ¿Qué tabla tiene las ventas/pacientes esenciales? Anota el <code class="bg-white px-1 rounded text-indigo-600">FROM tu_tabla</code> en tu Oracle.
+                            </div>
+                            <button onclick="unlockStep('help2-2', this)" class="w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold py-2 rounded-xl text-sm transition-colors">👍 Ya lo hice</button>
+                            
+                            <div id="help2-2" class="step-card hidden bg-indigo-50 border border-indigo-100 p-4 rounded-xl text-sm font-medium text-slate-700 relative opacity-0 transform translate-y-2 transition-all duration-500">
+                                <span class="absolute -top-3 -left-3 bg-indigo-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">2</span>
+                                <strong>La Gran Cuenta:</strong> Sube al SELECT. Empieza por responder la pregunta 1: ¿Cuántos hay en total? Usa la función de grupo maestra que no discrimina nada (<code class="bg-white px-1 rounded text-indigo-600">COUNT(*)</code>).
+                            </div>
+                            <button id="btn-help2-3" onclick="unlockStep('help2-3', this)" class="hidden w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold py-2 rounded-xl text-sm transition-colors opacity-0 transform translate-y-2 transition-all duration-500 delay-100">👍 Siguiente pregunta del jefe</button>
+                            
+                            <div id="help2-3" class="step-card hidden bg-emerald-50 border border-emerald-100 p-4 rounded-xl text-sm font-medium text-emerald-800 relative opacity-0 transform translate-y-2 transition-all duration-500">
+                                <span class="absolute -top-3 -left-3 bg-emerald-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-check"></i></span>
+                                <strong>Sumando Métricas:</strong> En la misma línea del SELECT, separa por una coma y agrega las demás funciones matemáticas (<code class="bg-white px-1 rounded text-emerald-600">AVG()</code>, <code class="bg-white px-1 rounded text-emerald-600">MAX()</code>, <code class="bg-white px-1 rounded text-emerald-600">MIN()</code>) pasando por parámetro tu columna numérica elegida. (<em>Ojo: ¡Asegúrate de no usar ningún GROUP BY aquí!</em>)
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Correo 3 -->
+                <article class="bg-white rounded-2xl p-6 border-l-8 border-l-purple-400 shadow-sm border border-slate-100 mail-card relative">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold"><i class="fa-solid fa-chart-pie"></i></div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 leading-tight">Equipo de Marketing</h3>
+                            <p class="text-xs text-slate-500">Para: dba.junior@empresa.cl</p>
+                        </div>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2 text-slate-700">Asunto: FWD: Segmentar base de datos 🎯</h4>
+                    <div class="bg-slate-50 p-4 rounded-xl text-slate-600 mb-4 border border-slate-100 text-sm leading-relaxed font-medium">
+                        "¡Hey! Necesitamos armar la campaña mensual. ¿Podrías decirnos cómo se distribuyen nuestros datos?<br><br>
+                        Agrupa tu tabla principal por alguna categoría (Estado del pedido, Cargo del empleado, Tipo de mascota, Rol de usuario) y <strong>cuéntanos cuántos hay de cada uno</strong>. Opcional: súmanos el monto por categoría si aplica."
+                    </div>
+                    
+                    <!-- Ayuda Paso a Paso 3 -->
+                    <div class="mt-4 border-t border-slate-100 pt-4">
+                        <button onclick="toggleHelp('help3')" class="text-indigo-600 font-bold text-sm hover:text-indigo-800 transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> ¿No sabes por dónde empezar? (Paso a Pasito)
+                        </button>
+                        <div id="help3" class="hidden mt-4 space-y-3">
+                            <div class="step-card bg-indigo-50 border border-indigo-100 p-4 rounded-xl text-sm font-medium text-slate-700 relative">
+                                <span class="absolute -top-3 -left-3 bg-indigo-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">1</span>
+                                <strong>La Identidad:</strong> ¿Qué vas a agrupar? Identifica visualmente en el motor de base de datos la columna que sirve como 'cajón' o categoría (ej: <code>id_estado</code>, <code>categoría_id</code>). Ponla en el <code>SELECT</code> y asegúrate de añadir el <code>FROM</code> hacia la tabla correcta.
+                            </div>
+                            <button onclick="unlockStep('help3-2', this)" class="w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold py-2 rounded-xl text-sm transition-colors">👍 Listo, vamos por el caos</button>
+                            
+                            <div id="help3-2" class="step-card hidden bg-indigo-50 border border-indigo-100 p-4 rounded-xl text-sm font-medium text-slate-700 relative opacity-0 transform translate-y-2 transition-all duration-500">
+                                <span class="absolute -top-3 -left-3 bg-indigo-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">2</span>
+                                <strong>El Error Intencional:</strong> Al lado de tu columna de categoría en el SELECT, añade un <code class="bg-white px-1 rounded text-indigo-600">COUNT(*)</code>. Ejecútalo así tal cual en Oracle. ¡Pum! Error <em>"not a single-group function"</em>. La base de datos no sabe cómo comprimir la columna normal junto a la función totalizadora.
+                            </div>
+                            <button id="btn-help3-3" onclick="unlockStep('help3-3', this)" class="hidden w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold py-2 rounded-xl text-sm transition-colors opacity-0 transform translate-y-2 transition-all duration-500 delay-100">💥 Me tiró error, ¡arreglémoslo!</button>
+                            
+                            <div id="help3-3" class="step-card hidden bg-emerald-50 border border-emerald-100 p-4 rounded-xl text-sm font-medium text-emerald-800 relative opacity-0 transform translate-y-2 transition-all duration-500">
+                                <span class="absolute -top-3 -left-3 bg-emerald-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-check"></i></span>
+                                <strong>Arreglando el Cableado:</strong> Para calmar a la base de datos, agrégale la cláusula abajo: <code class="bg-white px-1 rounded text-emerald-600">GROUP BY tu_columna_de_categoría;</code> usando LA MISMA columna normal del SELECT. Inténtalo de nuevo.
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Correo 4 -->
+                <article class="bg-white rounded-2xl p-6 border-l-8 border-l-rose-500 shadow-sm border border-slate-100 mail-card relative">
+                    <div class="absolute top-6 right-6 text-sm text-rose-500 font-bold animate-pulse">! ALTA PRIORIDAD</div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 font-bold"><i class="fa-solid fa-user-tie"></i></div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 leading-tight">Gerente General</h3>
+                            <p class="text-xs text-slate-500">Para: dba.junior@empresa.cl</p>
+                        </div>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2 text-slate-700">Asunto: RE: URGENTE: Reunión de inversionistas 📊</h4>
+                    <div class="bg-slate-50 p-4 rounded-xl text-slate-600 mb-4 border border-slate-100 text-sm leading-relaxed font-medium">
+                        "El reporte de Marketing agrupado quedó pésimo, ensucia la presentación con categorías sin importancia.<br><br>
+                        Aplica filtros al reporte anterior: <strong>Muéstrame SÓLO los grupos que tengan más de X cantidad de registros, O cuyo promedio sea mayor a un valor importante</strong>. Oculta los grupos irrelevantes."
+                    </div>
+                    
+                    <!-- Ayuda Paso a Paso 4 -->
+                    <div class="mt-4 border-t border-slate-100 pt-4">
+                        <button onclick="toggleHelp('help4')" class="text-indigo-600 font-bold text-sm hover:text-indigo-800 transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> ¿No sabes por dónde empezar? (Paso a Pasito)
+                        </button>
+                        <div id="help4" class="hidden mt-4 space-y-3">
+                            <div class="step-card bg-indigo-50 border border-indigo-100 p-4 rounded-xl text-sm font-medium text-slate-700 relative">
+                                <span class="absolute -top-3 -left-3 bg-indigo-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">1</span>
+                                <strong>Reutiliza:</strong> En la vida real copiamos código todo el tiempo. Toma tu consulta exacta que lograste ejecutar y armar en el correo anterior. Pégala aquí.
+                            </div>
+                            <button onclick="unlockStep('help4-2', this)" class="w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold py-2 rounded-xl text-sm transition-colors">👍 Copiado y pegado</button>
+                            
+                            <div id="help4-2" class="step-card hidden bg-indigo-50 border border-indigo-100 p-4 rounded-xl text-sm font-medium text-slate-700 relative opacity-0 transform translate-y-2 transition-all duration-500">
+                                <span class="absolute -top-3 -left-3 bg-indigo-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">2</span>
+                                <strong>La Advertencia:</strong> Si usas la palabra <code>WHERE</code> aquí abajo, te lanzará un horror terrible porque WHERE filtra filas individuales ANTES de agrupar, y tú buscas filtrar *lo que ya está sumado*.
+                            </div>
+                            <button id="btn-help4-3" onclick="unlockStep('help4-3', this)" class="hidden w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold py-2 rounded-xl text-sm transition-colors opacity-0 transform translate-y-2 transition-all duration-500 delay-100">👍 Comprendido, no usar WHERE</button>
+                            
+                            <div id="help4-3" class="step-card hidden bg-emerald-50 border border-emerald-100 p-4 rounded-xl text-sm font-medium text-emerald-800 relative opacity-0 transform translate-y-2 transition-all duration-500">
+                                <span class="absolute -top-3 -left-3 bg-emerald-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-check"></i></span>
+                                <strong>El Filtro Experto:</strong> Agrega la cláusula <code class="bg-white px-1 rounded text-emerald-600">HAVING</code> justo debajo de tu <code>GROUP BY</code>. La condición matemática debe usar una de las funciones completas. Ejp: <code class="bg-white px-1 rounded text-emerald-600">HAVING COUNT(*) > 5</code>. (¡No uses el Alias del SELECT aquí!). Ejecuta.
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Sidebar -->
+            <aside class="lg:col-span-5 space-y-6">
+                
+                <!-- Entregable -->
+                <div class="bg-slate-800 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+                    <div class="absolute -right-6 -top-6 text-slate-700 opacity-20"><i class="fa-solid fa-file-code text-9xl"></i></div>
+                    <h3 class="text-2xl font-bold mb-4 relative z-10 text-rose-300"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Mi Entregable</h3>
+                    <p class="text-slate-300 font-medium mb-6 relative z-10">Debes fallar. Eres estudiante, equivocarse ahora es gratis (en el mundo real se cae Producción). Muestra tu proceso.</p>
+                    
+                    <ul class="space-y-4 relative z-10 font-medium text-slate-200">
+                        <li class="flex items-start gap-4">
+                            <span class="bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold shadow-md">1</span>
+                            <span>Crea un archivo llamado <code class="bg-slate-700 px-2 py-1 rounded text-rose-300 text-sm">proyecto_db_respuestas.sql</code>.</span>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <span class="bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold shadow-md">2</span>
+                            <span>Escribe la consulta <strong>SQL final</strong> para cado uno de los 4 correos/casos.</span>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <span class="bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold shadow-md">3</span>
+                            <span><strong>Fundamental:</strong> Si un SQL te tiró un error rojo en el proceso (como es normal), anota el error como comentario <code class="text-slate-400">-- Fallé porque...</code> y explica cómo lo arreglaste de forma autónoma.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Clínica SQL (Troubleshooting Autónomo) -->
+                <div class="bg-white border-2 border-orange-200 rounded-3xl p-6 shadow-sm sticky top-6">
+                    <h3 class="text-xl font-bold text-orange-600 mb-6 flex items-center">
+                        <i class="fa-solid fa-truck-medical bg-orange-100 p-3 rounded-xl mr-3"></i> Clínica SQL (Autocorrección)
+                    </h3>
+                    <p class="text-slate-600 text-sm font-medium mb-6">Si Oracle Developer te tira un error en texto rojo, no llames al profesor. Lée aquí abajo, es muy probable que esté la cura a tu código:</p>
+
+                    <!-- Acordeon 1 -->
+                    <div class="border-b border-slate-200 mb-4">
+                        <button class="w-full text-left py-3 px-2 font-bold text-slate-700 hover:text-orange-500 transition-colors flex justify-between items-center" onclick="toggleAccordion('acc1')">
+                            <span>❌ ORA-00937: not a single-group function</span>
+                            <i class="fa-solid fa-chevron-down text-sm transition-transform" id="icon-acc1"></i>
+                        </button>
+                        <div id="acc1" class="accordion-content bg-slate-50 rounded-xl mb-4 text-sm text-slate-600 font-medium border border-slate-100">
+                            <div class="p-4">
+                                <strong class="text-rose-500">¿Qué hiciste mal?</strong> Metiste en el <code>SELECT</code> una columna "huérfana" (ej: el nombre, id o fecha) junto a una función como <code>COUNT(*)</code> o <code>SUM(precio)</code>.
+                                <br><br>
+                                <strong class="text-emerald-500">La cura:</strong> El motor SQL está en pánico porque tratas de mostrar el detalle individual y el resumen total en la misma tabla dimensional sin agrupar. La columna huérfana <strong>debe estar obligatoriamente</strong> en el <code>GROUP BY</code>.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Acordeon 2 -->
+                    <div class="border-b border-slate-200 mb-4">
+                        <button class="w-full text-left py-3 px-2 font-bold text-slate-700 hover:text-orange-500 transition-colors flex justify-between items-center" onclick="toggleAccordion('acc2')">
+                            <span>❌ El HAVING tira error con el ALIAS del SELECT</span>
+                            <i class="fa-solid fa-chevron-down text-sm transition-transform" id="icon-acc2"></i>
+                        </button>
+                        <div id="acc2" class="accordion-content bg-slate-50 rounded-xl mb-4 text-sm text-slate-600 font-medium border border-slate-100">
+                            <div class="p-4">
+                                <strong class="text-rose-500">¿Qué hiciste mal?</strong> Escribiste algo como: <br><code>SELECT COUNT(*) AS total_usuarios ... HAVING total_usuarios > 50</code>.
+                                <br><br>
+                                <strong class="text-emerald-500">La cura:</strong> Recuerda el Orden de Ejecución. Cuando la base de datos está evaluando el <code>HAVING</code>, el <code>SELECT</code> <strong>aún no existe</strong>. Por lo tanto, el alias no existe en esa línea temporal. Debes escribir la función completa de nuevo:<br><code>HAVING COUNT(*) > 50</code>.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Acordeon 3 -->
+                    <div class="border-b border-slate-200 mb-2">
+                        <button class="w-full text-left py-3 px-2 font-bold text-slate-700 hover:text-orange-500 transition-colors flex justify-between items-center" onclick="toggleAccordion('acc3')">
+                            <span>❌ ORA-00936: missing expression (Expresión falta)</span>
+                            <i class="fa-solid fa-chevron-down text-sm transition-transform" id="icon-acc3"></i>
+                        </button>
+                        <div id="acc3" class="accordion-content bg-slate-50 rounded-xl mb-4 text-sm text-slate-600 font-medium border border-slate-100">
+                            <div class="p-4">
+                                <strong class="text-rose-500">¿Qué hiciste mal?</strong> Generalmente es un simple error de tipeo "de capa 8".
+                                <br><br>
+                                <strong class="text-emerald-500">La cura:</strong> Revisa comas sobrantes justo antes del <code>FROM</code>. Revisa que todas las llaves o paréntesis de las funciones <code>ROUND()</code> o <code>SUM()</code> estén cerrados correctamente. Revisa que no te falte un operador lógico entre dos condiciones.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Script para Acordeones y Sistema Paso a Paso -->
+    <script>
+        // Logica Acordeon Clínica
+        function toggleAccordion(id) {
+            const content = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            
+            if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+                content.style.maxHeight = '0px';
+                icon.style.transform = 'rotate(0deg)';
+                content.style.paddingTop = '0px';
+                content.style.paddingBottom = '0px';
+                content.style.opacity = '0';
+            } else {
+                content.style.paddingTop = '1rem';
+                content.style.paddingBottom = '1rem';
+                content.style.opacity = '1';
+                content.style.maxHeight = content.scrollHeight + 32 + "px"; // + padding
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // Lógica Sistema de Ayuda Paso a Paso
+        function toggleHelp(helpBlockId) {
+            const el = document.getElementById(helpBlockId);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                // Auto-scroll suave para que la lectura baje con la ayuda
+                setTimeout(() => {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+
+        function unlockStep(nextStepId, buttonClicked) {
+            // Ocultar botón anterior
+            buttonClicked.style.display = 'none';
+            // Revelar el siguiente paso con animación Tailwind
+            const nextStep = document.getElementById(nextStepId);
+            nextStep.classList.remove('hidden');
+            
+            // Forzar reflow para que corra la transicion
+            void nextStep.offsetWidth;
+            
+            nextStep.classList.remove('opacity-0', 'translate-y-2');
+            nextStep.classList.add('opacity-100', 'translate-y-0');
+
+            // Revelar el siguiente boton si existe (usando el ID deducido btn-nextStepId)
+            const nextBtn = document.getElementById('btn-' + nextStepId);
+            if(nextBtn) {
+                setTimeout(() => {
+                    nextBtn.classList.remove('hidden');
+                    void nextBtn.offsetWidth;
+                    nextBtn.classList.remove('opacity-0', 'translate-y-2');
+                    nextBtn.classList.add('opacity-100', 'translate-y-0');
+                    nextStep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 400); // 400ms despues de que apareció la tarjeta de arriba
+            } else {
+                nextStep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+    </script>
+</body>
+</html>
