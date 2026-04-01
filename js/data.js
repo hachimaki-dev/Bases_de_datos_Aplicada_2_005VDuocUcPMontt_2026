@@ -137,6 +137,24 @@ const appData = {
             }
         },
         {
+            id: 'clase-3',
+            type: 'standard',
+            href: 'clase-3.html',
+            colSpan: 1,
+            date: '2026-04-03',
+            dateText: '3 Abr 2026',
+            tag: 'NUEVO', tagIcon: 'fa-star text-yellow-400',
+            badge: 'Entrada 4',
+            title: '🧩 Semántica Relacional: El Arte del JOIN',
+            description: 'Conoce cómo interpretar la relación de tablas del mundo real y construir queries de JOIN sin sufrir pánico. Incluye laboratorio de toma de decisiones éticas.',
+            btnText: 'Leer entrada', btnIcon: 'fa-arrow-right',
+            theme: {
+                border: 'border-emerald-200', circle: 'bg-emerald-50',
+                tagBox: 'bg-emerald-50 text-emerald-600 border-emerald-100', badgeTheme: 'text-emerald-500 border-emerald-200',
+                title: 'text-emerald-600', btn: 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white'
+            }
+        },
+        {
             id: 'git-basics',
             type: 'horizontal',
             href: 'git-basics.html',

@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 3 - El Arte del JOIN</title>
+    <!-- Configuración Centralizada (Tailwind, Fuentes) -->
+    <script src="js/config.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    
+    <style>
+        .shake { animation: shake 0.4s; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            50% { transform: translateX(6px); }
+            75% { transform: translateX(-6px); }
+        }
+        
+        .pulse-soft { animation: pulse-soft 2s infinite; }
+        @keyframes pulse-soft {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
+            50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(74, 222, 128, 0); }
+        }
+
+        .receipt-bg { background-image: repeating-linear-gradient(transparent, transparent 20px, #f1f5f9 20px, #f1f5f9 21px); }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen pb-20 text-gray-800 bg-emerald-50/30">
+    <app-nav></app-nav>
+
+    <header class="max-w-5xl mx-auto px-6 text-center mb-16">
+        <div class="inline-block bg-emerald-100 px-6 py-2.5 rounded-full text-emerald-700 font-bold text-base mb-6 border-2 border-emerald-200 shadow-sm">
+            <i class="fa-solid fa-book text-yellow-500 mr-2"></i> Clase 3
+        </div>
+        <h1 class="text-5xl md:text-6xl font-bold text-emerald-600 mb-6 drop-shadow-sm leading-tight">🧩 Semántica Relacional:<br>El Arte del JOIN</h1>
+        <p class="text-xl md:text-2xl text-gray-700 bg-white inline-flex items-center gap-3 px-8 py-4 rounded-full shadow-md border-2 border-emerald-100 mt-4 font-bold mx-auto justify-center">
+            Reconstruyendo la información fragmentada <i class="fa-solid fa-puzzle-piece text-emerald-400 text-2xl"></i>
+        </p>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6" id="join-class-app">
+
+        <!-- Momento 0: El Problema (Contexto Real y Normalización) -->
+        <section class="content-box">
+            <h2 class="section-title text-indigo-600 border-indigo-200">
+                <i class="fa-solid fa-database text-indigo-500 bg-indigo-100 p-3 rounded-2xl"></i> Momento 0: Recordando nuestras Raíces (Normalización)
+            </h2>
+            
+            <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 flex flex-col md:flex-row gap-8 items-center shadow-sm">
+                <div class="md:w-1/3 flex justify-center">
+                    <i class="fa-solid fa-file-excel text-8xl text-indigo-300 drop-shadow-sm"></i>
+                </div>
+                <div class="md:w-2/3">
+                    <h3 class="text-2xl font-bold text-indigo-800 mb-4">El Peligro del "Mega-Excel"</h3>
+                    <p class="text-lg text-indigo-900 font-medium leading-relaxed mb-4">
+                        Imaginen por un segundo que Netflix guardara su información en una tabla gigante y plana. Cada vez que tú vieras un episodio de *Stranger Things*, ¡tendrían que volver a escribir tu nombre completo, tu email, los datos de tu tarjeta de crédito, el nombre de la serie, el director y el género!
+                    </p>
+                    <p class="text-lg text-indigo-900 font-medium leading-relaxed">
+                        Ustedes ya saben cómo solucionar esto: <strong>¡Normalizar!</strong> Mediante las Formas Normales (1FN, 2FN, 3FN) dividimos esa monstruosidad en entidades limpias (`Usuarios` por un lado, `Contenidos` por otro) y las enlazamos usando Llaves Foráneas (FK) con un diagrama Entidad-Relación (DER).
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-8 bg-white p-6 rounded-2xl border-2 border-dashed border-indigo-200 shadow-sm">
+                <p class="text-xl font-bold text-center text-indigo-700 mb-2">💡 La Verdad sobre el JOIN</p>
+                <p class="text-lg text-gray-700 font-medium text-center">
+                    Destruimos la información monolítica mediante la <strong>Normalización</strong> para no redundar datos en el disco duro. Pero ahora, cuando el gerente quiere ver un reporte entendible por humanos... ¡necesitamos volver a juntarlos de manera temporal en la RAM! <strong>El JOIN es el costurero mágico que vuelve a unir las piezas del rompecabezas.</strong>
+                </p>
+            </div>
+        </section>
+
+        <!-- Momento 0.5: Validación Interactiva ("El Detective de Tablas") -->
+        <section class="content-box bg-slate-50 relative">
+            <h2 class="section-title text-cyan-600 border-cyan-200">
+                <i class="fa-solid fa-magnifying-glass text-cyan-500 bg-cyan-100 p-3 rounded-2xl"></i> Laboratorio 1: El Detective de Información
+            </h2>
+            <p class="text-lg text-slate-700 font-medium mb-8">
+                Piensa en un ticket de compra o una boleta de supermercado. Visualmente la imprimen como un solo rollo de papel continuo, pero lógicamente es una <em>vista (View)</em> final donde convergen instantáneamente datos de <strong>múltiples tablas separadas</strong>. Tu primer trabajo como DBA es mirar un diseño en papel y rastrear la tabla de origen de cada pedacito de dato impreso. Si resuelves esto en tu mente, el código de los JOINs sale prácticamente solo.
+            </p>
+            
+            <div class="flex flex-col md:flex-row gap-10">
+                <!-- Boleta Visual -->
+                <div class="w-full md:w-5/12 mx-auto">
+                    <div class="bg-white p-6 shadow-xl border border-gray-200 transform rotate-1 receipt-bg pb-12 rounded-t-sm" style="clip-path: polygon(0 0, 100% 0, 100% 100%, 95% 98%, 90% 100%, 85% 98%, 80% 100%, 75% 98%, 70% 100%, 65% 98%, 60% 100%, 55% 98%, 50% 100%, 45% 98%, 40% 100%, 35% 98%, 30% 100%, 25% 98%, 20% 100%, 15% 98%, 10% 100%, 5% 98%, 0 100%);">
+                        <div class="border-b-2 border-dashed border-gray-300 pb-4 mb-4 text-center">
+                            <h3 class="font-black text-2xl tracking-widest text-slate-800">AMAZON 2.0</h3>
+                            <p class="font-mono text-sm text-slate-500">BOLETA Electrónica #B-4029</p>
+                        </div>
+                        <div class="space-y-3 font-mono text-sm text-slate-800">
+                            <!-- Sucursal -->
+                            <div class="flex justify-between cursor-pointer p-1.5 rounded hover:bg-cyan-100 hover:text-cyan-900 transition-colors border-2 border-transparent relative group" :class="{'border-cyan-400 bg-cyan-50 shadow-sm': idSeleccionado === 'sucursal'}" @click="seleccionarDato('sucursal')">
+                                <span class="font-bold">Sucursal:</span>
+                                <span class="text-right">Mall Plaza Sur <span class="text-xs text-slate-400">(ID: S-05)</span></span>
+                                <div class="absolute -left-3 top-2 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-hand-pointer text-cyan-500 text-xs"></i></div>
+                            </div>
+
+                            <!-- Vendedor / Fecha -->
+                            <div class="flex flex-col cursor-pointer p-1.5 rounded hover:bg-cyan-100 hover:text-cyan-900 transition-colors border-2 border-transparent relative group" :class="{'border-cyan-400 bg-cyan-50 shadow-sm': idSeleccionado === 'fecha'}" @click="seleccionarDato('fecha')">
+                                <div class="flex justify-between w-full"><span class="font-bold">Emisión:</span><span class="text-right">03/Abr/2026 14:32</span></div>
+                                <div class="flex justify-between w-full text-slate-500"><span>Cajero:</span><span>Pedro_Martinez</span></div>
+                                <div class="absolute -left-3 top-2 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-hand-pointer text-cyan-500 text-xs"></i></div>
+                            </div>
+                            
+                            <!-- Cliente -->
+                            <div class="flex justify-between cursor-pointer p-1.5 rounded hover:bg-cyan-100 hover:text-cyan-900 transition-colors border-2 border-transparent border-t-2 border-dashed border-gray-300 pt-3 relative group" :class="{'border-cyan-400 bg-cyan-50 shadow-sm': idSeleccionado === 'cliente'}" @click="seleccionarDato('cliente')">
+                                <span class="font-bold">Cliente:</span>
+                                <span class="text-right">Luisa Rojas <span class="text-xs text-slate-400">(RUT: 12.X)</span></span>
+                                <div class="absolute -left-3 top-4 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-hand-pointer text-cyan-500 text-xs"></i></div>
+                            </div>
+                            
+                            <!-- Detalle -->
+                            <div class="border-t-2 border-b-2 border-dashed border-gray-300 py-3 my-3">
+                                <div class="flex justify-between font-bold text-xs mb-2 text-slate-400 uppercase tracking-widest"><span>Cant. Artícu.</span><span>Subtotal</span></div>
+                                
+                                <div class="flex flex-col mb-3">
+                                    <div class="flex justify-between cursor-pointer p-1.5 rounded hover:bg-cyan-100 transition-colors border-2 border-transparent relative group text-base" :class="{'border-cyan-400 bg-cyan-50': idSeleccionado === 'producto1'}" @click="seleccionarDato('producto1')">
+                                        <span>1x Play 5 Pro</span><span class="font-medium">$800.000</span>
+                                        <div class="absolute -left-3 top-2 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-hand-pointer text-cyan-500 text-xs"></i></div>
+                                    </div>
+                                    <div class="text-xs text-slate-500 italic ml-4 mt-1 p-1 rounded cursor-pointer hover:bg-fuchsia-100 hover:text-fuchsia-900 transition-colors inline-block w-fit" :class="{'bg-fuchsia-200 text-fuchsia-800 font-bold': idSeleccionado === 'categoria'}" @click.stop="seleccionarDato('categoria')">
+                                        ↳ Cat: Consolas & Videojuegos
+                                    </div>
+                                </div>
+                                
+                                <div class="flex flex-col">
+                                    <div class="flex justify-between cursor-pointer p-1.5 rounded hover:bg-cyan-100 transition-colors border-2 border-transparent relative group text-base" :class="{'border-cyan-400 bg-cyan-50': idSeleccionado === 'producto2'}" @click="seleccionarDato('producto2')">
+                                        <span>2x Mando DualSense</span><span class="font-medium">$150.000</span>
+                                        <div class="absolute -left-3 top-2 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-hand-pointer text-cyan-500 text-xs"></i></div>
+                                    </div>
+                                    <div class="text-xs text-slate-500 italic ml-4 mt-1">↳ Cat: Accesorios Gaming</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Promoción -->
+                            <div class="flex justify-between cursor-pointer p-1.5 rounded hover:bg-rose-100 hover:text-rose-900 text-rose-600 transition-colors border-2 border-transparent relative group font-bold" :class="{'border-rose-400 bg-rose-50 shadow-sm': idSeleccionado === 'promocion'}" @click="seleccionarDato('promocion')">
+                                <span>Desc. "CyberDay" (-5%):</span>
+                                <span class="text-right">-$47.500</span>
+                                <div class="absolute -left-3 top-2 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-hand-pointer text-rose-500 text-xs"></i></div>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t-2 border-slate-800 flex justify-between font-black text-2xl">
+                            <span>TOTAL:</span><span>$902.500</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel de Decisión -->
+                <div class="w-full md:w-7/12 flex flex-col justify-center">
+                    <p class="font-bold text-xl text-cyan-800 mb-6 bg-white p-4 rounded-xl border border-cyan-200 shadow-sm">
+                        <i class="fa-solid fa-hand-pointer text-cyan-500 mr-2"></i> 
+                        <span v-if="!idSeleccionado">¡Haz clic en un dato de la boleta de la izquierda para comenzar!</span>
+                        <span v-else>El dato resaltado en la boleta, ¿en cuál de estas tablas reales del DER debe estar modelado y por qué?</span>
+                    </p>
+
+                    <transition name="fade" mode="out-in">
+                        <div v-if="idSeleccionado" :key="idSeleccionado" class="space-y-4">
+                            <button v-for="(tabla, i) in opcionesTablaDetective" :key="i"
+                                    @click="comprobarDetective(tabla.id)"
+                                    class="w-full text-left p-4 rounded-xl font-bold border-2 shadow-sm transition-all flex items-center gap-4"
+                                    :class="getClaseBtnDetective(tabla.id)">
+                                <i class="fa-solid text-2xl" :class="tabla.icono"></i>
+                                <div>
+                                    <span class="block text-lg">{{ tabla.nombre }}</span>
+                                    <span class="block text-sm font-normal mt-1 opacity-80 font-mono">{{ tabla.columnas }}</span>
+                                </div>
+                            </button>
+                        </div>
+                    </transition>
+
+                    <!-- Feedback -->
+                    <div v-if="feedbackDetective" class="mt-6 p-4 rounded-xl font-bold flex items-start gap-3"
+                         :class="detectiveEsCorrecto ? 'bg-emerald-100/80 text-emerald-800 border-l-4 border-emerald-500' : 'bg-rose-100/80 text-rose-800 border-l-4 border-rose-500 shake'">
+                        <i class="fa-solid mt-1 text-xl" :class="detectiveEsCorrecto ? 'fa-circle-check text-emerald-500' : 'fa-circle-xmark text-rose-500'"></i>
+                        <span class="leading-relaxed" v-html="feedbackDetective"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-12 bg-white/60 p-6 rounded-2xl border border-slate-200 shadow-sm text-center">
+                <p class="font-bold text-slate-700 mb-2">⭐ Meta-reflexión sobre Cardinalidad (1:1, 1:N, N:M)</p>
+                <p class="text-slate-600 font-medium">¿Te diste cuenta? Un usuario tiene <strong>muchas</strong> compras (1:N), pero un Ticket tiene <strong>muchos</strong> productos y un Producto está en <strong>muchos</strong> Tickets (N:M). Para armar esa boleta, SQL tuvo que hacer un <code>JOIN</code> gigante usando llaves foráneas para cruzar tres entidades separadas en el DER gracias a una tabla "<em>Detalle de Compra</em>".</p>
+            </div>
+        </section>
+
+
+        <!-- Momento 1: Semántica -->
+        <section class="content-box">
+            <h2 class="section-title text-emerald-600 border-emerald-200">
+                <i class="fa-solid fa-brain text-emerald-500 bg-emerald-100 p-3 rounded-2xl"></i> Momento 1: Semántica de nuestra Base de Datos
+            </h2>
+            <div class="space-y-6">
+                <p class="text-xl leading-relaxed font-medium text-gray-700">
+                    Sabiendo esto, analicemos nuestro caso oficial de hoy (tipo Netflix). Tenemos 3 "islas" de información en nuestra base de datos (`bd_emeplo`). 
+                    Dos tablas son entidades fuertes (Maestras), y la tercera es la tabla "Puente" (Asociativa) que resuelve la relación N:M: Un usuario ve muchas películas, y una película es vista por muchos usuarios.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                <!-- Tabla Usuarios -->
+                <div class="bg-blue-50 border border-blue-200 rounded-2xl overflow-hidden shadow-sm relative">
+                    <div class="absolute -right-2 top-2 rotate-12 bg-yellow-400 text-yellow-900 text-xs font-black px-2 py-1 rounded shadow-md z-20">R: 1</div>
+                    <div class="bg-blue-600 text-white font-bold p-3 text-center"><i class="fa-solid fa-users mr-2"></i>USUARIOS (PK)</div>
+                    <table class="w-full text-sm font-mono text-center relative z-10 bg-white">
+                        <thead class="bg-blue-100 text-blue-800"><tr><th>id_usuario</th><th>nombre</th></tr></thead>
+                        <tbody>
+                            <tr class="border-b"><td class="py-2 text-blue-600 font-bold"><i class="fa-solid fa-key text-yellow-500 mr-1 text-xs"></i>1</td><td>ana torres</td></tr>
+                            <tr class="border-b"><td class="py-2 text-blue-600 font-bold"><i class="fa-solid fa-key text-yellow-500 mr-1 text-xs"></i>2</td><td>luis rojas</td></tr>
+                            <tr class="border-b"><td class="py-2 text-blue-600 font-bold"><i class="fa-solid fa-key text-yellow-500 mr-1 text-xs"></i>3</td><td>mika tanaka</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Tabla Visualizaciones (Puente) -->
+                <div class="bg-purple-50 border border-purple-200 rounded-2xl overflow-hidden shadow-sm relative transform scale-105 z-10 border-4 border-purple-400">
+                    <div class="absolute -right-2 top-2 rotate-12 bg-yellow-400 text-yellow-900 text-xs font-black px-2 py-1 rounded shadow-md z-20">R: N</div>
+                    <div class="bg-purple-600 text-white font-bold p-3 text-center"><i class="fa-solid fa-bridge mr-2"></i>VISUALIZACIONES (Puente)</div>
+                    <table class="w-full text-sm font-mono text-center bg-white relative z-10">
+                        <thead class="bg-purple-100 text-purple-800"><tr><th>id_vis</th><th class="border-x border-purple-200">id_usuario (FK)</th><th>id_contenido (FK)</th></tr></thead>
+                        <tbody>
+                            <tr class="border-b bg-yellow-100"><td class="py-2">101</td><td class="font-bold text-blue-600 border-x border-purple-100">1</td><td class="font-bold text-rose-600">3</td></tr>
+                            <tr class="border-b"><td class="py-2">102</td><td class="font-bold text-blue-600 border-x border-purple-100">2</td><td class="font-bold text-rose-600">1</td></tr>
+                            <tr class="border-b"><td class="py-2">103</td><td class="font-bold text-blue-600 border-x border-purple-100">1</td><td class="font-bold text-rose-600">1</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Tabla Contenidos -->
+                <div class="bg-rose-50 border border-rose-200 rounded-2xl overflow-hidden shadow-sm relative">
+                    <div class="absolute -right-2 top-2 rotate-12 bg-yellow-400 text-yellow-900 text-xs font-black px-2 py-1 rounded shadow-md z-20">R: 1</div>
+                    <div class="bg-rose-600 text-white font-bold p-3 text-center"><i class="fa-solid fa-film mr-2"></i>CONTENIDOS (PK)</div>
+                    <table class="w-full text-sm font-mono text-center bg-white relative z-10">
+                        <thead class="bg-rose-100 text-rose-800"><tr><th>id_contenido</th><th>titulo</th></tr></thead>
+                        <tbody>
+                            <tr class="border-b"><td class="py-2 text-rose-600 font-bold"><i class="fa-solid fa-key text-yellow-500 mr-1 text-xs"></i>1</td><td>Attack on Titan</td></tr>
+                            <tr class="border-b"><td class="py-2 text-rose-600 font-bold"><i class="fa-solid fa-key text-yellow-500 mr-1 text-xs"></i>2</td><td>Breaking Bad</td></tr>
+                            <tr class="border-b"><td class="py-2 text-rose-600 font-bold"><i class="fa-solid fa-key text-yellow-500 mr-1 text-xs"></i>3</td><td>Demon Slayer</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-emerald-50 p-6 rounded-2xl flex flex-col items-center justify-center border-2 border-emerald-200 mt-10">
+                <p class="font-bold text-emerald-800 text-lg mb-3">🕵️ Traducción Humana: Observa la fila amarrilla de la tabla puente (101). En lenguaje natural, ¿qué está uniendo?</p>
+                <div class="flex flex-wrap justify-center gap-3">
+                    <span v-for="(opt, idx) in ['El usuario 1 vio a Ana Torres', 'Attack on Titan duró 3 horas', 'Ana Torres vio Demon Slayer']" 
+                          :key="idx"
+                          class="px-4 py-2 rounded-lg border font-bold cursor-pointer transition-all"
+                          :class="getClaseTraduccion(idx)"
+                          @click="showTraduccionMsg(idx === 2 ? 'bien' : 'mal', idx)">
+                        {{ opt }}
+                    </span>
+                </div>
+                <p v-if="traduccionMsg" class="mt-4 font-bold p-3 rounded-lg" :class="traduccionCorrecta ? 'bg-emerald-200 text-emerald-800' : 'bg-red-200 text-red-800'">
+                    <i class="fa-solid mr-2" :class="traduccionCorrecta ? 'fa-check' : 'fa-xmark'"></i> {{ traduccionMsg }}
+                </p>
+            </div>
+        </section>
+
+        <!-- Momento 2: Construcción Progresiva -->
+        <section class="content-box">
+            <h2 class="section-title text-blue-600 border-blue-200">
+                <i class="fa-solid fa-layer-group text-blue-500 bg-blue-100 p-3 rounded-2xl"></i> Momento 2: Construyendo la Query paso a paso
+            </h2>
+            <p class="text-lg text-gray-700 font-medium mb-6">
+                Cuando quieras hacer un JOIN de 3 o más tablas partiendo de tu DER, NUNCA lo escribas todo de una vez. Se construye progresivamente, parándonos visualmente en la tabla central (N) y "viajando" hacia las maestras (1).
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Paso 1 -->
+                <div class="bg-slate-50 border border-slate-200 p-6 rounded-2xl shadow-sm">
+                    <h3 class="font-bold text-lg text-slate-700 mb-2">1. La base y el Alias</h3>
+                    <p class="text-sm text-slate-500 mb-4">Primero nombramos la tabla puente y le damos un "alias" o apodo cortito (`v`) para no escribir la palabra gigante a cada rato.</p>
+                    <pre class="!m-0"><code class="language-sql">SELECT *
+FROM visualizaciones v;</code></pre>
+                </div>
+                <!-- Paso 2 -->
+                <div class="bg-blue-50 border border-blue-200 p-6 rounded-2xl shadow-sm">
+                    <h3 class="font-bold text-lg text-blue-700 mb-2">2. El Primer Puente (Hacia Usuarios)</h3>
+                    <p class="text-sm text-blue-600 mb-4">Acoplamos la maestra <code>usuarios u</code>. El <code>ON</code> es simplemente la declaración de igualdad entre la Foránea y la Primaria.</p>
+                    <pre class="!m-0"><code class="language-sql">SELECT *
+FROM visualizaciones v
+JOIN usuarios u 
+  ON v.id_usuario = u.id_usuario;</code></pre>
+                </div>
+                <!-- Paso 3 -->
+                <div class="bg-purple-50 border border-purple-200 p-6 rounded-2xl shadow-sm md:col-span-2">
+                    <h3 class="font-bold text-lg text-purple-700 mb-2">3. El Segundo Puente (Hacia Contenidos)</h3>
+                    <p class="text-sm text-purple-600 mb-4">Finalizamos el diseño. Sutilmente dejamos de usar el arterisco (`*`) y elegimos campos legibles gracias a los alias.</p>
+                    <pre class="!m-0"><code class="language-sql">SELECT u.nombre, c.titulo, v.progreso
+FROM visualizaciones v
+JOIN usuarios u ON v.id_usuario = u.id_usuario
+JOIN contenidos c ON v.id_contenido = c.id_contenido;</code></pre>
+                </div>
+            </div>
+            
+            <div class="bg-yellow-50 p-6 rounded-2xl border border-yellow-200 mt-8 shadow-sm">
+                <div class="flex items-center gap-3 mb-6">
+                    <i class="fa-solid fa-lightbulb text-3xl text-yellow-500"></i>
+                    <strong class="text-yellow-800 text-xl">Mitos Comunes: Verdadero o Falso</strong>
+                </div>
+                
+                <div class="space-y-6">
+                    <!-- Pregunta 1 -->
+                    <div class="bg-white p-5 rounded-xl border border-yellow-100 shadow-sm relative overflow-hidden">
+                        <div class="absolute right-0 top-0 text-7xl opacity-5"><i class="fa-solid fa-question"></i></div>
+                        <p class="text-gray-800 font-medium mb-4 italic text-lg relative z-10">"Al hacer este SELECT cruzado, mostramos una sábana gigante de datos. Esto significa que la tabla en el disco duro se fusionó físicamente y <strong>rompimos nuestra Normalización</strong>."</p>
+                        
+                        <div class="flex gap-3 mb-3 relative z-10">
+                            <button @click="responderTF(0, true)" class="px-6 py-2 rounded-full font-bold border-2 transition-colors" :class="getTFClass(0, true)">Verdadero</button>
+                            <button @click="responderTF(0, false)" class="px-6 py-2 rounded-full font-bold border-2 transition-colors" :class="getTFClass(0, false)">Falso</button>
+                        </div>
+                        
+                        <div v-if="tf_respuestas[0] !== null" class="p-4 rounded-lg font-medium text-sm border-l-4 mt-3" :class="tf_respuestas[0] === tf_correctas[0] ? 'bg-emerald-50 text-emerald-800 border-emerald-500' : 'bg-rose-50 text-rose-800 border-rose-500 shake'">
+                            <span v-if="tf_respuestas[0] === tf_correctas[0]"><i class="fa-solid fa-check-circle mr-1"></i> ¡Correcto!</span>
+                            <span v-else><i class="fa-solid fa-triangle-exclamation mr-1"></i> ¡Cuidado!</span>
+                            {{ tf_feedbacks[0] }}
+                        </div>
+                    </div>
+
+                    <!-- Pregunta 2 -->
+                    <div class="bg-white p-5 rounded-xl border border-yellow-100 shadow-sm relative overflow-hidden">
+                        <div class="absolute right-0 top-0 text-7xl opacity-5"><i class="fa-solid fa-question"></i></div>
+                        <p class="text-gray-800 font-medium mb-4 italic text-lg relative z-10">"Si mi tabla central 'visualizaciones' tenía originalmente 42 filas. El resultado de hacerle INNER JOIN conectándola hacia Usuarios y luego hacia Contenidos... <strong>tendrá exactamente 42 filas finales.</strong>"</p>
+                        
+                        <div class="flex gap-3 mb-3 relative z-10">
+                            <button @click="responderTF(1, true)" class="px-6 py-2 rounded-full font-bold border-2 transition-colors" :class="getTFClass(1, true)">Verdadero</button>
+                            <button @click="responderTF(1, false)" class="px-6 py-2 rounded-full font-bold border-2 transition-colors" :class="getTFClass(1, false)">Falso</button>
+                        </div>
+                        
+                        <div v-if="tf_respuestas[1] !== null" class="p-4 rounded-lg font-medium text-sm border-l-4 mt-3" :class="tf_respuestas[1] === tf_correctas[1] ? 'bg-emerald-50 text-emerald-800 border-emerald-500' : 'bg-rose-50 text-rose-800 border-rose-500 shake'">
+                            <span v-if="tf_respuestas[1] === tf_correctas[1]"><i class="fa-solid fa-check-circle mr-1"></i> ¡Diste en el clavo!</span>
+                            <span v-else><i class="fa-solid fa-triangle-exclamation mr-1"></i> ¡Atención con este mito!</span>
+                            {{ tf_feedbacks[1] }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Momento 3: El Valle de los Errores -->
+        <section class="content-box">
+            <h2 class="section-title text-rose-600 border-rose-200">
+                <i class="fa-solid fa-bug text-rose-500 bg-rose-100 p-3 rounded-2xl"></i> Momento 3: El Valle de los Errores
+            </h2>
+            <p class="text-lg text-gray-700 font-medium mb-8">
+                El motor relacional hará <em>literalmente</em> lo que tú le digas, incluso si eso significa arruinar el servidor o entregar métricas falsas que quiebren la compañía. Analiza estos 2 desastres muy comunes:
+            </p>
+
+            <div class="space-y-8">
+                <div class="flex flex-col md:flex-row gap-6 bg-rose-50 p-6 rounded-2xl border border-rose-200 shadow-sm relative overflow-hidden">
+                    <div class="absolute -right-8 -bottom-8 opacity-10"><i class="fa-solid fa-bomb text-9xl text-rose-900"></i></div>
+                    <div class="w-full md:w-1/2 relative z-10">
+                        <strong class="text-rose-800 text-xl flex items-center mb-2"><i class="fa-solid fa-triangle-exclamation mr-2 text-rose-600"></i> ERROR LÓGICO: Claves Destruidas</strong>
+                        <p class="text-rose-700 font-medium text-sm mb-4">Un estudiante escribió mal la condición del ON, cruzando la Edad o el ID erróneo.</p>
+                        <pre class="!p-4 !m-0 bg-slate-900"><code class="language-sql text-sm">SELECT u.nombre, v.progreso
+FROM usuarios u
+JOIN visualizaciones v 
+  ON u.id_usuario = v.id_contenido; -- ¡AUCH!</code></pre>
+                    </div>
+                    <div class="w-full md:w-1/2 flex items-center relative z-10 bg-white p-4 rounded-xl border border-rose-100">
+                        <p class="text-gray-700 font-medium leading-relaxed"><strong>Consecuencia Práctica:</strong> SQL no dará error (¡ambos son solo números TYPE NUMBER de Oracle!). Pero unirá al "usuario 5" con "la película 5". Generarás un reporte donde un joven compró cosas que no tienen sentido solo porque la ID del usuario coincidió mágicamente con la PK que no era.</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-6 bg-orange-50 p-6 rounded-2xl border border-orange-200 shadow-sm relative overflow-hidden">
+                    <div class="absolute -right-8 -bottom-8 opacity-10"><i class="fa-solid fa-explosion text-9xl text-orange-900"></i></div>
+                    <div class="w-full md:w-1/2 relative z-10">
+                        <strong class="text-orange-800 text-xl flex items-center mb-2"><i class="fa-solid fa-radiation mr-2 text-orange-600"></i> ERROR FATAL: El Producto Cartesiano</strong>
+                        <p class="text-orange-700 font-medium text-sm mb-4">Un estudiante olvidó escribir la condición matemática `ON` que acopla las entidades.</p>
+                        <pre class="!p-4 !m-0 bg-slate-900"><code class="language-sql text-sm">SELECT u.nombre, c.titulo
+FROM usuarios u
+JOIN contenidos c; -- !FALTA EL ON!</code></pre>
+                    </div>
+                    <div class="w-full md:w-1/2 flex items-center relative z-10 bg-white p-4 rounded-xl border border-orange-100">
+                        <p class="text-gray-700 font-medium leading-relaxed"><strong>Consecuencia Operativa:</strong> Al no tener una llave (PK=FK) para guiarse, la Base de Datos asume que quieres cruzar <em>TODOS contra TODOS</em> indiscriminadamente.<br><br>Si tu web tiene 10.000 usuarios y 50.000 películas... el resultado generará <strong>500 millones de filas</strong> inservibles (10.000 * 50.000) colapsando la CPU, llenando la memoria e interrumpiendo las compras reales del e-commerce.</p>
+                    </div>
+                </div>
+
+                <!-- Acordeón Meme: Producto Cartesiano -->
+                <details class="group bg-white rounded-2xl border-2 border-orange-200 shadow-sm overflow-hidden transform transition-all -mt-4 relative z-20 mx-4">
+                    <summary class="flex justify-between items-center cursor-pointer p-4 font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 transition-colors">
+                        <span class="flex items-center gap-3"><i class="fa-solid fa-masks-theater text-xl"></i> Ver Ejemplo Meme: ¿Qué rayos es "Todos contra Todos"?</span>
+                        <span class="transition duration-300 group-open:rotate-180"><i class="fa-solid fa-chevron-down"></i></span>
+                    </summary>
+                    <div class="p-6 text-sm text-gray-700 flex flex-col md:flex-row gap-8 items-center bg-orange-50/30">
+                        <div class="w-full md:w-1/3 space-y-3">
+                            <div class="bg-blue-50 p-3 rounded-xl border border-blue-200 text-center shadow-inner">
+                                <h4 class="font-bold text-blue-800 mb-2 border-b border-blue-200 pb-1">🎤 Tabla ARTISTAS</h4>
+                                <ul class="font-mono text-blue-700 font-bold">
+                                    <li>1. Shakira</li>
+                                    <li>2. Bad Bunny</li>
+                                </ul>
+                            </div>
+                            <div class="text-center text-orange-500 font-black text-2xl drop-shadow"><i class="fa-solid fa-xmark"></i></div>
+                            <div class="bg-green-50 p-3 rounded-xl border border-green-200 text-center shadow-inner">
+                                <h4 class="font-bold text-green-800 mb-2 border-b border-green-200 pb-1">🌭 Tabla COMIDAS</h4>
+                                <ul class="font-mono text-green-700 font-bold">
+                                    <li>A. Completo</li>
+                                    <li>B. Empanada</li>
+                                    <li>C. Sopaipilla</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-2/3">
+                            <p class="mb-4 text-base">Si le dices a la BD: <code class="bg-gray-100 px-2 py-1 rounded border">SELECT * FROM artistas JOIN comidas;</code> <strong>¡Y OLVIDAS EL ON!</strong></p>
+                            <p class="mb-4 font-medium text-slate-600">SQL asume que quieres emparejarlos absolutamente todos a la fuerza matemáticamente (2 artistas × 3 comidas = <strong>6 filas</strong>). El servidor no discriminará y te devolverá este monstruo que no respeta la realidad:</p>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs bg-slate-900 text-orange-300 p-5 rounded-2xl border-l-4 border-orange-500 shadow-xl">
+                                <div class="flex items-center gap-2"><i class="fa-solid fa-bolt text-yellow-400"></i> Shakira + Completo</div>
+                                <div class="flex items-center gap-2"><i class="fa-solid fa-bolt text-yellow-400"></i> Shakira + Empanada</div>
+                                <div class="flex items-center gap-2"><i class="fa-solid fa-bolt text-yellow-400"></i> Shakira + Sopaipilla</div>
+                                <div class="flex items-center gap-2"><i class="fa-solid fa-bolt text-yellow-400"></i> Bad Bunny + Completo</div>
+                                <div class="flex items-center gap-2"><i class="fa-solid fa-bolt text-yellow-400"></i> Bad Bunny + Empanada</div>
+                                <div class="flex items-center gap-2"><i class="fa-solid fa-bolt text-yellow-400"></i> Bad Bunny + Sopaipilla</div>
+                            </div>
+                            
+                            <p class="mt-5 font-bold text-orange-900 bg-orange-200/50 p-4 rounded-xl border border-orange-300 flex items-start gap-3">
+                                <i class="fa-solid fa-triangle-exclamation text-xl mt-0.5 text-orange-600"></i> 
+                                <span><strong>Conclusión Peligrosa:</strong> Si tuvieras 100 artistas y 1.000 comidas, SQL intentaría imprimir en pantalla <span class="bg-white px-2 py-0.5 rounded border border-orange-200">100.000</span> combinaciones falsas donde todos comen de todo, matando la memoria RAM de tu servidor en el proceso.</span>
+                            </p>
+                            
+                            <div class="mt-4 border-2 border-dashed border-rose-500/50 p-4 rounded-xl bg-rose-50 shadow-inner">
+                                <p class="text-sm text-rose-800 font-bold mb-3"><i class="fa-solid fa-skull text-xl mr-1"></i> Desafío de Máquinas: Congela tu Propio Computador</p>
+                                <p class="text-sm text-slate-700 leading-relaxed font-medium mb-4">No necesitas descargar una tabla con 10 millones de filas para asfixiarte. Usaremos el poder matemático contra ti. Copia el siguiente código y ejecútalo en tu cliente SQL (Developer, Workbench, MySQL). Se cruzará una pequeñísima tabla de 42 filas consigo misma 5 veces sin usar ON (<span class="font-bold text-rose-600">42</span> x <span class="font-bold text-rose-600">42</span> x <span class="font-bold text-rose-600">42</span> x <span class="font-bold text-rose-600">42</span> x <span class="font-bold text-rose-600">42</span>).</p>
+                                
+                                <div class="bg-slate-900 rounded-lg p-0 overflow-hidden relative border border-slate-700 shadow-md">
+                                    <pre class="!m-0 text-sm"><code class="language-sql text-rose-400">-- LA BOMBA CARTESIANA: Generará 130 MILLONES de filas de la nada.
+SELECT count(*) 
+FROM visualizaciones v1, 
+     visualizaciones v2, 
+     visualizaciones v3, 
+     visualizaciones v4, 
+     visualizaciones v5;</code></pre>
+                                </div>
+                                
+                                <p class="text-xs text-rose-600/80 font-bold italic mt-3 bg-rose-100 p-2 rounded">
+                                    * Precaución: Observa el administrador de tareas de tu PC (RAM y CPU). El servidor intentará imprimir temporalmente 130.691.232 combinaciones colapsando sus recursos. Te verás obligado a detener la consulta a la fuerza.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <!-- Momento 4: Laboratorio (Vue Component) -->
+        <section class="content-box bg-slate-900 relative">
+            <h2 class="section-title text-cyan-400 border-cyan-800">
+                <i class="fa-solid fa-gamepad text-cyan-300 bg-slate-800 p-3 rounded-2xl shadow-inner"></i> Momento 4: Laboratorio Ejecutivo Activo
+            </h2>
+            <p class="text-slate-300 font-medium text-lg leading-relaxed mb-10">
+                Has sido promovido a DBA Senior. No tipearás; diseñarás la arquitectura visual de las consultas. Deberás resolver 3 correos críticos del Directorio de Netflix tomando las decisiones lógicas correctas.
+            </p>
+
+            <div class="flex gap-4 border-b-2 border-slate-700 mb-8 overflow-x-auto pb-2">
+                <button v-for="(reto, idx) in retos" :key="idx" 
+                        class="px-6 py-3 font-bold rounded-t-xl whitespace-nowrap transition-colors"
+                        :class="idx === activeIdx ? 'bg-cyan-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'"
+                        @click="setActiveReto(idx)">
+                    Reto {{ idx + 1 }}: {{ reto.title }}
+                </button>
+            </div>
+
+            <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl min-h-[400px]">
+                <h3 class="text-3xl font-bold text-white mb-3 tracking-wide">{{ currentReto.title }}</h3>
+                <p class="text-cyan-200 text-lg mb-8 bg-slate-900/50 p-4 rounded-xl border-l-4 border-cyan-500 font-medium"><i class="fa-regular fa-envelope mr-2 text-cyan-400"></i>" {{ currentReto.desc }} "</p>
+
+                <!-- Tarea: Ensamblador Lógico -->
+                <div class="space-y-6">
+                    <p class="text-slate-400 font-bold uppercase tracking-wider text-sm"><i class="fa-solid fa-hammer mr-2"></i> Ensambla los Nodos Relacionales (Asigna las llaves correctas):</p>
+                    
+                    <!-- Diagrama de Tablas -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 relative">
+                        <div class="bg-blue-900/50 border-2 border-blue-500/50 rounded-xl p-4 shadow-inner transform transition-transform hover:scale-105">
+                            <h4 class="font-black text-blue-300 mb-2 border-b border-blue-500/30 pb-1 flex justify-between">USUARIOS <span class="bg-blue-800 px-2 rounded text-xs opacity-75">Alias: u</span></h4>
+                            <ul class="text-sm font-mono text-blue-100/70 space-y-1">
+                                <li class="text-blue-200"><i class="fa-solid fa-key text-yellow-500 text-xs mr-1 opacity-80"></i>u.id_usuario</li>
+                                <li>u.nombre</li>
+                                <li>u.pais</li>
+                            </ul>
+                        </div>
+                        <div class="bg-fuchsia-900/50 border-2 border-fuchsia-500/50 rounded-xl p-4 shadow-inner transform transition-transform hover:scale-105">
+                            <h4 class="font-black text-fuchsia-300 mb-2 border-b border-fuchsia-500/30 pb-1 flex justify-between">VISUALIZACIONES <span class="bg-fuchsia-800 px-2 rounded text-xs opacity-75">Alias: v</span></h4>
+                            <ul class="text-sm font-mono text-fuchsia-100/70 space-y-1">
+                                <li class="text-fuchsia-200"><i class="fa-solid fa-key text-yellow-500 text-xs mr-1 opacity-80"></i>v.id_visualizacion</li>
+                                <li><i class="fa-solid fa-link text-slate-400 text-xs mr-1"></i>v.id_usuario</li>
+                                <li><i class="fa-solid fa-link text-slate-400 text-xs mr-1"></i>v.id_contenido</li>
+                                <li>v.progreso</li>
+                            </ul>
+                        </div>
+                        <div class="bg-teal-900/50 border-2 border-teal-500/50 rounded-xl p-4 shadow-inner transform transition-transform hover:scale-105">
+                            <h4 class="font-black text-teal-300 mb-2 border-b border-teal-500/30 pb-1 flex justify-between">CONTENIDOS <span class="bg-teal-800 px-2 rounded text-xs opacity-75">Alias: c</span></h4>
+                            <ul class="text-sm font-mono text-teal-100/70 space-y-1">
+                                <li class="text-teal-200"><i class="fa-solid fa-key text-yellow-500 text-xs mr-1 opacity-80"></i>c.id_contenido</li>
+                                <li>c.titulo</li>
+                                <li>c.genero</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Formulario Constructor de Query -->
+                    <div class="bg-slate-900 p-5 rounded-2xl border border-slate-700 shadow-inner space-y-5">
+                        
+                        <!-- SELECT Fijo -->
+                        <div class="flex items-center gap-4 border-b border-slate-800 pb-4">
+                            <div class="w-1/4 text-right font-mono font-bold text-pink-400 text-lg">SELECT</div>
+                            <div class="w-3/4"><code class="text-white text-lg bg-slate-800 px-3 py-1 rounded shadow-inner">{{ currentReto.selectText }}</code></div>
+                        </div>
+
+                        <!-- Enlace 1 -->
+                        <div class="flex flex-col sm:flex-row items-center gap-4 group">
+                            <div class="w-full sm:w-1/4 sm:text-right font-mono font-bold text-pink-400 transition-colors group-hover:text-pink-300"><i class="fa-solid fa-plug mr-1"></i> JOIN (ON) 1:</div>
+                            <div class="w-full sm:w-3/4 flex items-center gap-2">
+                                <select v-model="link1_a" :disabled="isSimulating" class="w-full bg-slate-800 text-white p-3 rounded-lg border border-slate-600 focus:border-cyan-500 outline-none font-mono text-sm cursor-pointer hover:bg-slate-700 transition">
+                                    <option value="null" disabled>Columna Origen...</option>
+                                    <option v-for="col in globalCols" :value="col">{{col}}</option>
+                                </select>
+                                <span class="text-slate-500 font-bold px-2">=</span>
+                                <select v-model="link1_b" :disabled="isSimulating" class="w-full bg-slate-800 text-white p-3 rounded-lg border border-slate-600 focus:border-cyan-500 outline-none font-mono text-sm cursor-pointer hover:bg-slate-700 transition">
+                                    <option value="null" disabled>Columna Destino...</option>
+                                    <option v-for="col in globalCols" :value="col">{{col}}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Enlace 2 (Opcional) -->
+                        <div v-if="currentReto.req_joins.length > 1" class="flex flex-col sm:flex-row items-center gap-4 border-t border-slate-800/50 pt-4 group">
+                            <div class="w-full sm:w-1/4 sm:text-right font-mono font-bold text-pink-400 transition-colors group-hover:text-pink-300"><i class="fa-solid fa-plug mr-1"></i> JOIN (ON) 2:</div>
+                            <div class="w-full sm:w-3/4 flex items-center gap-2">
+                                <select v-model="link2_a" :disabled="isSimulating" class="w-full bg-slate-800 text-white p-3 rounded-lg border border-slate-600 focus:border-cyan-500 outline-none font-mono text-sm cursor-pointer hover:bg-slate-700 transition">
+                                    <option value="null" disabled>Columna Origen...</option>
+                                    <option v-for="col in globalCols" :value="col">{{col}}</option>
+                                </select>
+                                <span class="text-slate-500 font-bold px-2">=</span>
+                                <select v-model="link2_b" :disabled="isSimulating" class="w-full bg-slate-800 text-white p-3 rounded-lg border border-slate-600 focus:border-cyan-500 outline-none font-mono text-sm cursor-pointer hover:bg-slate-700 transition">
+                                    <option value="null" disabled>Columna Destino...</option>
+                                    <option v-for="col in globalCols" :value="col">{{col}}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Filtro -->
+                        <div v-if="currentReto.req_filter !== 'none'" class="flex flex-col sm:flex-row items-center gap-4 border-t border-slate-800 pt-5 group">
+                            <div class="w-full sm:w-1/4 sm:text-right font-mono font-bold text-pink-400 transition-colors group-hover:text-pink-300"><i class="fa-solid fa-filter mr-1 text-sm"></i> FILTRO:</div>
+                            <div class="w-full sm:w-3/4 flex flex-col sm:flex-row gap-2">
+                                <select v-model="filter_type" :disabled="isSimulating" class="w-full sm:w-1/3 bg-slate-800 text-white p-3 rounded-lg border border-slate-600 focus:border-cyan-500 outline-none font-bold text-sm cursor-pointer hover:bg-slate-700 transition">
+                                    <option value="null" disabled>Mecanismo...</option>
+                                    <option value="WHERE">WHERE</option>
+                                    <option value="HAVING">HAVING</option>
+                                </select>
+                                <select v-model="filter_body" :disabled="isSimulating" class="w-full sm:w-2/3 bg-slate-800 text-yellow-300 p-3 rounded-lg border border-slate-600 focus:border-cyan-500 outline-none font-mono text-sm cursor-pointer hover:bg-slate-700 transition">
+                                    <option value="null" disabled>Elige la Condición Aritmética...</option>
+                                    <option v-for="opt in currentReto.filter_options" :value="opt.val">{{opt.label}}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="mt-10 flex flex-col md:flex-row justify-between items-center bg-slate-900/60 p-6 rounded-2xl gap-4 border border-slate-700/50">
+                        <button @click="revelarSolucionConSusto" 
+                                class="text-slate-500 font-bold hover:text-rose-400 transition-colors border-2 border-slate-700 hover:border-rose-400 px-5 py-3 rounded-lg text-sm bg-transparent w-full md:w-auto">
+                            <i class="fa-solid fa-flag text-xs mr-2 relative -top-[1px]"></i> Me Rindo / Revelar Solución
+                        </button>
+                        <button @click="verificarRespuesta" 
+                                class="bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold py-4 px-10 rounded-full shadow-[0_0_15px_rgba(8,145,178,0.5)] hover:shadow-[0_0_25px_rgba(8,145,178,0.7)] hover:from-cyan-500 hover:to-blue-500 transform hover:scale-[1.03] transition-all text-lg tracking-wide focus:outline-none w-full md:w-auto"
+                                :class="{ 'shake border-4 border-rose-500': shakeBtn }">
+                            Ejecutar Query <i class="fa-solid fa-bolt ml-2 text-yellow-300"></i>
+                        </button>
+                    </div>
+
+                    <!-- Simulador del Motor Relacional Visual -->
+                    <div v-if="isSimulating" class="mt-8 p-8 rounded-2xl border-4 bg-slate-900 transition-all duration-500 overflow-hidden relative" :class="animStep === 2 ? (isCorrect ? 'border-emerald-500 shadow-[0_0_40px_rgba(16,185,129,0.4)]' : 'border-rose-500 shadow-[0_0_40px_rgba(244,63,94,0.4)]') : 'border-indigo-500 shadow-2xl'">
+                        <h4 class="text-indigo-300 font-black text-xl mb-6 relative z-10 text-center uppercase tracking-widest" :class="{'animate-pulse': animStep < 2}">
+                            <i class="fa-solid fa-gears mr-2" :class="{'fa-spin': animStep < 2}"></i> 
+                            {{ animStep < 2 ? 'Procesando Motor Relacional...' : (isCorrect ? '¡Fusión Completa!' : 'Colisión de Datos') }}
+                        </h4>
+                        
+                        <div class="flex items-center justify-between text-white font-mono text-xs sm:text-sm relative h-32 w-full max-w-lg mx-auto">
+                            <!-- Entidad Izquierda -->
+                            <div class="absolute bg-blue-600 p-2 sm:p-4 rounded-xl border-2 border-blue-400 shadow-[0_0_15px_rgba(37,99,235,0.6)] text-center transform transition-all duration-1000 flex flex-col items-center justify-center h-20 w-24 sm:h-24 sm:w-28 z-10" :class="animStep >= 1 ? 'left-[50%] -translate-x-1/2 scale-125 opacity-0' : 'left-0 sm:left-[10%] opacity-100'">
+                                <i class="fa-solid fa-table mb-1 text-2xl sm:text-3xl text-blue-200"></i><span class="font-bold">Tabla<br>Maestra</span>
+                            </div>
+                            
+                            <!-- Laser de Union -->
+                            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-0" v-if="animStep === 0">
+                                <i class="fa-solid fa-bolt text-4xl sm:text-5xl text-yellow-500 animate-pulse opacity-50"></i>
+                            </div>
+
+                            <!-- Entidad Derecha -->
+                            <div class="absolute bg-fuchsia-600 p-2 sm:p-4 rounded-xl border-2 border-fuchsia-400 shadow-[0_0_15px_rgba(217,70,239,0.6)] text-center transform transition-all duration-1000 flex flex-col items-center justify-center h-20 w-24 sm:h-24 sm:w-28 z-10" :class="animStep >= 1 ? 'right-[50%] translate-x-1/2 scale-125 opacity-0' : 'right-0 sm:right-[10%] opacity-100'">
+                                <i class="fa-solid fa-table mb-1 text-2xl sm:text-3xl text-fuchsia-200"></i><span class="font-bold">Tabla<br>Puente</span>
+                            </div>
+                            
+                            <!-- Fusión / VISTA RESULTANTE -->
+                            <div v-if="animStep >= 1" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 text-center transition-all duration-500" :class="animStep === 2 ? 'scale-100 opacity-100' : 'scale-50 opacity-0'">
+                                <div v-if="isCorrect" class="animate-bounce-in bg-gradient-to-br from-emerald-400 to-cyan-500 p-4 sm:p-6 rounded-2xl border-4 border-white shadow-[0_0_30px_rgba(52,211,153,0.8)] filter drop-shadow-2xl text-slate-900 border-opacity-90">
+                                    <i class="fa-solid fa-table-cells text-3xl sm:text-5xl mb-1 sm:mb-2 text-white drop-shadow-sm"></i>
+                                    <div class="font-black text-sm sm:text-lg tracking-widest drop-shadow-md text-white uppercase">Nueva<br>Vista</div>
+                                </div>
+                                <div v-else class="text-7xl text-rose-500 drop-shadow-[0_0_20px_rgba(244,63,94,1)]" :class="animStep === 2 ? 'shake' : ''">
+                                    <i class="fa-solid fa-burst"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mensajes de Feedback Originales -->
+                    <transition name="fade">
+                        <div v-if="feedback && !isSimulating" class="mt-6 p-6 rounded-2xl font-bold flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg border-2"
+                             :class="isCorrect ? 'bg-emerald-900/50 text-emerald-300 border-emerald-500' : 'bg-rose-900/50 text-rose-300 border-rose-500'">
+                            <div class="flex items-center text-lg">
+                                <span v-if="isCorrect" class="mr-4 text-3xl drop-shadow-md">🎉</span>
+                                <span v-else class="mr-4 text-3xl drop-shadow-md">❌</span>
+                                <span v-html="feedback" class="leading-relaxed"></span>
+                            </div>
+                            <button v-if="isCorrect && activeIdx < 2" @click="setActiveReto(activeIdx + 1)" class="bg-emerald-500 text-emerald-950 font-black px-6 py-3 rounded-full hover:bg-emerald-400 transition-colors whitespace-nowrap pulse-soft shadow-lg">
+                                Siguiente Misión <i class="fa-solid fa-arrow-right ml-1"></i>
+                            </button>
+                            <span v-if="isCorrect && activeIdx === 2" class="text-emerald-400 font-black px-4 py-2 border-2 border-emerald-400 rounded-full bg-emerald-950/50">💎 LABORATORIO CUMPLIDO</span>
+                        </div>
+                    </transition>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Momento 5: Metacognición y Escabilidad -->
+        <section class="content-box">
+            <h2 class="section-title text-fuchsia-600 border-fuchsia-200">
+                <i class="fa-solid fa-door-open text-fuchsia-500 bg-fuchsia-100 p-3 rounded-2xl"></i> Momento 5: Escalando el Pensamiento
+            </h2>
+            <div class="flex flex-col md:flex-row gap-8 items-center bg-fuchsia-50 p-8 rounded-3xl border-2 border-fuchsia-100 shadow-sm relative overflow-hidden">
+                <div class="absolute -left-6 -top-6 opacity-20"><i class="fa-brands fa-searchengin text-9xl text-fuchsia-400"></i></div>
+                <div class="flex-shrink-0 bg-white p-6 rounded-full shadow-lg relative z-10 border-4 border-fuchsia-100">
+                    <i class="fa-solid fa-ghost text-6xl text-fuchsia-500"></i>
+                </div>
+                <div class="relative z-10">
+                    <h3 class="text-3xl font-bold text-fuchsia-800 mb-4 tracking-tight">El Misterio de la Usuaria Fantasma</h3>
+                    <p class="text-xl text-fuchsia-900 font-medium leading-relaxed mb-4">
+                        Imagina una usuaria VIP que pagó su suscripción pero durante 3 meses, <strong>jamás presionó 'Play' en ninguna serie</strong>. No hay ningún registro de ella en la tabla N:M puente `visualizaciones`.
+                    </p>
+                    <p class="text-xl text-fuchsia-900 font-black bg-white p-5 rounded-2xl border-l-4 border-fuchsia-500 shadow-sm">
+                        Si corremos tu exitoso reporte corporativo con `INNER JOIN`... ¡Esta usuaria desaparecerá del Excel final como si no existiera!
+                    </p>
+                    <p class="text-lg text-fuchsia-800 font-medium leading-relaxed mt-5">
+                        El `INNER JOIN` exige 100% de coincidencias y reciprocidad. Discútelo con clase: ¿Qué tipo de reporte estadístico necesitaría ver el gerente, donde es **obligatorio** mostrar clientes incluso cuando tengan `NULL` o `CERO` compras?<br><br>
+                        <em>Prepárate... para resolver esto usaremos pronto la Fuerza de Gravedad: <strong>El LEFT OUTER JOIN</strong>.</em>
+                    </p>
+                </div>
+            </div>
+        </section>
+        <!-- Momento 6: Desafío Final (Misión Github) -->
+        <section class="content-box bg-slate-50 border-t-4 border-slate-800 rounded-b-none mb-0 relative overflow-hidden">
+            <div class="absolute right-0 top-0 opacity-5 text-9xl"><i class="fa-brands fa-github"></i></div>
+            <h2 class="section-title text-slate-800 border-slate-300 relative z-10">
+                <i class="fa-solid fa-code-commit text-slate-700 bg-slate-200 p-3 rounded-2xl"></i> Misión Final: Tu Propia Base de Datos
+            </h2>
+            <div class="space-y-6 relative z-10">
+                <p class="text-lg text-slate-700 font-medium">
+                    Ya superaste el entrenamiento teórico. Ahora es momento de ensuciarte las manos. A continuación tienes el script oficial usado en la clase de hoy para que puedas montarlo en tu propio cliente de Base de Datos y hacer pruebas reales.
+                </p>
+
+                <!-- Acordeón del Script -->
+                <details class="group bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <summary class="flex justify-between items-center cursor-pointer p-4 font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors">
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-file-code text-indigo-500"></i> Desplegar Script de Ejemplo `bd_emeplo.sql`</span>
+                        <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down"></i></span>
+                    </summary>
+                    <div class="p-0 bg-slate-900 overflow-x-auto max-h-96 custom-scrollbar">
+                        <pre class="!m-0 !bg-transparent text-sm"><code class="language-sql text-slate-300">-- Script Oracle SQL: Entorno Netflix Básico
+DROP TABLE visualizaciones;
+DROP TABLE contenidos;
+DROP TABLE usuarios;
+
+CREATE TABLE usuarios (
+    id_usuario NUMBER PRIMARY KEY,
+    nombre VARCHAR2(50),
+    pais VARCHAR2(50),
+    fecha_registro DATE
+);
+CREATE TABLE contenidos (
+    id_contenido NUMBER PRIMARY KEY,
+    titulo VARCHAR2(100),
+    genero VARCHAR2(50),
+    duracion_min NUMBER,
+    rating NUMBER(3,1)
+);
+CREATE TABLE visualizaciones (
+    id_visualizacion NUMBER PRIMARY KEY,
+    id_usuario NUMBER,
+    id_contenido NUMBER,
+    fecha DATE,
+    progreso NUMBER,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario),
+    FOREIGN KEY (id_contenido) REFERENCES contenidos(id_contenido)
+);
+
+INSERT INTO usuarios VALUES (1, 'ana torres', 'Chile', DATE '2023-01-10');
+INSERT INTO usuarios VALUES (2, 'LUIS ROJAS', 'Chile', DATE '2023-03-22');
+INSERT INTO usuarios VALUES (3, 'mika tanaka', 'Japón', DATE '2022-11-05');
+INSERT INTO usuarios VALUES (4, 'john smith', 'USA', DATE '2023-06-30');
+INSERT INTO usuarios VALUES (5, 'camila perez', 'Chile', DATE '2023-07-15');
+INSERT INTO usuarios VALUES (6, 'diego muñoz', 'Chile', DATE '2023-08-10');
+INSERT INTO usuarios VALUES (7, 'sofia garcia', 'Argentina', DATE '2023-02-18');
+INSERT INTO usuarios VALUES (8, 'li wei', 'China', DATE '2022-12-01');
+INSERT INTO usuarios VALUES (9, 'emma brown', 'UK', DATE '2023-05-05');
+
+INSERT INTO contenidos VALUES (1, 'Attack on Titan', 'Anime', 24, 9.5);
+INSERT INTO contenidos VALUES (2, 'Breaking Bad', 'Drama', 47, 9.7);
+INSERT INTO contenidos VALUES (3, 'Demon Slayer', 'Anime', 23, 8.9);
+INSERT INTO contenidos VALUES (4, 'Stranger Things', 'Sci-Fi', 50, 8.8);
+INSERT INTO contenidos VALUES (5, 'One Piece', 'Anime', 22, 9.0);
+INSERT INTO contenidos VALUES (6, 'Naruto', 'Anime', 23, 8.7);
+INSERT INTO contenidos VALUES (7, 'Dark', 'Sci-Fi', 55, 9.1);
+INSERT INTO contenidos VALUES (8, 'The Office', 'Comedy', 22, 8.9);
+INSERT INTO contenidos VALUES (9, 'Jujutsu Kaisen', 'Anime', 24, 9.2);
+INSERT INTO contenidos VALUES (10, 'Interstellar', 'Sci-Fi', 169, 8.6);
+
+INSERT INTO visualizaciones VALUES (1, 1, 1, DATE '2024-01-01', 100);
+INSERT INTO visualizaciones VALUES (2, 1, 3, DATE '2024-01-02', 50);
+INSERT INTO visualizaciones VALUES (3, 2, 2, DATE '2024-01-03', 100);
+INSERT INTO visualizaciones VALUES (4, 3, 1, DATE '2024-01-04', 80);
+INSERT INTO visualizaciones VALUES (5, 4, 4, DATE '2024-01-05', 100);
+INSERT INTO visualizaciones VALUES (6, 2, 5, DATE '2024-01-06', 30);
+INSERT INTO visualizaciones VALUES (7, 3, 3, DATE '2024-01-07', 100);
+INSERT INTO visualizaciones VALUES (8, 5, 1, DATE '2024-01-08', 100);
+INSERT INTO visualizaciones VALUES (9, 5, 6, DATE '2024-01-09', 40);
+INSERT INTO visualizaciones VALUES (10, 5, 9, DATE '2024-01-10', 100);
+INSERT INTO visualizaciones VALUES (11, 6, 2, DATE '2024-01-08', 60);
+INSERT INTO visualizaciones VALUES (12, 6, 4, DATE '2024-01-09', 100);
+INSERT INTO visualizaciones VALUES (13, 6, 7, DATE '2024-01-10', 20);
+INSERT INTO visualizaciones VALUES (14, 7, 3, DATE '2024-01-08', 100);
+INSERT INTO visualizaciones VALUES (15, 7, 5, DATE '2024-01-09', 80);
+INSERT INTO visualizaciones VALUES (16, 7, 8, DATE '2024-01-10', 100);
+INSERT INTO visualizaciones VALUES (17, 8, 1, DATE '2024-01-08', 30);
+INSERT INTO visualizaciones VALUES (18, 8, 6, DATE '2024-01-09', 100);
+INSERT INTO visualizaciones VALUES (19, 8, 10, DATE '2024-01-10', 50);
+INSERT INTO visualizaciones VALUES (20, 9, 2, DATE '2024-01-08', 100);
+INSERT INTO visualizaciones VALUES (21, 9, 4, DATE '2024-01-09', 90);
+INSERT INTO visualizaciones VALUES (22, 9, 7, DATE '2024-01-10', 100);
+INSERT INTO visualizaciones VALUES (23, 1, 5, DATE '2024-01-11', 70);
+INSERT INTO visualizaciones VALUES (24, 1, 9, DATE '2024-01-12', 100);
+INSERT INTO visualizaciones VALUES (25, 2, 3, DATE '2024-01-11', 40);
+INSERT INTO visualizaciones VALUES (26, 2, 8, DATE '2024-01-12', 100);
+INSERT INTO visualizaciones VALUES (27, 3, 7, DATE '2024-01-11', 60);
+INSERT INTO visualizaciones VALUES (28, 3, 10, DATE '2024-01-12', 100);
+INSERT INTO visualizaciones VALUES (29, 4, 2, DATE '2024-01-11', 100);
+INSERT INTO visualizaciones VALUES (30, 4, 8, DATE '2024-01-12', 50);
+INSERT INTO visualizaciones VALUES (31, 6, 1, DATE '2024-01-13', 15);
+INSERT INTO visualizaciones VALUES (32, 7, 2, DATE '2024-01-13', 100);
+INSERT INTO visualizaciones VALUES (33, 8, 3, DATE '2024-01-13', 75);
+INSERT INTO visualizaciones VALUES (34, 9, 5, DATE '2024-01-13', 20);
+INSERT INTO visualizaciones VALUES (35, 5, 8, DATE '2024-01-14', 100);
+INSERT INTO visualizaciones VALUES (36, 6, 9, DATE '2024-01-14', 95);
+INSERT INTO visualizaciones VALUES (37, 7, 10, DATE '2024-01-14', 100);
+INSERT INTO visualizaciones VALUES (38, 8, 4, DATE '2024-01-14', 60);
+INSERT INTO visualizaciones VALUES (39, 9, 6, DATE '2024-01-14', 100);
+INSERT INTO visualizaciones VALUES (40, 1, 7, DATE '2024-01-15', 85);
+INSERT INTO visualizaciones VALUES (41, 2, 10, DATE '2024-01-15', 100);
+INSERT INTO visualizaciones VALUES (42, 3, 8, DATE '2024-01-15', 30);
+</code></pre>
+                    </div>
+                </details>
+
+                <div class="bg-indigo-50 border-l-4 border-indigo-500 p-8 rounded-r-2xl shadow-sm mt-8 relative">
+                    <h3 class="text-3xl font-black text-indigo-950 mb-5 tracking-tight"><i class="fa-solid fa-user-tie text-indigo-500 mr-2"></i> Reto: En los Zapatos del Cliente</h3>
+                    <p class="text-lg text-indigo-900 mb-5 leading-relaxed font-medium">
+                        Como equipo ya tienen su propio problema modelado (Si no lo tienen, ¡invéntenlo ahora!). Olvídense del código por un segundo y <strong>pónganse en los zapatos del cliente</strong> para definir qué vistas reales darían valor a su negocio.
+                    </p>
+                    <ol class="list-decimal list-outside space-y-4 text-indigo-950 ml-6 text-lg font-medium mb-8">
+                        <li><strong>Plantea el Caso (Comentarios):</strong> Escribe documentado en texto un caso real donde el dueño del negocio necesite ver en pantalla un reporte cruzando al menos 3 de sus tablas. <em>Ej: "La directora del Hospital necesita imprimir un reporte que muestre, por cada Médico, el nombre del Paciente que atendió y la Sala usada esta semana".</em></li>
+                        <li><strong>Dibuja el Mapa:</strong> Antes de teclear, diagrama en tu mente o en papel la ruta de los <code>JOIN</code> que necesitas hacer a través de la tabla transaccional.</li>
+                        <li><strong>Arma 5 Consultas Útiles:</strong> Crea y ejecuta 5 consultas usando tu Base de Datos combinando <code>INNER JOIN</code> con filtrados y agrupaciones que solucionen los misterios empresariales.</li>
+                        <li><strong>El Entregable en GitHub:</strong> Todo tu esfuerzo (El script <code>CREATE</code> o <code>INSERT</code> de tu BD + Tus 5 Consultas y la redacción del caso de uso) guárdalo limpio en un archivo <code class="bg-indigo-200 px-2 py-0.5 rounded text-indigo-800 text-sm">solucion_grupo_X.sql</code>. Súbelo al Repositorio Oficial creando una rama (branch) con sus nombres.</li>
+                    </ol>
+                    <div class="flex">
+                        <a href="https://github.com/hachimaki-dev/Bases_de_datos_Aplicada_2_005VDuocUcPMontt_2026" target="_blank" class="inline-flex items-center gap-3 bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 px-10 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                            <i class="fa-brands fa-github text-2xl"></i> Subir Entregable Oficial
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <app-footer></app-footer>
+
+    <script src="js/components.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    // Detective
+                    idSeleccionado: null,
+                    opcionesTablaDetective: [
+                        { id: 'tabla_cliente', nombre: 'Tabla CLIENTES', icono: 'fa-user-tag text-purple-600', columnas: 'PK_Rut, Nombre, Correo' },
+                        { id: 'tabla_producto', nombre: 'Tabla PRODUCTOS', icono: 'fa-box-open text-orange-600', columnas: 'PK_SKU, Nom_Prod, FK_IdCat, Precio' },
+                        { id: 'tabla_ticket', nombre: 'Tabla TICKET (Maestra-Cabecera)', icono: 'fa-receipt text-blue-600', columnas: 'PK_Boleta, FK_Rut, FK_Sucursal, Fecha_Emision' },
+                        { id: 'tabla_detalle', nombre: 'Tabla DETALLE_COMPRA (Puente-Item)', icono: 'fa-list-ol text-emerald-600', columnas: 'PK_Detalle, FK_Boleta, FK_SKU_Prod, Cantidad' },
+                        { id: 'tabla_sucursal', nombre: 'Tabla SUCURSAL', icono: 'fa-store text-indigo-500', columnas: 'PK_Sucursal, Nombre_Mall, Direccion' },
+                        { id: 'tabla_categoria', nombre: 'Tabla CATEGORIAS_FAMILIAS', icono: 'fa-tags text-fuchsia-600', columnas: 'PK_IdCat, Nombre_Cat, Impuesto_Aplicable' },
+                        { id: 'tabla_promocion', nombre: 'Tabla PROMOCIONES_TEMPORADA', icono: 'fa-percent text-rose-600', columnas: 'PK_Promo, Evento, Porcentaje_Descuento' },
+                    ],
+                    feedbackDetective: '',
+                    detectiveEsCorrecto: false,
+                    respuestasDetective: {
+                        'cliente': { correctId: 'tabla_cliente', msg: '¡Genial! El nombre "Luisa" vive aislado en su fila maestra <code>CLIENTES</code>. En la boleta (que cruzaremos) es invocado mágicamente por su Llave Foránea para no escribir todo 100 veces si Luisa hace 100 compras distintas en el año.'},
+                        'producto1': { correctId: 'tabla_producto', msg: '¡Sólido! El texto descriptivo "Play 5 Pro" nunca se guarda en la boleta. Se guarda como <code>PK_SKU</code> en Detalle de Compra y por JOIN jalamos el nombre desde <code>PRODUCTOS</code>. Facilita actualizar el precio masivamente si cambia.'},
+                        'producto2': { correctId: 'tabla_producto', msg: 'Idéntico al anterior. Lo maravilloso del JOIN relacional es que el ticket puede listar 200 productos distintos si usamos iterativamente la tabla Puente <code>DETALLE_COMPRA</code> apuntando al SKU de producto.'},
+                        'fecha': { correctId: 'tabla_ticket', msg: '¡Excelente! Los datos globales de la transacción temporal como Fecha, Cajero y Total de Impuestos, se albergan una sola vez en la cabecera del <code>TICKET</code> (Relación de 1 a N hacia sus detalles abajo).'},
+                        'sucursal': { correctId: 'tabla_sucursal', msg: '¡Ojo Clínico! Amazon o Falabella tienen cientos de tiendas. "Mall Plaza Sur" no puede escribirse como texto suelto. Está estandarizado en <code>SUCURSAL</code> y el ticket invoca la <code>FK_Sucursal = S-05</code>.'},
+                        'categoria': { correctId: 'tabla_categoria', msg: '¡Nivel Dios Arquitectónico! 🏛️. Piensa en esto: el producto "Play 5" guarda una <code>Id_Cat = 4</code>. Pero para mostrar el string "Consolas & Videojuegos" impreso allí, la consulta SQL tuvo que saltar una Tabla más e invocar UN TERCER JOIN hacia <code>CATEGORIAS_FAMILIAS</code>.'},
+                        'promocion': { correctId: 'tabla_promocion', msg: '¡Claro que sí! Las reglas de negocio de descuentos dictan que las promociones cambian dinámicamente ("CyberDay", "BlackFriday"). Debe ser su propia entidad y asociarse temporalmente al registro del Ticket.'}
+                    },
+
+                    // Traductor
+                    traduccionMsg: '',
+                    traduccionCorrecta: false,
+                    traduccionSeleccionada: null,
+                    
+                    // Verdadero o Falso en Medio
+                    tf_respuestas: [null, null],
+                    tf_correctas: [false, true],
+                    tf_feedbacks: [
+                        "La consulta (SELECT) es puramente visual y abstracta, vive en la RAM temporalmente hasta que cierras la pestaña. El modelo 3FN de las tablas físicas del disco duro está intacto.",
+                        "Asumiendo perfecta integridad referencial, el INNER JOIN no crea filas nuevas de arriba hacia abajo, simplemente engorda o 'ensancha' las filas existentes agregando columnas hacia la derecha para nutrir de contexto."
+                    ],
+                    
+                    // Laboratorio Vue Central Modular
+                    activeIdx: 0,
+                    link1_a: 'null', link1_b: 'null',
+                    link2_a: 'null', link2_b: 'null',
+                    filter_type: 'null', filter_body: 'null',
+                    globalCols: ['u.id_usuario', 'u.nombre', 'u.pais', 'v.id_visualizacion', 'v.id_usuario', 'v.id_contenido', 'v.progreso', 'c.id_contenido', 'c.titulo', 'c.genero'],
+                    feedback: '',
+                    isCorrect: false,
+                    isSimulating: false,
+                    animStep: 0,
+                    shakeBtn: false,
+                    revelarMendigos: 0,
+                    
+                    mockData: [
+                        { cols: ['u.nombre', 'c.titulo'], rows: [['Ana Torres', 'Attack on Titan'], ['Luis Rojas', 'Breaking Bad']], totalRows: 42 },
+                        { cols: ['u.nombre', 'u.pais', 'c.titulo'], rows: [['Mika Tanaka', 'Japón', 'Demon Slayer']], totalRows: 5 },
+                        { cols: ['c.titulo', 'hit_count'], rows: [['Breaking Bad', '2,500,000'], ['Attack on Titan', '1,800,500']], totalRows: 12 },
+                    ],
+                    retos: [
+                        {
+                            title: 'Misión 1: Reconstrucción Básica',
+                            desc: 'Queremos ver qué humanos están viendo qué peliculas (o animes). Une la tabla puente transaccional hacia sus dos maestras.',
+                            selectText: 'u.nombre, c.titulo',
+                            req_joins: [
+                                { a: 'u.id_usuario', b: 'v.id_usuario' },
+                                { a: 'v.id_contenido', b: 'c.id_contenido' }
+                            ],
+                            req_filter: 'none',
+                            correctFeed: "¡Conexión Genética Exitosa! Uniste perfectamente el ADN de Usuarios hacia Visualizaciones, y de Visualizaciones a Contenidos. No hay filas falsas."
+                        },
+                        {
+                            title: 'Misión 2: El Filtro Japonés',
+                            desc: 'El reporte de la Misión 1 estalló porque incluía a todo el mundo. Ahora agrupa las 3 tablas igual, pero filtra la vista SOLO para los clientes del continente nipón.',
+                            selectText: 'u.nombre, u.pais, c.titulo',
+                            req_joins: [
+                                { a: 'u.id_usuario', b: 'v.id_usuario' },
+                                { a: 'v.id_contenido', b: 'c.id_contenido' }
+                            ],
+                            req_filter: { type: 'WHERE', body: 'pais_japon' },
+                            filter_options: [
+                                { val: 'pais_japon', label: "u.pais = 'Japón'" },
+                                { val: 'prog_100', label: "v.progreso = 100" },
+                                { val: 'tit_dbz', label: "c.titulo = 'Dragon Ball'" }
+                            ],
+                            correctFeed: "¡Arquitectura Inmaculada! Enganchaste bien y utilizaste un WHERE temprano actuando como un filtro colador que salvó miles de megabytes de RAM extra."
+                        },
+                        {
+                            title: 'Misión 3: Análisis de Mega Hits',
+                            desc: 'Solo cruza Visualizaciones con Contenidos (No necesitamos Humanos). Agrupamos y contabilizamos con COUNT(*) cada show. Muestra solo aquellos mega-hits con más de 1.000.000 visualizaciones.',
+                            selectText: 'c.titulo, COUNT(*) as hit_count',
+                            req_joins: [
+                                { a: 'v.id_contenido', b: 'c.id_contenido' }
+                            ],
+                            req_filter: { type: 'HAVING', body: 'hits_million' },
+                            filter_options: [
+                                { val: 'prog_50', label: "v.progreso > 50" },
+                                { val: 'hits_million', label: "COUNT(*) > 1000000" }
+                            ],
+                            correctFeed: "¡Doctorado Forense! Al requerir la condición aritmética luego del conteo matemático, la única llave válida del filtro era el HAVING. Eres oficialmente un DBA Relacional."
+                        }
+                    ]
+                }
+            },
+            computed: {
+                currentReto() { return this.retos[this.activeIdx]; }
+            },
+            methods: {
+                // Detective
+                seleccionarDato(id) {
+                    this.idSeleccionado = id;
+                    this.feedbackDetective = '';
+                    this.detectiveEsCorrecto = false;
+                },
+                comprobarDetective(idTablaSeleccionada) {
+                    if(!this.idSeleccionado) return;
+                    
+                    const respuestaMapeada = this.respuestasDetective[this.idSeleccionado];
+                    if (idTablaSeleccionada === respuestaMapeada.correctId) {
+                        this.detectiveEsCorrecto = true;
+                        this.feedbackDetective = respuestaMapeada.msg;
+                    } else {
+                        this.detectiveEsCorrecto = false;
+                        this.feedbackDetective = 'Piénsalo lógicamente y abstrae. ¿Ese dato pertenece a esa entidad por su naturaleza, o pertenece a otra entidad y lo estamos mirando impreso todo junto gracias a un JOIN en la impresora del cajero?';
+                    }
+                },
+                getClaseBtnDetective(idTabla) {
+                    if (this.detectiveEsCorrecto && this.respuestasDetective[this.idSeleccionado].correctId === idTabla) {
+                        return 'bg-emerald-50 border-emerald-400 text-emerald-800 scale-[1.02] shadow-md';
+                    }
+                    if (!this.detectiveEsCorrecto && this.feedbackDetective && idTabla === this.respuestasDetective[this.idSeleccionado].correctId) {
+                         // opcionalmente marcar el malo o no
+                    }
+                    return 'bg-white border-slate-200 text-slate-600 hover:border-cyan-300 hover:bg-cyan-50';
+                },
+
+                // Semantica
+                showTraduccionMsg(res, idx) {
+                    this.traduccionSeleccionada = idx;
+                    if(res === 'bien') {
+                        this.traduccionCorrecta = true;
+                        this.traduccionMsg = "¿Ves? La BD tiene números fríos (claves), pero unidos temporalmente forman información valiosa para los humanos.";
+                    } else {
+                        this.traduccionCorrecta = false;
+                        this.traduccionMsg = "Vuelve a rastrear como un buen detective. La llave amarilla 1 y 3 en la fila del medio nos dicen la verdad.";
+                    }
+                },
+                getClaseTraduccion(idx) {
+                    if (this.traduccionSeleccionada !== idx) {
+                        return 'bg-white border-emerald-200 text-emerald-700 hover:bg-emerald-50 shadow-sm';
+                    }
+                    return this.traduccionCorrecta && idx === 2
+                        ? 'bg-emerald-600 text-white shadow-md border-emerald-700' 
+                        : 'bg-rose-500 text-white shadow-md border-rose-600 shake';
+                },
+                
+                // Verdadero Falso Medio
+                responderTF(idx, respuesta) {
+                    this.tf_respuestas[idx] = respuesta;
+                },
+                getTFClass(idx, btnValue) {
+                    if (this.tf_respuestas[idx] === null) {
+                        return 'bg-white border-yellow-300 text-yellow-700 hover:bg-yellow-100 hover:border-yellow-400';
+                    }
+                    if (this.tf_respuestas[idx] === btnValue) {
+                        if (btnValue === this.tf_correctas[idx]) return 'bg-emerald-500 border-emerald-500 text-white shadow-md';
+                        return 'bg-rose-500 border-rose-500 text-white shadow-md';
+                    }
+                    return 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-50';
+                },
+
+                // Laboratorio Executivo
+                setActiveReto(idx) {
+                    if (this.isSimulating) return;
+                    this.activeIdx = idx;
+                    this.descansarSelects();
+                    this.feedback = ''; 
+                    this.isCorrect = false;
+                    this.revelarMendigos = 0;
+                },
+                descansarSelects() {
+                    this.link1_a = 'null'; this.link1_b = 'null';
+                    this.link2_a = 'null'; this.link2_b = 'null';
+                    this.filter_type = 'null'; this.filter_body = 'null';
+                },
+                verificarRespuesta() {
+                    if (this.isCorrect || this.isSimulating) return;
+                    const r = this.currentReto;
+                    
+                    if (this.link1_a === 'null' || this.link1_b === 'null') {
+                        this.triggerShake(); alert("Faltaron cables lógicos en el Enlace 1."); return;
+                    }
+                    if (r.req_joins.length > 1 && (this.link2_a === 'null' || this.link2_b === 'null')) {
+                        this.triggerShake(); alert("Olvistas amarrar el Enlace 2."); return;
+                    }
+                    if (r.req_filter !== 'none' && (this.filter_type === 'null' || this.filter_body === 'null')) {
+                        this.triggerShake(); alert("Olvidaste setear la herramienta de filtrado."); return;
+                    }
+
+                    // Validador de Nodos
+                    const j1 = r.req_joins[0];
+                    let q1Ok = (this.link1_a === j1.a && this.link1_b === j1.b) || (this.link1_a === j1.b && this.link1_b === j1.a);
+                    
+                    if (r.req_joins.length > 1) {
+                         const j2 = r.req_joins[1];
+                         let l1_matches_j2 = (this.link1_a === j2.a && this.link1_b === j2.b) || (this.link1_a === j2.b && this.link1_b === j2.a);
+                         let l2_matches_j2 = (this.link2_a === j2.a && this.link2_b === j2.b) || (this.link2_a === j2.b && this.link2_b === j2.a);
+                         let l2_matches_j1 = (this.link2_a === j1.a && this.link2_b === j1.b) || (this.link2_a === j1.b && this.link2_b === j1.a);
+                         
+                         q1Ok = (q1Ok && l2_matches_j2) || (l1_matches_j2 && l2_matches_j1);
+                    }
+
+                    let filterOk = true;
+                    if (r.req_filter !== 'none') {
+                         filterOk = (this.filter_type === r.req_filter.type) && (this.filter_body === r.req_filter.body);
+                    }
+
+                    this.isSimulating = true;
+                    this.animStep = 0;
+                    this.feedback = '';
+                    this.isCorrect = (q1Ok && filterOk);
+                    
+                    setTimeout(() => { this.animStep = 1; }, 500);
+
+                    setTimeout(() => {
+                        this.animStep = 2;
+                        if (!this.isCorrect) this.triggerShake();
+                    }, 1500);
+
+                    setTimeout(() => {
+                        this.isSimulating = false;
+                        if (this.isCorrect) {
+                            this.feedback = r.correctFeed;
+                        } else {
+                            if (!q1Ok) this.feedback = "¡Incompatibilidad Molecular! Intentaste cruzar dos atributos que no son equivalentes en el diagrama (Ej: Un ID con un Título o el ID equivocado). Provocaste Producto Cartesiano a nivel motor.";
+                            else this.feedback = "Ensamblaje del ADN lógico exitoso, pero erraste con la herramienta de filtrado en su paso final.";
+                        }
+                    }, 2800);
+                },
+                triggerShake() {
+                    this.shakeBtn = true;
+                    setTimeout(() => this.shakeBtn = false, 500);
+                },
+                revelarSolucionConSusto() {
+                    if (this.isCorrect || this.isSimulating) return;
+
+                    this.revelarMendigos++;
+                    
+                    if (this.revelarMendigos === 1) {
+                        alert("¡Oye! Un DBA Señor no se rinde tan rápido a la primera complicación. Piénsalo desde la lógica que aprendimos arriba.");
+                    } else if (this.revelarMendigos === 2) {
+                        alert("Última Advertencia en el Sistema Central. Si vuelves a presionar, el Sistema activará los protocolos anti-robos de respuesta y tu profesor y compañeros se enterarán. ¡Intenta unir las piezas!");
+                    } else if (this.revelarMendigos >= 3) {
+                        // Protocolo de Sirena Acusatoria
+                        this.playAccusationAlarm();
+                        
+                        // Autocompletar la solución
+                        const r = this.currentReto;
+                        if(r.req_joins.length > 0) {
+                            this.link1_a = r.req_joins[0].a;
+                            this.link1_b = r.req_joins[0].b;
+                        }
+                        if(r.req_joins.length > 1) {
+                            this.link2_a = r.req_joins[1].a;
+                            this.link2_b = r.req_joins[1].b;
+                        }
+                        if(r.req_filter !== 'none') {
+                            this.filter_type = r.req_filter.type;
+                            this.filter_body = r.req_filter.body;
+                        }
+                        
+                        this.isCorrect = true;
+                        this.feedback = "🚨 <strong>INFRACCIÓN DE DROPOUT DETECTADA</strong> 🚨 <br> - " + r.correctFeed;
+                        this.revelarMendigos = 0; 
+                    }
+                },
+                playAccusationAlarm() {
+                    try {
+                        const AudioContext = window.AudioContext || window.webkitAudioContext;
+                        if (!AudioContext) return;
+                        const ctx = new AudioContext();
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.type = 'square';
+                        
+                        const now = ctx.currentTime;
+                        // Sirena de emergencia alternante aguda 
+                        for (let i = 0; i < 20; i++) {
+                            osc.frequency.setValueAtTime(800, now + i * 0.25); // tono alto (C6)
+                            osc.frequency.setValueAtTime(600, now + i * 0.25 + 0.125); // tono bajo (Eb5)
+                        }
+                        
+                        gain.gain.setValueAtTime(0.0, now);
+                        // Rampa rápida simulando bocina real
+                        gain.gain.linearRampToValueAtTime(0.4, now + 0.1);
+                        gain.gain.setValueAtTime(0.4, now + 4.8);
+                        gain.gain.linearRampToValueAtTime(0.0, now + 5);
+                        
+                        osc.start(now);
+                        osc.stop(now + 5);
+                    } catch(e) {
+                        console.warn("Audio no soportado nativamente en este frame para reproduccion de sirena.", e);
+                    }
+                }
+            },
+            mounted() {
+                if (window.Prism) {
+                    setTimeout(() => Prism.highlightAll(), 300);
+                }
+            }
+        }).mount('#join-class-app');
+    </script>
+</body>
+</html>
