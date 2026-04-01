@@ -4,90 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anatomía SQL - Traductor Visual Progresivo</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- TailwindCSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Canvas Confetti -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { 
-                        sans: ['Quicksand', 'sans-serif'],
-                        mono: ['Fira Code', 'monospace']
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { background-color: #f8fafc; color: #1e293b; overflow-x: hidden; scroll-behavior: smooth; }
-        .sql-code { font-family: 'Fira Code', monospace; font-size: 1.1rem; line-height: 1.8; }
-        
-        /* Ocultar niveles por defecto */
-        .level-section {
-            opacity: 0;
-            transform: translateY(20px);
-            display: none;
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-        .level-section.active {
-            display: block;
-        }
-        .level-section.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Estilos del editor falso */
-        .editor-box {
-            background-color: #0f172a;
-            border-radius: 0.75rem;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
-            border: 1px solid #334155;
-            overflow: hidden;
-            margin-bottom: 1.5rem;
-        }
-        .editor-header {
-            background-color: #1e293b;
-            padding: 0.75rem 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            border-bottom: 1px solid #334155;
-        }
-        .editor-content {
-            padding: 1.5rem;
-            color: #f8fafc;
-        }
-        
-        .t-keyword { color: #f472b6; font-weight: bold; } /* pink-400 */
-        .t-function { color: #60a5fa; } /* blue-400 */
-        .t-column { color: #e2e8f0; } /* slate-200 */
-        .t-alias { color: #fcd34d; } /* amber-300 */
-        .t-number { color: #a78bfa; } /* purple-400 */
-
-        /* Animación de error en quizes */
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-        .shake-error { animation: shake 0.4s ease-in-out; }
-    </style>
+    <script src="js/config.js"></script>
 </head>
 <body class="font-sans antialiased min-h-screen pb-32 pt-8">
 
     <!-- Navbar -->
-    <nav class="absolute top-6 left-6 z-50">
-        <a href="index.html" class="inline-flex items-center text-slate-500 hover:text-slate-700 font-bold transition-transform hover:-translate-x-1 bg-white px-6 py-3 rounded-full shadow-md border-2 border-slate-100 text-lg">
-            <i class="fa-solid fa-arrow-left mr-3"></i> Menú
-        </a>
-    </nav>
+    <app-nav></app-nav>
 
     <div class="max-w-4xl mx-auto px-6 relative z-10 pt-16">
         

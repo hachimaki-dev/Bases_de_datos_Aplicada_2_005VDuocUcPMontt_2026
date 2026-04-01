@@ -4,73 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Repaso Interactivo - Funciones de Fila</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- TailwindCSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Canvas Confetti -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Quicksand', 'sans-serif'] },
-                }
-            }
-        }
-    </script>
-    <style>
-        body { background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
-        
-        .question-card, .drag-item, .drop-zone {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .drag-item { cursor: grab; user-select: none; }
-        .drag-item:active { cursor: grabbing; transform: scale(0.95); }
-        .drag-item.dragging { opacity: 0.5; transform: scale(1.05); }
-
-        .drop-zone { min-height: 4rem; border: 3px dashed #cbd5e1; transition: background-color 0.2s, border-color 0.2s; }
-        .drop-zone.drag-over { background-color: #f1f5f9; border-color: #6366f1; }
-        .drop-zone.filled { border-style: solid; border-color: #e2e8f0; background-color: white; padding: 0.5rem; }
-
-        .btn-option {
-            transition: all 0.2s ease;
-            user-select: none;
-        }
-        .btn-option:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        .btn-option:active:not(:disabled) { transform: translateY(0); }
-        
-        /* Animaciones para correct/incorrect (Múltiple/VF) */
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-        .animate-shake { animation: shake 0.4s ease-in-out; }
-        @keyframes pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        .animate-pop { animation: pop 0.4s ease-in-out; }
-
-        .hidden-level { display: none !important; }
-        .fade-in { animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+    <script src="js/config.js"></script>
 </head>
 <body class="font-sans antialiased min-h-screen pb-20 flex justify-center pt-8">
 
     <!-- Navbar -->
-    <nav class="absolute top-6 left-6 z-50">
-        <a href="index.html" class="inline-flex items-center text-indigo-500 hover:text-indigo-700 font-bold transition-transform hover:-translate-x-1 bg-white px-6 py-3 rounded-full shadow-md border-2 border-indigo-100 text-lg">
-            <i class="fa-solid fa-arrow-left mr-3"></i> Menú
-        </a>
-    </nav>
+    <app-nav></app-nav>
 
     <div class="max-w-4xl w-full px-6 relative z-10 w-full">
         

@@ -4,41 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diario de Clases - BD Aplicada 2</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- TailwindCSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Quicksand', 'sans-serif'],
-                    },
-                    colors: {
-                        kawaii: {
-                            pink: '#FFE4E1',
-                            blue: '#E0F7FA',
-                            yellow: '#FFF9C4',
-                            purple: '#F3E5F5',
-                            text: '#4A3B32',
-                            card: '#FFFFFF'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { background-color: #FFF0F5; color: #4A3B32; }
-        .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
-        .card-hover:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(255,182,193,0.5); }
-    </style>
+    <!-- Configuración Centralizada (Tailwind, Fuentes) -->
+    <script src="js/config.js"></script>
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Datos de Entradas -->
+    <script src="js/data.js?v=sorted"></script>
 </head>
 <body class="font-sans antialiased min-h-screen text-gray-800">
-    <div class="max-w-5xl mx-auto px-6 py-16">
+    <div id="app" class="max-w-5xl mx-auto px-6 py-16">
         <header class="text-center mb-16">
             <h1 class="text-5xl md:text-6xl font-bold text-pink-500 drop-shadow-md mb-6">
                 <i class="fa-solid fa-book-heart text-pink-400"></i> Diario de Base de Datos ✨
@@ -47,153 +21,119 @@
         </header>
 
         <main class="grid grid-cols-1 md:grid-cols-2 gap-10">
-            <!-- Entry Card -->
-            <a href="clase-1.html" class="block group">
-                <article class="bg-white rounded-[2rem] p-8 shadow-lg border-2 border-pink-200 card-hover h-full flex flex-col relative overflow-hidden">
-                    <!-- Decoración interna -->
-                    <div class="absolute -right-10 -top-10 bg-pink-50 w-32 h-32 rounded-full z-0 transition-transform group-hover:scale-150 duration-500"></div>
-                    
-                    <div class="relative z-10">
-                        <div class="bg-blue-50 rounded-2xl p-4 mb-6 flex justify-between items-center text-blue-600 border border-blue-100 shadow-sm">
-                            <span class="font-bold text-lg"><i class="fa-solid fa-calendar-day mr-2"></i> HOY</span>
-                            <span class="text-sm bg-white px-4 py-1.5 rounded-full font-bold shadow-sm text-blue-500 border border-blue-200">Entrada 1</span>
-                        </div>
-                        <h2 class="text-3xl font-bold mb-4 text-pink-600 leading-tight">🧪 Funciones de Fila en Oracle SQL</h2>
-                        <p class="text-gray-700 font-medium mb-8 leading-relaxed text-lg flex-grow">
-                            Aprende sobre funciones de texto, numéricas y fechas en Oracle SQL. 
-                            Un taller interactivo con ejemplos y desafíos geniales sobre una plataforma tipo streaming.
-                        </p>
-                        <div class="inline-flex items-center text-white font-bold bg-pink-500 hover:bg-pink-600 transition-colors px-6 py-3 rounded-full shadow-md text-lg">
-                            Leer entrada <i class="fa-solid fa-arrow-right ml-3 mt-0.5"></i>
-                        </div>
-                    </div>
-                </article>
-            </a>
-            
-            <!-- Actividad Intermedia (Columna Completa) -->
-            <a href="repaso-clase-1.html" class="block group md:col-span-2">
-                <article class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-[2rem] p-8 shadow-xl card-hover relative overflow-hidden text-white border-4 border-indigo-400/30">
-                    <div class="absolute -right-10 -top-10 bg-white/10 w-48 h-48 rounded-full z-0 transition-transform group-hover:scale-150 duration-500"></div>
-                    <div class="absolute -left-10 -bottom-10 bg-black/10 w-32 h-32 rounded-full z-0 transition-transform group-hover:scale-150 duration-500"></div>
-                    
-                    <div class="relative z-10 flex flex-col md:flex-row items-center gap-8">
-                        <div class="bg-white/20 p-6 rounded-full flex-shrink-0 backdrop-blur-sm border border-white/30">
-                            <i class="fa-solid fa-gamepad text-6xl text-yellow-300 drop-shadow-md group-hover:animate-bounce"></i>
-                        </div>
-                        <div class="flex-grow text-center md:text-left">
-                            <div class="inline-block bg-white/20 rounded-full px-4 py-1.5 mb-4 text-sm font-bold tracking-wider uppercase border border-white/30 backdrop-blur-sm">
-                                <i class="fa-solid fa-bolt text-yellow-300 mr-2"></i> Misión Intermedia
+            <!-- V-FOR EN LAS ENTRADAS DE DATA.JS -->
+            <template v-for="entry in entries" :key="entry.id">
+                
+                <!-- Tarjeta Standard -->
+                <a v-if="entry.type === 'standard'" :href="entry.href" :class="['block group', entry.colSpan === 2 ? 'md:col-span-2' : 'md:col-span-1']">
+                    <article :class="['bg-white rounded-[2rem] p-8 shadow-lg border-2 h-full flex flex-col relative overflow-hidden card-hover', entry.theme.border]">
+                        <div :class="['absolute -right-10 -top-10 w-32 h-32 rounded-full z-0 transition-transform group-hover:scale-150 duration-500', entry.theme.circle]"></div>
+                        <div class="relative z-10 flex flex-col h-full">
+                            <div :class="['rounded-2xl p-4 mb-6 flex justify-between items-center border shadow-sm', entry.theme.tagBox]">
+                                <span class="font-bold text-lg"><i :class="['fa-solid mr-2', entry.tagIcon]"></i> {{ entry.tag }}</span>
+                                <span :class="['text-sm bg-white px-4 py-1.5 rounded-full font-bold shadow-sm border', entry.theme.badgeTheme]">{{ entry.badge }}</span>
                             </div>
-                            <h2 class="text-3xl md:text-4xl font-extrabold mb-3 drop-shadow-md">Simulador de Base de Datos</h2>
-                            <p class="text-indigo-100 font-medium text-lg mb-6 max-w-2xl">
-                                ¿Sobrevivirás a los reportes del gerente? Demuestra que dominas las funciones de fila en este mini-juego interactivo de 3 niveles con tiempo real.
-                            </p>
-                            <div class="inline-flex items-center text-indigo-900 font-bold bg-yellow-300 hover:bg-yellow-400 transition-colors px-8 py-3 rounded-full shadow-lg text-lg">
-                                Iniciar Desafío <i class="fa-solid fa-play ml-3"></i>
+                            <div class="text-slate-400 font-bold mb-2 text-sm uppercase tracking-wider"><i class="fa-regular fa-calendar-days mr-1"></i> {{ entry.dateText }}</div>
+                            <h2 :class="['text-3xl font-bold mb-4 leading-tight', entry.theme.title]">{{ entry.title }}</h2>
+                            <p class="text-gray-700 font-medium mb-8 leading-relaxed text-lg flex-grow" v-html="entry.description"></p>
+                            <div :class="['inline-flex items-center text-white font-bold transition-colors px-6 py-3 rounded-full shadow-md text-lg w-max', entry.theme.btn]">
+                                {{ entry.btnText }} <i :class="['fa-solid ml-3 mt-0.5', entry.btnIcon]"></i>
                             </div>
                         </div>
-                    </div>
-                </article>
-            </a>
+                    </article>
+                </a>
 
-            <!-- [NUEVO] Entrada 2: Anatomía SQL -->
-            <a href="anatomia-sql.html" class="block group md:col-span-1">
-                <article class="bg-white rounded-[2rem] p-8 shadow-lg border-2 border-violet-200 card-hover h-full flex flex-col relative overflow-hidden">
-                    <div class="absolute -right-10 -top-10 bg-violet-50 w-32 h-32 rounded-full z-0 transition-transform group-hover:scale-150 duration-500"></div>
-                    <div class="relative z-10">
-                        <div class="bg-violet-50 rounded-2xl p-4 mb-6 flex justify-between items-center text-violet-600 border border-violet-100 shadow-sm">
-                            <span class="font-bold text-lg"><i class="fa-solid fa-glasses mr-2"></i> GUÍA VISUAL</span>
-                            <span class="text-sm bg-white px-4 py-1.5 rounded-full font-bold shadow-sm text-violet-500 border border-violet-200">Entrada 2</span>
+                <!-- Tarjeta Hero (Actividad Intermedia) -->
+                <a v-else-if="entry.type === 'hero'" :href="entry.href" :class="['block group', entry.colSpan === 2 ? 'md:col-span-2' : 'md:col-span-1']">
+                    <article :class="['rounded-[2rem] p-8 shadow-xl border-4 card-hover relative overflow-hidden', entry.theme.bg, entry.theme.border, entry.theme.title]">
+                        <div :class="['absolute -right-10 -top-10 w-48 h-48 rounded-full z-0 transition-transform group-hover:scale-150 duration-500', entry.theme.circle1]"></div>
+                        <div :class="['absolute -left-10 -bottom-10 w-32 h-32 rounded-full z-0 transition-transform group-hover:scale-150 duration-500', entry.theme.circle2]"></div>
+                        
+                        <div class="relative z-10 flex flex-col md:flex-row items-center gap-8">
+                            <div :class="['p-6 rounded-full flex-shrink-0 backdrop-blur-sm border', entry.iconContainer || 'bg-white/20 border-white/30']">
+                                <i :class="['fa-solid text-6xl', entry.icon, entry.iconColor, entry.theme.iconShadow]"></i>
+                            </div>
+                            <div class="flex-grow text-center md:text-left">
+                                <div :class="['inline-block rounded-full px-4 py-1.5 mb-4 text-sm font-bold tracking-wider uppercase border backdrop-blur-sm', entry.theme.tagBox, entry.theme.tagText]">
+                                    <i :class="['fa-solid mr-2', entry.tagIcon]"></i> {{ entry.tag }}
+                                </div>
+                                <div class="text-indigo-200 font-bold mb-2 text-sm uppercase tracking-wider"><i class="fa-regular fa-calendar-days mr-1"></i> {{ entry.dateText }}</div>
+                                <h2 :class="['text-3xl md:text-4xl font-extrabold mb-3 drop-shadow-md', entry.theme.title]" v-html="entry.title"></h2>
+                                <p :class="['font-medium text-lg mb-6 max-w-2xl', entry.theme.desc]" v-html="entry.description"></p>
+                                <div :class="['inline-flex items-center font-bold transition-colors px-8 py-3 rounded-full shadow-lg text-lg', entry.theme.btn]">
+                                    {{ entry.btnText }} <i :class="['fa-solid ml-3', entry.btnIcon]"></i>
+                                </div>
+                            </div>
                         </div>
-                        <h2 class="text-3xl font-bold mb-4 text-violet-600 leading-tight">🍕 Anatomía de una Query SQL</h2>
-                        <p class="text-gray-700 font-medium mb-8 leading-relaxed text-lg flex-grow">
-                            Antes de escribir código, aprende a leerlo e interpretarlo. Desglosamos una consulta compleja usando la técnica de la pizzería.
-                        </p>
-                        <div class="inline-flex items-center text-white font-bold bg-violet-500 hover:bg-violet-600 transition-colors px-6 py-3 rounded-full shadow-md text-lg">
-                            Ver traductor <i class="fa-solid fa-arrow-right ml-3 mt-0.5"></i>
-                        </div>
-                    </div>
-                </article>
-            </a>
+                    </article>
+                </a>
 
-            <!-- Entrada 3 (Antes Entrada 2) -->
-            <a href="clase-2.html" class="block group md:col-span-1">
-                <article class="bg-white rounded-[2rem] p-8 shadow-lg border-2 border-teal-200 card-hover h-full flex flex-col relative overflow-hidden">
-                    <div class="absolute -right-10 -top-10 bg-teal-50 w-32 h-32 rounded-full z-0 transition-transform group-hover:scale-150 duration-500"></div>
-                    <div class="relative z-10">
-                        <div class="bg-teal-50 rounded-2xl p-4 mb-6 flex justify-between items-center text-teal-600 border border-teal-100 shadow-sm">
-                            <span class="font-bold text-lg"><i class="fa-solid fa-fire mr-2 text-orange-400"></i> IMPORTANTE</span>
-                            <span class="text-sm bg-white px-4 py-1.5 rounded-full font-bold shadow-sm text-teal-500 border border-teal-200">Entrada 3</span>
+                <!-- Tarjeta Special (Laboratorio) -->
+                <a v-else-if="entry.type === 'special'" :href="entry.href" :class="['block group border-4 border-dashed rounded-[2.5rem] p-2 hover:border-solid transition-all shadow-xl hover:-translate-y-2', entry.colSpan === 2 ? 'md:col-span-2' : 'md:col-span-1', entry.theme.outerBorder, entry.theme.outerBg]">
+                    <article :class="['rounded-[2rem] p-8 h-full flex flex-col relative overflow-hidden', entry.theme.innerBg]">
+                        <div :class="['absolute right-0 top-0 w-24 h-24 rounded-bl-full z-0 transition-transform group-hover:scale-125 duration-300', entry.theme.circle]"></div>
+                        <div class="relative z-10 flex flex-col h-full">
+                            <div :class="['rounded-2xl p-4 mb-6 flex justify-between items-center border shadow-sm', entry.theme.tagBox]">
+                                <span class="font-bold text-lg"><i :class="['fa-solid mr-2', entry.tagIcon]"></i> {{ entry.tag }}</span>
+                                <span :class="['px-4 py-1.5 rounded-full font-bold border', entry.theme.badgeTheme]">{{ entry.badge }}</span>
+                            </div>
+                            <div class="text-slate-400 font-bold mb-2 text-sm uppercase tracking-wider"><i class="fa-regular fa-calendar-days mr-1"></i> {{ entry.dateText }}</div>
+                            <h2 :class="['text-3xl font-extrabold mb-4 leading-tight', entry.theme.title]" v-html="entry.title"></h2>
+                            <p class="text-gray-700 font-medium mb-8 leading-relaxed text-lg flex-grow" v-html="entry.description"></p>
+                            <div :class="['inline-flex items-center text-white font-bold transition-colors px-6 py-3 rounded-full shadow-md text-lg', entry.theme.btn]">
+                                {{ entry.btnText }} <i :class="['fa-solid ml-3 mt-0.5', entry.btnIcon]"></i>
+                            </div>
                         </div>
-                        <h2 class="text-3xl font-bold mb-4 text-teal-600 leading-tight">📊 Funciones de Grupo en SQL</h2>
-                        <p class="text-gray-700 font-medium mb-8 leading-relaxed text-lg flex-grow">
-                            Aprende a resumir millones de registros en reportes usando COUNT, SUM, AVG, GROUP BY y HAVING. Usado en Spotify, Netflix y más.
-                        </p>
-                        <div class="inline-flex items-center text-white font-bold bg-teal-500 hover:bg-teal-600 transition-colors px-6 py-3 rounded-full shadow-md text-lg">
-                            Leer entrada <i class="fa-solid fa-arrow-right ml-3 mt-0.5"></i>
-                        </div>
-                    </div>
-                </article>
-            </a>
+                    </article>
+                </a>
 
-            <!-- Actividad Final: Ahora Tú (Ocupa 1 Columna, al lado de Clase 2) -->
-            <a href="ahora-tu.html" class="block group md:col-span-1 border-4 border-dashed border-rose-300 rounded-[2.5rem] p-2 hover:border-solid transition-all bg-white shadow-xl hover:-translate-y-2">
-                <article class="bg-rose-50 rounded-[2rem] p-8 h-full flex flex-col relative overflow-hidden">
-                    <div class="absolute right-0 top-0 bg-rose-200 w-24 h-24 rounded-bl-full z-0 transition-transform group-hover:scale-125 duration-300"></div>
-                    <div class="relative z-10">
-                        <div class="bg-white rounded-2xl p-4 mb-6 flex justify-between items-center text-rose-600 border border-rose-100 shadow-sm">
-                            <span class="font-bold text-lg"><i class="fa-solid fa-laptop-code mr-2"></i> LABORATORIO</span>
-                            <span class="text-sm bg-rose-100 px-4 py-1.5 rounded-full font-bold text-rose-700 border border-rose-200 shadow-inner">Reto Final</span>
+                <!-- Tarjeta Horizontal (Git Basics) -->
+                <a v-else-if="entry.type === 'horizontal'" :href="entry.href" :class="['block group card-hover text-white', entry.colSpan === 2 ? 'md:col-span-2' : 'md:col-span-1']">
+                    <article :class="['rounded-[2rem] p-8 shadow-lg border-2 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden', entry.theme.mainBg, entry.theme.border]">
+                        <div :class="['absolute -right-10 -top-10 w-48 h-48 rounded-full z-0 transition-transform group-hover:scale-150 duration-500', entry.theme.circle]"></div>
+                        <div :class="['relative z-10 p-4 rounded-2xl border flex-shrink-0', entry.theme.iconBox]">
+                            <i :class="['fa-brands text-6xl', entry.icon, entry.iconColor]"></i>
                         </div>
-                        <h2 class="text-3xl font-extrabold mb-4 text-rose-600 leading-tight">¡Ahora Tú! ⚡<br>Caso Proyecto</h2>
-                        <p class="text-gray-700 font-medium mb-8 leading-relaxed text-lg flex-grow">
-                            Recibe 4 correos de gerencia reales y resuélvelos operando <strong>tu propia base de datos</strong>. Equivócate hoy para no botar Producción mañana.
-                        </p>
-                        <div class="inline-flex items-center text-white font-bold bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 transition-colors px-6 py-3 rounded-full shadow-md text-lg w-full justify-center">
-                            Iniciar mi turno <i class="fa-solid fa-arrow-right ml-3 mt-0.5"></i>
+                        <div class="relative z-10 flex-grow text-center md:text-left">
+                            <div class="mb-2 flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                                <span :class="['text-sm px-3 py-1 rounded-md font-bold border uppercase tracking-wider w-max', entry.tagTheme]">{{ entry.tag }}</span>
+                                <span class="text-slate-400 font-bold text-sm uppercase tracking-wider"><i class="fa-regular fa-calendar-days mr-1"></i> {{ entry.dateText }}</span>
+                            </div>
+                            <h2 :class="['text-3xl font-bold mb-3 leading-tight', entry.theme.title]" v-html="entry.title"></h2>
+                            <p :class="['font-medium mb-6 leading-relaxed text-lg lg:pr-20', entry.theme.desc]" v-html="entry.description"></p>
                         </div>
-                    </div>
-                </article>
-            </a>
-            
-            <!-- Bonus Git (Mover debajo a span completo) -->
-            <a href="git-basics.html" class="block group md:col-span-2">
-                <article class="bg-slate-800 rounded-[2rem] p-8 shadow-lg border-2 border-slate-700 card-hover flex flex-col md:flex-row items-center gap-8 relative overflow-hidden text-white">
-                    <div class="absolute -right-10 -top-10 bg-slate-700 w-48 h-48 rounded-full z-0 transition-transform group-hover:scale-150 duration-500"></div>
-                    <div class="relative z-10 p-4 bg-slate-700 rounded-2xl border border-slate-600 flex-shrink-0">
-                        <i class="fa-brands fa-git-alt text-6xl text-orange-500"></i>
-                    </div>
-                    <div class="relative z-10 flex-grow text-center md:text-left">
-                        <div class="mb-2">
-                            <span class="text-sm bg-orange-500/20 px-3 py-1 rounded-md font-bold text-orange-400 border border-orange-500/30 uppercase tracking-wider">HERRAMIENTA BONUS</span>
+                        <div class="relative z-10 flex-shrink-0 w-full md:w-auto text-center">
+                            <div :class="['inline-flex items-center font-bold px-8 py-3 rounded-full shadow-md text-lg transition-colors', entry.theme.btn]">
+                                {{ entry.btnText }} <i :class="['fa-solid ml-3 mt-0.5', entry.btnIcon]"></i>
+                            </div>
                         </div>
-                        <h2 class="text-3xl font-bold mb-3 text-white leading-tight">Magia con Git y GitHub</h2>
-                        <p class="text-slate-300 font-medium mb-6 leading-relaxed text-lg lg:pr-20">
-                            Aprende a hacer commit de tus scripts SQL y subir tus avances al repositorio del curso para no perder tu código jamás.
-                        </p>
-                    </div>
-                    <div class="relative z-10 flex-shrink-0 w-full md:w-auto text-center">
-                        <div class="inline-flex items-center text-slate-900 font-bold bg-white hover:bg-slate-200 transition-colors px-8 py-3 rounded-full shadow-md text-lg">
-                            Leer anexo <i class="fa-solid fa-book-open ml-3 mt-0.5"></i>
-                        </div>
-                    </div>
-                </article>
-            </a>
+                    </article>
+                </a>
+
+            </template>
         </main>
     </div>
 
-    <!-- Footer -->
-    <footer class="text-center bg-white/50 border-t-2 border-pink-100 mt-20 py-12 flex flex-col items-center">
-        <div class="mb-4">
-            <img src="avatar.png" alt="HachiMaki-dev avatar" class="w-28 h-28 rounded-full border-4 border-pink-300 shadow-lg object-cover">
-        </div>
-        <h2 class="text-3xl font-bold text-pink-600 mb-2">HachiMaki-dev</h2>
-        <div class="flex items-center justify-center space-x-2 text-pink-500 text-xl font-bold">
-            <span>Bases de datos aplicada 2</span>
-        </div>
-        <div class="mt-4 bg-pink-200 text-pink-900 font-bold px-6 py-2.5 rounded-full text-base shadow-sm inline-block">
-            DuocUC Puerto Montt 2026
-        </div>
-    </footer>
+    <!-- Componente Pie de página Centralizado -->
+    <app-footer></app-footer>
+
+    <!-- Componentes y Lógica Vue -->
+    <script src="js/components.js"></script>
+    <script>
+        const { createApp } = Vue;
+        createApp({
+            data() {
+                return {
+                    rawEntries: appData.entries
+                }
+            },
+            computed: {
+                entries() {
+                    // Crea una copia del arreglo y lo ordena por fecha de más reciente a más antigua
+                    return this.rawEntries.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+                }
+            }
+        }).mount('#app');
+    </script>
 </body>
 </html>

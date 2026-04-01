@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flujo Lógico SQL - Diario de Clases</title>
+    <!-- Configuración Centralizada -->
+    <script src="js/config.js"></script>
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        .pipeline-node {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .pipeline-node.active {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen pb-20 text-gray-800 bg-slate-50">
+    
+    <app-nav></app-nav>
+
+    <div id="app">
+        <!-- Header -->
+        <header class="max-w-5xl mx-auto px-6 text-center mb-16 pt-8">
+            <div class="inline-block bg-cyan-100 px-6 py-2.5 rounded-full text-cyan-700 font-bold text-base mb-6 border-2 border-cyan-200 shadow-sm">
+                <i class="fa-solid fa-brain text-yellow-500 mr-2"></i> Cambio de Paradigma
+            </div>
+            <h1 class="text-5xl md:text-6xl font-bold text-cyan-700 mb-6 drop-shadow-sm leading-tight">
+                El Flujo Oculto de SQL
+            </h1>
+            <p class="text-xl md:text-2xl text-slate-700 bg-white inline-flex items-center gap-3 px-8 py-4 rounded-full shadow-md border-2 border-cyan-100 mt-4 mx-auto max-w-4xl font-medium justify-center text-center leading-relaxed">
+                SQL no lee tu código de arriba hacia abajo como Python o Java. Piensa en cascadas y transformaciones de datos. 🌊
+            </p>
+        </header>
+
+        <main class="max-w-5xl mx-auto px-6 space-y-16">
+            
+            <!-- Simulador Interactivo -->
+            <section class="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-xl border-4 border-slate-100 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-cyan-50 rounded-bl-full -z-10 opacity-70"></div>
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-8 border-b-2 border-slate-100 pb-4">
+                    <i class="fa-solid fa-diagram-project text-cyan-500 mr-3"></i> 1. El Simulador de la Fila de Ensamblaje
+                </h2>
+                <div class="mb-10 text-lg text-slate-600 font-medium">
+                    Haz clic en cada paso del flujo lógico para ver en qué momento real se ejecuta cada parte de una consulta.
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <!-- Controles -->
+                    <div class="space-y-4 relative">
+                        <!-- Linea conectora visual -->
+                        <div class="absolute left-6 top-8 bottom-8 w-1 bg-slate-200 rounded-full z-0 hidden sm:block"></div>
+                        
+                        <div v-for="(stage, index) in logicOrder" :key="stage.name" 
+                             @click="currentStage = index"
+                             :class="['pipeline-node relative z-10 p-5 rounded-2xl cursor-pointer border-2 flex items-center gap-4 shadow-sm', 
+                                      currentStage === index ? 'bg-cyan-50 border-cyan-400 shadow-md ring-4 ring-cyan-100' : 'bg-white border-slate-200 hover:border-cyan-300 hover:bg-slate-50']">
+                            
+                            <div :class="['w-12 h-12 rounded-full flex flex-shrink-0 items-center justify-center text-xl font-bold shadow-inner', currentStage === index ? 'bg-cyan-500 text-white' : 'bg-slate-100 text-slate-500']">
+                                {{ index + 1 }}
+                            </div>
+                            <div>
+                                <h3 :class="['font-extrabold text-xl', currentStage === index ? 'text-cyan-700' : 'text-slate-700']">{{ stage.name }}</h3>
+                                <p class="text-sm font-medium text-slate-500 mt-1">{{ stage.desc }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visualizador de Estado -->
+                    <div class="bg-slate-800 rounded-3xl p-8 text-white shadow-2xl flex flex-col justify-between border-4 border-slate-700 h-full min-h-[400px]">
+                        <div>
+                            <div class="text-slate-400 font-bold uppercase tracking-widest text-sm mb-4">Estado de los Datos</div>
+                            <div class="flex items-center gap-4 mb-6">
+                                <i :class="['fa-solid text-5xl text-cyan-400', logicOrder[currentStage].icon]"></i>
+                                <h3 class="text-4xl font-black text-white">{{ logicOrder[currentStage].name }}</h3>
+                            </div>
+                            <p class="text-xl text-slate-300 font-medium leading-relaxed mb-8">
+                                {{ logicOrder[currentStage].action }}
+                            </p>
+                            
+                            <div class="bg-slate-900 rounded-xl p-4 border border-slate-700">
+                                <span class="text-cyan-400 text-sm font-bold uppercase block mb-1">Volumen de registros vivos:</span>
+                                <div class="text-2xl font-mono text-emerald-400">{{ logicOrder[currentStage].volume }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Comparativa con Orden Escrito -->
+                        <div class="mt-8 bg-slate-700/50 p-4 rounded-xl border border-slate-600">
+                            <span class="text-slate-400 text-xs font-bold uppercase mb-2 block">Orden que tú escribiste vs Orden Real:</span>
+                            <div class="flex flex-wrap gap-2">
+                                <span v-for="w in writtenOrder" :key="w" 
+                                      :class="['px-3 py-1 rounded text-xs font-bold font-mono', 
+                                              w === logicOrder[currentStage].name ? 'bg-cyan-500 text-white' : 'bg-slate-800 text-slate-400 border border-slate-600']">
+                                    {{ w }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Conflicto Cognitivo: Funciones en WHERE -->
+            <section class="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-xl border-4 border-rose-100 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-rose-50 rounded-bl-full -z-10 opacity-70"></div>
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-6 border-b-2 border-slate-100 pb-4 flex items-center">
+                    <i class="fa-solid fa-bug text-rose-500 mr-3"></i> 2. La Paradoja del WHERE
+                </h2>
+                
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-r-xl mb-8 text-yellow-800 font-medium text-lg">
+                    Un estudiante intentó filtrar para ver sólo los géneros que tengan más de 2 películas. Escribió esto, le dio *Ejecutar* y la base de datos le gritó un error horrible.
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div class="bg-[#1e1e1e] p-6 rounded-2xl shadow-inner font-mono text-lg leading-relaxed relative border-2 border-slate-700">
+                        <div class="absolute top-3 right-3 flex space-x-2">
+                            <div class="w-3 h-3 bg-rose-500 rounded-full"></div>
+                            <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        <div class="mt-4">
+                            <span class="text-blue-400">SELECT</span> <span class="text-white">genero,</span> <span class="text-yellow-300">COUNT(*)</span><br>
+                            <span class="text-blue-400">FROM</span> <span class="text-white">contenidos</span><br>
+                            <span class="text-blue-400">WHERE</span> <span class="text-yellow-300 text-rose-400 font-bold underline decoration-wavy">COUNT(*)</span> <span class="text-white">> 2</span> 
+                            <span class="text-slate-500 ml-4 hidden md:inline">&larr; AQUÍ HAY FUEGO</span><br>
+                            <span class="text-blue-400">GROUP BY</span> <span class="text-white">genero;</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button v-if="!showErrorForm" @click="showErrorForm = true" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold text-xl py-6 rounded-2xl shadow-lg transition-transform hover:-translate-y-1 mb-4 flex items-center justify-center">
+                            <i class="fa-solid fa-play mr-3"></i> EJECUTAR EN SERVIDOR
+                        </button>
+
+                        <div v-show="showErrorForm" class="bg-rose-50 border-2 border-rose-200 rounded-2xl p-6 text-rose-900 shadow-sm animate-fade-in">
+                            <div class="font-bold text-rose-600 mb-2 font-mono"><i class="fa-solid fa-triangle-exclamation mr-2"></i> ORA-00934: group function is not allowed here</div>
+                            <p class="mb-4 font-medium text-lg">El motor te ha rechazado porque intentaste usar <code>COUNT()</code> en la cláusula <code>WHERE</code>.</p>
+                            
+                            <h3 class="font-bold text-slate-800 mb-3"><i class="fa-solid fa-lightbulb text-yellow-500"></i> Reflexión usando el Simulador:</h3>
+                            <button @click="solvedError = true" class="bg-white hover:bg-slate-50 border-2 border-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl w-full text-left transition-colors mb-3">
+                                ¿Por qué lógicamente SQL no puede contar `COUNT(*)` en el paso del WHERE?
+                            </button>
+                            
+                            <div v-show="solvedError" class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl mt-4 text-emerald-800 font-medium">
+                                <i class="fa-solid fa-check-circle mr-2"></i> <strong>¡Exacto!</strong> Según nuestro pipeline, el <code class="bg-white px-1 rounded border border-emerald-100">WHERE</code> (paso 2) procesa fila por fila <strong>ANTES</strong> de que se formen los grupos en el <code class="bg-white px-1 rounded border border-emerald-100">GROUP BY</code> (paso 3). ¡SQL no puede contar los elementos de un estante si aún no ha construido los estantes! Por eso inventaron la cláusula <code class="bg-white px-1 font-bold rounded shadow-sm">HAVING</code> (paso 4).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Accidente Producto Cartesiano -->
+            <section class="bg-slate-900 rounded-[2.5rem] p-8 md:p-12 shadow-2xl relative overflow-hidden text-slate-200 border-4 border-slate-700">
+                <div class="absolute -top-32 -right-32 text-slate-800 opacity-50">
+                    <i class="fa-solid fa-burst text-[30rem]"></i>
+                </div>
+                
+                <div class="relative z-10">
+                    <h2 class="text-3xl font-extrabold text-white mb-6 flex items-center">
+                        <span class="bg-orange-500/20 text-orange-400 w-12 h-12 rounded-full flex items-center justify-center mr-4 shadow-[0_0_15px_rgba(249,115,22,0.5)]"><i class="fa-solid fa-radiation"></i></span>
+                        3. El Accidente en la Bodega
+                    </h2>
+                    
+                    <p class="text-xl leading-relaxed mb-8">
+                        Ya entendiste que el <strong>FROM</strong> es lo primero que se ejecuta. Toma las tablas y las carga en la memoria temporal del servidor. Pero qué pasa si le pides datos de dos tablas al mismo tiempo: <code>FROM usuarios, contenidos</code>.
+                    </p>
+
+                    <div class="bg-black/50 p-8 rounded-3xl border border-slate-700 mb-10 text-center">
+                        <button v-if="!showCartesian" @click="triggerCartesian" class="bg-slate-700 hover:bg-slate-600 border-2 border-slate-500 text-white font-bold text-xl py-4 px-10 rounded-full transition-transform hover:scale-110 shadow-lg">
+                            Ver el estado de la memoria <i class="fa-solid fa-eye ml-2"></i>
+                        </button>
+                        
+                        <div v-show="showCartesian" class="animate-fade-in text-left">
+                            <h3 class="text-orange-400 font-black text-2xl mb-4 text-center">¡PRODUCTO CARTESIANO!</h3>
+                            <div class="bg-rose-900/40 p-6 rounded-2xl border-2 border-rose-500/50 mb-6">
+                                <p class="font-medium text-lg leading-relaxed text-rose-100">
+                                    Al no especificar <em>cómo</em> conectarlas, SQL mezcla <strong>TODAS las filas de usuarios con TODAS las de contenidos ciegamente.</strong><br><br>
+                                    Si tienes solo 1.000 usuarios y 5.000 películas... la memoria RAM acaba de generar <strong class="text-white text-2xl">5.000.000</strong> de combinaciones sin sentido (Por ejemplo: Ana Torres vio "Attack on Titan", Ana vió "Breaking Bad", Luis Rojas vió "Attack"... etc).
+                                </p>
+                            </div>
+
+                            <a href="#" class="block bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-center text-white font-bold py-5 rounded-2xl shadow-xl transition-all transform hover:-translate-y-1">
+                                <span class="block text-sm text-blue-200 mb-1 uppercase tracking-widest"><i class="fa-solid fa-key mr-2"></i> Para solucionar esto crearon una llave maestra:</span>
+                                <span class="text-2xl">Descubre los JOIN <i class="fa-solid fa-arrow-right ml-2"></i></span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <app-footer></app-footer>
+
+    <script src="js/components.js"></script>
+    <script>
+        const { createApp } = Vue;
+        createApp({
+            data() {
+                return {
+                    currentStage: 0,
+                    showErrorForm: false,
+                    solvedError: false,
+                    showCartesian: false,
+                    logicOrder: [
+                        { name: 'FROM', desc: 'Identifica y extrae las tablas base.', action: 'Conecta a la bodega física del disco duro y carga grandes bolsas de datos a la memoria de trabajo RAM.', volume: '100% de la tabla cruda', icon: 'fa-database' },
+                        { name: 'WHERE', desc: 'Descarta filas individuales inválidas.', action: 'Un guardia revisa cada fila en la cinta de montaje. Si no cumple la condición booleana, la bota a la basura antes de procesarla matemáticamente.', volume: 'Sólo las filas aprobadas', icon: 'fa-filter' },
+                        { name: 'GROUP BY', desc: 'Funde las filas en repisas.', action: 'Toma la masa de filas desordenadas y las apila forzosamente en "estantes" según la categoría configurada. Ya no existen filas por separado.', volume: 'Número de categorías únicas', icon: 'fa-layer-group' },
+                        { name: 'HAVING', desc: 'Audita los grupos enteros.', action: 'Otro guardia, pero este revisa el estante COMPLETO. Si el recuento total del estante no cumple, bota la repisa entera a la basura.', volume: 'Sólo repisas válidas', icon: 'fa-filter-circle-xmark' },
+                        { name: 'SELECT', desc: 'Imprime el reporte visual.', action: 'Una impresora que proyecta las columnas solicitadas y calcula los promedios/sumatorias de lo que quedó en los estantes sobrevivientes.', volume: 'La proyección final.', icon: 'fa-table-columns' },
+                        { name: 'ORDER BY', desc: 'Acomoda el PDF para leerlo.', action: 'SQL simplemente toma el papel impreso que ya está listo, y ordena las líneas alfabéticamente o de mayor a menor para tu comodidad visual.', volume: 'Lectura Final', icon: 'fa-arrow-down-a-z' }
+                    ],
+                    writtenOrder: ['SELECT', 'FROM', 'WHERE', 'GROUP BY', 'HAVING', 'ORDER BY']
+                }
+            },
+            methods: {
+                triggerCartesian() {
+                    this.showCartesian = true;
+                }
+            }
+        }).mount('#app');
+    </script>
+    <style>
+        .animate-fade-in { animation: fadeIn 0.5s ease-in forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</body>
+</html>

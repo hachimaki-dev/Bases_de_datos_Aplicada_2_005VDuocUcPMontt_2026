@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🧩 Desafío JOIN: El Arte de Unir Tablas</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { cute: ['Quicksand', 'sans-serif'], code: ['Fira Code', 'monospace'] },
+          colors: {
+            kawaii: { pink: '#fce4ec', rose: '#f8bbd0', lilac: '#e1bee7', mint: '#c8e6c9', sky: '#b3e5fc', peach: '#ffe0b2', cream: '#fffde7', deep: '#0f766e', text: '#4a4a4a', correct: '#4CAF50', wrong: '#F44336' }
+          },
+          animation: { 'bounce-slow': 'bounce 3s infinite' }
+        }
+      }
+    }
+  </script>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+
+  <style>
+    body { background-color: #f0fdf4; font-family: 'Quicksand', sans-serif; color: #334155; overflow-x: hidden; background-image: radial-gradient(#a7f3d0 1px, transparent 1px); background-size: 20px 20px; }
+    .bg-shape { position: absolute; border-radius: 50%; filter: blur(60px); z-index: 0; opacity: 0.5; }
+    .fade-enter-active, .fade-leave-active { transition: opacity 0.4s ease; }
+    .fade-enter-from, .fade-leave-to { opacity: 0; }
+    .slide-enter-active, .slide-leave-active { transition: all 0.4s ease; }
+    .slide-enter-from { opacity: 0; transform: translateY(20px); }
+    .slide-leave-to { opacity: 0; transform: translateY(-20px); }
+    .challenge-card { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); cursor: pointer; }
+    .challenge-card:hover:not(.locked) { transform: translateY(-5px) scale(1.02); box-shadow: 0 15px 30px -5px rgba(15, 118, 110, 0.2); }
+    .challenge-card.locked { cursor: not-allowed; filter: grayscale(100%); opacity: 0.6; }
+    .pulse-btn { box-shadow: 0 0 0 0 rgba(15,118,110,0.4); animation: pulse-ring 2s infinite; }
+    @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(15,118,110,0.4); } 70% { box-shadow: 0 0 0 20px rgba(15,118,110,0); } 100% { box-shadow: 0 0 0 0 rgba(15,118,110,0); } }
+    @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 50%{transform:translateX(6px);} 75%{transform:translateX(-6px);} }
+    .shake { animation: shake 0.4s; }
+    pre[class*="language-"] { background: #1e1e3f !important; border-radius: 1rem; border: 4px solid #6ee7b7; box-shadow: 0 10px 20px rgba(0,0,0,0.1); font-size: 1.05rem !important; padding: 1.5rem !important; }
+    code[class*="language-"] { font-family: 'Fira Code', monospace !important; }
+    .glass-panel { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border: 2px solid rgba(255,255,255,0.5); border-radius: 1.5rem; box-shadow: 0 8px 32px rgba(15,118,110,0.1); }
+    .island-btn { transition: all 0.25s ease; }
+    .island-btn:hover { transform: scale(1.05); }
+    .island-btn.selected-correct { background-color: #d1fae5; border-color: #059669; }
+    .island-btn.selected-wrong { background-color: #fee2e2; border-color: #dc2626; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col relative text-slate-800">
+
+  <script src="js/components.js"></script>
+  <app-nav class="relative z-50 shadow-md bg-white"></app-nav>
+
+  <div class="bg-shape" style="width:50vw;height:50vw;background:#a7f3d0;top:-10%;left:-10%;"></div>
+  <div class="bg-shape" style="width:40vw;height:40vw;background:#e1bee7;bottom:-10%;right:-10%;"></div>
+  <div class="bg-shape" style="width:30vw;height:30vw;background:#bbf7d0;top:40%;left:30%;"></div>
+
+  <div id="join-app" class="relative z-10 flex-grow flex flex-col w-full max-w-7xl mx-auto px-4 py-8">
+    
+    <!-- STICKY HEADER -->
+    <header class="flex flex-col sm:flex-row justify-between items-center mb-8 glass-panel p-4 z-20 sticky top-4 gap-3">
+       <div class="text-xl font-bold font-cute tracking-wide flex items-center gap-2 text-kawaii-deep">
+        <span>🧩</span><span>Misión JOIN</span>
+       </div>
+       <div class="font-bold bg-white px-5 py-2 rounded-full shadow-sm text-lg text-kawaii-deep flex gap-1.5">
+         <span v-for="i in 8" :key="i" class="text-base">{{ completedChallenges.includes(i) ? '⭐' : '⬛' }}</span>
+       </div>
+       <!-- DB Reference Toggle -->
+       <button @click="showDbRef = !showDbRef" class="bg-teal-600 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-teal-700 transition-colors shadow-sm">
+         <i class="fa-solid fa-database mr-1"></i> {{ showDbRef ? 'Ocultar' : 'Ver' }} Tablas
+       </button>
+    </header>
+
+    <!-- FLOATING DB REFERENCE -->
+    <transition name="slide">
+      <div v-if="showDbRef" class="mb-8 bg-white rounded-2xl p-6 shadow-xl border-2 border-emerald-200 relative z-10">
+        <h3 class="font-bold text-teal-700 mb-4 text-lg"><i class="fa-solid fa-database mr-2"></i>Referencia Rápida de la Base de Datos</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div v-for="(tbl, name) in dbTables" :key="name" class="bg-slate-50 rounded-xl p-4 border border-slate-200 overflow-x-auto">
+            <h4 class="font-bold text-slate-700 mb-2">{{ tbl.icon }} {{ name }}</h4>
+            <table class="w-full text-xs font-code">
+              <thead><tr class="bg-slate-200"><th v-for="col in tbl.cols" :key="col" class="p-1 text-left">{{ col }}</th></tr></thead>
+              <tbody><tr v-for="(row, ri) in tbl.rows" :key="ri" class="border-b border-slate-100"><td v-for="(val, ci) in row" :key="ci" class="p-1">{{ val }}</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <main class="flex-grow flex flex-col items-center relative w-full">
+      <transition name="fade" mode="out-in">
+
+        <!-- ═══════════ MAP VIEW ═══════════ -->
+        <div v-if="state === 'map'" key="map" class="w-full flex flex-col items-center px-4 max-w-5xl">
+          <div class="text-center mb-10 mt-4">
+             <div class="text-6xl mb-4">🌉</div>
+             <h1 class="text-5xl font-bold text-kawaii-deep mb-4 drop-shadow-sm">El Mapa de los Puentes</h1>
+             <p class="text-xl text-slate-600 max-w-2xl mx-auto glass-panel p-4 font-medium">
+               Cruza las islas de información paso a paso. Falla, lee las pistas y aprende. Gana las 8 estrellas para dominar el JOIN.
+             </p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full relative z-10">
+             <div v-for="ch in challenges" :key="ch.id"
+               class="challenge-card p-5 rounded-2xl shadow-xl border-4 text-center min-h-[200px] flex flex-col items-center justify-between"
+               :class="[isUnlocked(ch.id) ? 'bg-white border-teal-600' : 'locked bg-slate-100 border-slate-300', completedChallenges.includes(ch.id) ? 'ring-4 ring-emerald-400 bg-emerald-50/50' : '']"
+               @click="isUnlocked(ch.id) ? startChallenge(ch) : null">
+                <div class="text-4xl mb-2 relative">
+                   {{ ch.emoji }}
+                   <div v-if="completedChallenges.includes(ch.id)" class="absolute -top-2 -right-2 text-2xl">⭐</div>
+                   <div v-if="!isUnlocked(ch.id)" class="absolute inset-0 flex items-center justify-center bg-white/50 rounded-full text-3xl">🔒</div>
+                </div>
+                <h3 class="text-lg font-bold" :class="isUnlocked(ch.id) ? 'text-teal-800' : 'text-slate-500'">{{ ch.title }}</h3>
+                <p class="text-xs mt-1 font-medium bg-slate-100 rounded-lg px-2 py-1 text-slate-600">{{ ch.skill }}</p>
+                <button v-if="isUnlocked(ch.id) && !completedChallenges.includes(ch.id)" class="mt-3 bg-teal-600 text-white font-bold py-1.5 px-5 rounded-full text-sm hover:bg-teal-700 transition">Comenzar</button>
+             </div>
+          </div>
+        </div>
+
+        <!-- ═══════════ EXERCISE VIEW ═══════════ -->
+        <div v-else-if="state === 'playing'" key="playing" class="w-full flex flex-col items-center max-w-4xl">
+           <!-- Challenge Header -->
+           <div class="glass-panel w-full p-6 mb-6 text-center border-t-8 border-t-teal-600 relative">
+              <button @click="backToMap" class="absolute top-4 left-4 bg-slate-200 hover:bg-slate-300 rounded-full w-10 h-10 flex items-center justify-center font-bold text-slate-700"><i class="fa-solid fa-xmark"></i></button>
+              <div class="text-4xl mb-1">{{ currentChallenge.emoji }}</div>
+              <h2 class="text-2xl font-bold text-teal-800">{{ currentChallenge.title }}</h2>
+              <p class="text-base text-slate-600 mt-1">{{ currentChallenge.description }}</p>
+              <div class="mt-3 flex justify-center gap-2">
+                 <span class="text-sm font-bold text-slate-500 mr-1">Vidas:</span>
+                 <span v-for="i in 3" :key="i" class="text-lg transition-all" :class="i <= (3 - attempts) ? 'opacity-100' : 'opacity-20 grayscale'">❤️</span>
+              </div>
+              <div class="mt-2 text-xs text-slate-400 font-bold">Ejercicio {{ currentExerciseIndex + 1 }} / {{ currentChallenge.exercises.length }}</div>
+           </div>
+
+           <!-- ─── EXERCISE BODY ─── -->
+           <div class="w-full bg-white p-6 rounded-2xl shadow-lg border-2 border-emerald-200 mb-6">
+              <p class="text-lg font-bold mb-6 text-center text-teal-700 leading-relaxed">{{ activeExercise.prompt }}</p>
+
+              <!-- ★ TYPE: select-island ★ -->
+              <div v-if="currentChallenge.type === 'select-island'" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <button v-for="(tbl, name) in dbTables" :key="name" @click="selectIsland(name)"
+                  :class="['island-btn p-6 rounded-2xl border-4 text-center font-bold text-xl shadow-sm',
+                           islandSelection === name ? (islandCorrect === true ? 'selected-correct border-emerald-500' : islandCorrect === false ? 'selected-wrong border-rose-500 shake' : 'border-blue-400 bg-blue-50') : 'border-slate-200 bg-slate-50 hover:border-teal-400']">
+                  <div class="text-4xl mb-2">{{ tbl.icon }}</div>
+                  {{ name }}
+                </button>
+              </div>
+
+              <!-- ★ TYPE: manual-join ★ -->
+              <div v-if="currentChallenge.type === 'manual-join'" class="space-y-6">
+                <!-- Show tables for reference -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm">
+                  <p class="font-bold text-slate-600 mb-2"><i class="fa-solid fa-eye mr-1"></i> Consulta las tablas arriba (botón "Ver Tablas") para encontrar las respuestas.</p>
+                </div>
+                <div v-for="(step, si) in activeExercise.steps" :key="si" class="bg-slate-100 rounded-xl p-5 border border-slate-200">
+                  <p class="font-bold text-slate-700 mb-3">{{ step.instruction }}</p>
+                  <div v-if="si <= manualStep" class="flex gap-3 items-center">
+                    <input type="text" v-model="manualAnswers[si]" @keyup.enter="checkManualStep(si)"
+                      class="flex-grow bg-white border-2 border-slate-300 rounded-xl px-4 py-3 font-code focus:border-teal-500 outline-none text-lg"
+                      :placeholder="si < manualStep ? '✅ Correcto' : 'Tu respuesta...'"
+                      :disabled="si < manualStep" />
+                    <button v-if="si === manualStep" @click="checkManualStep(si)" class="bg-teal-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-teal-700 transition flex-shrink-0">
+                      <i class="fa-solid fa-check"></i>
+                    </button>
+                  </div>
+                  <div v-else class="text-slate-400 italic text-sm mt-2">Completa el paso anterior primero.</div>
+                </div>
+                <!-- Revelation -->
+                <transition name="slide">
+                  <div v-if="showRevelation" class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-6 text-center">
+                    <div class="text-4xl mb-3">💡</div>
+                    <p class="text-lg font-bold text-emerald-800">{{ activeExercise.revelation }}</p>
+                  </div>
+                </transition>
+              </div>
+
+              <!-- ★ TYPE: connect-keys ★ -->
+              <div v-if="currentChallenge.type === 'connect-keys'" class="space-y-4">
+                <div class="grid grid-cols-2 gap-6">
+                  <!-- Source Table Columns -->
+                  <div>
+                    <h4 class="text-center font-bold text-slate-600 mb-3 bg-slate-100 py-2 rounded-lg text-sm uppercase tracking-wider">{{ activeExercise.sourceTable }}</h4>
+                    <div class="space-y-2">
+                      <button v-for="col in getTableCols(activeExercise.sourceTable)" :key="'s-'+col" @click="selectKeyCol('source', col)"
+                        :class="['w-full p-3 rounded-xl border-2 font-code text-sm font-bold transition-all text-left',
+                                 keySource === col ? 'bg-blue-100 border-blue-500 text-blue-800' : 'bg-white border-slate-200 hover:border-blue-300']">
+                        <i class="fa-solid fa-key text-yellow-500 mr-2" v-if="col.includes('id')"></i>{{ col }}
+                      </button>
+                    </div>
+                  </div>
+                  <!-- Target Table Columns -->
+                  <div>
+                    <h4 class="text-center font-bold text-slate-600 mb-3 bg-slate-100 py-2 rounded-lg text-sm uppercase tracking-wider">{{ activeExercise.targetTable }}</h4>
+                    <div class="space-y-2">
+                      <button v-for="col in getTableCols(activeExercise.targetTable)" :key="'t-'+col" @click="selectKeyCol('target', col)"
+                        :class="['w-full p-3 rounded-xl border-2 font-code text-sm font-bold transition-all text-left',
+                                 keyTarget === col ? 'bg-purple-100 border-purple-500 text-purple-800' : 'bg-white border-slate-200 hover:border-purple-300']">
+                        <i class="fa-solid fa-key text-yellow-500 mr-2" v-if="col.includes('id')"></i>{{ col }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <!-- Connect Button -->
+                <div class="text-center pt-4" v-if="keySource && keyTarget">
+                  <button @click="verifyKeyConnection" class="bg-teal-700 text-white font-bold py-3 px-10 rounded-full hover:bg-teal-600 shadow-lg text-lg pulse-btn">
+                    Conectar 🔗 {{ keySource }} → {{ keyTarget }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- ★ TYPE: fillgaps ★ -->
+              <div v-if="currentChallenge.type === 'fillgaps'" class="text-center font-code text-xl bg-slate-800 text-white p-8 rounded-xl leading-[3rem]">
+                 <span v-for="(part, idx) in parseTemplate(activeExercise.template)" :key="idx">
+                    <span v-if="part.isGap" class="inline-block mx-1">
+                       <input type="text" v-model="userAnswers[part.id]"
+                         class="bg-slate-700 text-emerald-400 border-b-4 border-emerald-500 outline-none font-code text-center w-40 px-2 py-1 focus:bg-slate-600 transition-colors rounded-t-lg"
+                         placeholder="?" autocomplete="off" spellcheck="false" />
+                    </span>
+                    <span v-else class="text-teal-300">{{ part.text }}</span>
+                 </span>
+              </div>
+
+              <!-- ★ TYPE: tracetable ★ -->
+              <div v-if="currentChallenge.type === 'tracetable'" class="flex flex-col gap-6">
+                 <div class="flex justify-center"><pre><code class="language-sql">{{ activeExercise.code }}</code></pre></div>
+                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-sm text-center text-slate-500 font-bold">
+                   <i class="fa-solid fa-lightbulb text-yellow-500 mr-1"></i> Consulta las tablas de referencia (botón "Ver Tablas") para encontrar las coincidencias.
+                 </div>
+                 <div class="overflow-x-auto rounded-xl shadow border border-slate-200">
+                    <table class="w-full text-center border-collapse">
+                       <thead><tr class="bg-teal-600 text-white">
+                          <th class="p-3 border-r border-teal-500">#</th>
+                          <th v-for="v in activeExercise.vars" :key="v" class="p-3 font-code border-r border-teal-500 text-sm">{{ v }}</th>
+                       </tr></thead>
+                       <tbody><tr v-for="(row, rIdx) in activeExercise.table" :key="rIdx" class="bg-white">
+                          <td class="p-3 border-b border-r border-slate-200 font-bold bg-slate-50 text-slate-500 text-sm">{{ row.row }}</td>
+                          <td v-for="(val, cIdx) in row.values" :key="cIdx" class="p-3 border-b border-r border-slate-200">
+                             <input v-model="userAnswers[`${rIdx}-${cIdx}`]"
+                               class="w-full max-w-[120px] text-center font-code border-b-2 border-slate-300 focus:border-teal-600 outline-none bg-transparent mx-auto block"
+                               placeholder="?" autocomplete="off" />
+                          </td>
+                       </tr></tbody>
+                    </table>
+                 </div>
+              </div>
+
+              <!-- ★ TYPE: reorder ★ -->
+              <div v-if="currentChallenge.type === 'reorder'" class="flex flex-col gap-3">
+                 <p class="text-sm text-center text-slate-500 mb-2">Usa las flechas para mover las líneas al orden correcto.</p>
+                 <div v-for="(line, idx) in userWorkspace" :key="idx" class="flex items-center gap-2 bg-slate-800 text-emerald-400 p-3 rounded-lg font-code shadow-sm">
+                    <span class="text-slate-500 w-6 font-mono text-sm">{{ idx + 1 }}</span>
+                    <pre class="m-0 p-0 bg-transparent border-0 text-sm flex-grow leading-none" style="box-shadow:none;"><code class="language-sql">{{ line }}</code></pre>
+                    <button @click="moveLine(idx, -1)" :disabled="idx === 0" class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded text-white disabled:opacity-30 text-sm"><i class="fa-solid fa-arrow-up"></i></button>
+                    <button @click="moveLine(idx, 1)" :disabled="idx === userWorkspace.length - 1" class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded text-white disabled:opacity-30 text-sm"><i class="fa-solid fa-arrow-down"></i></button>
+                 </div>
+              </div>
+
+              <!-- ★ TYPE: toggle-join ★ -->
+              <div v-if="currentChallenge.type === 'toggle-join'" class="space-y-6">
+                <div class="flex justify-center gap-4 mb-4">
+                  <button @click="toggleJoinType = 'INNER'" :class="['px-8 py-3 rounded-xl font-bold text-lg transition-all shadow border-b-4', toggleJoinType === 'INNER' ? 'bg-emerald-500 border-emerald-700 text-white' : 'bg-slate-200 border-slate-400 text-slate-500']">
+                    INNER JOIN
+                  </button>
+                  <button @click="toggleJoinType = 'LEFT'" :class="['px-8 py-3 rounded-xl font-bold text-lg transition-all shadow border-b-4', toggleJoinType === 'LEFT' ? 'bg-fuchsia-500 border-fuchsia-700 text-white' : 'bg-slate-200 border-slate-400 text-slate-500']">
+                    LEFT JOIN
+                  </button>
+                </div>
+                <!-- Live Result Table -->
+                <div class="bg-slate-900 rounded-xl p-4 overflow-x-auto border border-slate-700 shadow-inner">
+                  <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="border-b border-slate-700 text-emerald-300">
+                      <tr><th class="py-2 px-3">u.nombre</th><th class="py-2 px-3 border-l border-slate-700">Contenido</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="v in activeExercise.viewings" :key="v.id_usuario+v.titulo" class="border-b border-slate-800">
+                        <td class="py-2 px-3 font-bold text-white"><i class="fa-solid fa-user text-slate-500 mr-2"></i>{{ getUserName(v.id_usuario) }}</td>
+                        <td class="py-2 px-3 border-l border-slate-700 text-emerald-300"><i class="fa-solid fa-film mr-2"></i>{{ v.titulo }}</td>
+                      </tr>
+                      <!-- Camila row for LEFT JOIN -->
+                      <transition name="slide">
+                        <tr v-if="toggleJoinType === 'LEFT'" key="camila-row" class="border-b border-slate-800 bg-fuchsia-900/20">
+                          <td class="py-2 px-3 font-bold text-white"><i class="fa-solid fa-user text-fuchsia-400 mr-2"></i>camila vega</td>
+                          <td class="py-2 px-3 border-l border-slate-700 text-rose-400 italic font-bold"><i class="fa-solid fa-ghost mr-2"></i>NULL</td>
+                        </tr>
+                      </transition>
+                    </tbody>
+                  </table>
+                  <div class="text-center text-xs mt-3 font-bold" :class="toggleJoinType === 'INNER' ? 'text-slate-500' : 'text-fuchsia-300'">
+                    {{ toggleJoinType === 'INNER' ? 'Camila desapareció porque no tiene visualizaciones.' : 'Camila fue forzada a aparecer. Su contenido es NULL.' }}
+                  </div>
+                </div>
+                <!-- Question -->
+                <div class="flex flex-col gap-3 mt-4">
+                  <p class="font-bold text-slate-700 text-center">{{ activeExercise.question }}</p>
+                  <button v-for="(opt, oi) in activeExercise.options" :key="oi" @click="submitAnswer(opt)"
+                    class="bg-slate-100 hover:bg-emerald-50 border-2 border-teal-200 text-teal-800 font-bold text-base py-3 px-5 rounded-xl transition text-left shadow-sm">
+                    {{ opt }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- ★ TYPE: writecode ★ -->
+              <div v-if="currentChallenge.type === 'writecode'" class="flex flex-col gap-4">
+                 <textarea v-model="userCodeInput" rows="6"
+                   class="w-full bg-slate-900 text-emerald-400 font-code p-4 rounded-xl outline-none focus:ring-4 ring-emerald-500 resize-none text-lg"
+                   placeholder="-- Escribe tu SQL aquí..." spellcheck="false"></textarea>
+              </div>
+           </div>
+
+           <!-- ─── ACTION BAR ─── -->
+           <div class="w-full">
+              <div v-if="['reorder','fillgaps','tracetable','writecode'].includes(currentChallenge.type)" class="flex justify-center mb-6">
+                 <button @click="verifyAnswer" class="bg-teal-700 text-white text-xl font-bold py-4 px-12 rounded-full hover:bg-teal-600 transition shadow-xl pulse-btn">
+                    Verificar ⚡
+                 </button>
+              </div>
+              <transition name="slide">
+                 <div v-if="feedbackMsg" class="p-5 rounded-2xl shadow-md border-l-8 text-base font-bold flex flex-col sm:flex-row items-center justify-between gap-4"
+                      :class="isFeedbackCorrect ? 'bg-emerald-50 border-emerald-500 text-emerald-800' : 'bg-rose-50 border-rose-500 text-rose-800'">
+                    <div class="flex items-center gap-3">
+                       <span class="text-3xl">{{ isFeedbackCorrect ? '✨' : '🔥' }}</span>
+                       <span v-html="feedbackMsg"></span>
+                    </div>
+                    <button v-if="isFeedbackCorrect" @click="nextExercise" class="bg-emerald-600 text-white py-2 px-6 rounded-full hover:bg-emerald-700 shadow flex-shrink-0 font-bold">
+                       Siguiente <i class="fa-solid fa-caret-right ml-1"></i>
+                    </button>
+                 </div>
+              </transition>
+           </div>
+        </div>
+
+        <!-- ═══════════ RESULTS VIEW ═══════════ -->
+        <div v-else-if="state === 'results'" key="results" class="text-center bg-white/90 backdrop-blur-lg p-12 rounded-[3rem] shadow-2xl border-4 border-emerald-400 w-full max-w-4xl">
+           <div class="text-8xl mb-6">🏆</div>
+           <h1 class="text-5xl font-black text-teal-800 mb-4">¡Maestro de las Relaciones!</h1>
+           <p class="text-xl text-slate-600 mb-8 font-medium">Has comprendido los fundamentos del SQL JOIN.</p>
+           <div class="bg-emerald-50 py-8 px-12 rounded-3xl inline-block mb-10 border-2 border-emerald-200 shadow-inner">
+             <div class="flex justify-center gap-1 text-4xl mb-4">⭐⭐⭐⭐⭐⭐⭐⭐</div>
+             <p class="text-lg font-bold text-emerald-800">¡Todas las islas conectadas!</p>
+           </div>
+           <div class="flex justify-center gap-6 flex-wrap">
+             <button @click="resetProgress" class="bg-white border-4 border-teal-700 text-teal-800 text-lg font-bold py-3 px-8 rounded-full hover:bg-teal-50 transition-colors"><i class="fa-solid fa-redo-alt mr-2"></i> Reiniciar</button>
+             <a href="index.html" class="bg-teal-700 text-white text-lg font-bold py-3 px-8 rounded-full hover:bg-teal-600 shadow-lg inline-flex items-center">Volver al Diario <i class="fa-solid fa-house ml-2"></i></a>
+           </div>
+        </div>
+
+      </transition>
+    </main>
+  </div>
+
+  <app-footer class="relative z-50 mt-16"></app-footer>
+
+  <script src="js/join-data.js"></script>
+  <script>
+    const app = Vue.createApp({
+      data() {
+        return {
+          challenges: CHALLENGES,
+          dbTables: DB_TABLES,
+          state: 'map',
+          showDbRef: false,
+          completedChallenges: JSON.parse(localStorage.getItem('bd_duoc_join_v2') || '[]'),
+          currentChallenge: null,
+          currentExerciseIndex: 0,
+          attempts: 0,
+          feedbackMsg: '',
+          isFeedbackCorrect: false,
+          // Exercise-specific state
+          userWorkspace: [],
+          userAnswers: {},
+          userCodeInput: '',
+          // select-island
+          islandSelection: null,
+          islandCorrect: null,
+          // manual-join
+          manualStep: 0,
+          manualAnswers: {},
+          showRevelation: false,
+          // connect-keys
+          keySource: null,
+          keyTarget: null,
+          // toggle-join
+          toggleJoinType: 'INNER',
+        }
+      },
+      computed: {
+        activeExercise() {
+          if (!this.currentChallenge) return {};
+          return this.currentChallenge.exercises[this.currentExerciseIndex] || {};
+        }
+      },
+      methods: {
+        isUnlocked(id) { return id === 1 || this.completedChallenges.includes(id - 1); },
+        
+        startChallenge(ch) {
+          this.currentChallenge = ch;
+          this.currentExerciseIndex = 0;
+          this.resetExerciseState();
+          this.state = 'playing';
+          this.showDbRef = false;
+          this.$nextTick(() => this.highlightCode());
+        },
+        
+        backToMap() { this.state = 'map'; this.currentChallenge = null; },
+        
+        resetExerciseState() {
+          this.attempts = 0; this.feedbackMsg = ''; this.isFeedbackCorrect = false;
+          this.userAnswers = {}; this.userCodeInput = '';
+          this.islandSelection = null; this.islandCorrect = null;
+          this.manualStep = 0; this.manualAnswers = {}; this.showRevelation = false;
+          this.keySource = null; this.keyTarget = null;
+          this.toggleJoinType = 'INNER';
+          if (this.currentChallenge && this.currentChallenge.type === 'reorder') {
+            this.userWorkspace = [...this.activeExercise.shuffled];
+          }
+        },
+
+        // ─── select-island ───
+        selectIsland(name) {
+          this.islandSelection = name;
+          if (name === this.activeExercise.correctIsland) {
+            this.islandCorrect = true;
+            this.isFeedbackCorrect = true;
+            this.feedbackMsg = this.activeExercise.explanation;
+            confetti({ particleCount: 40, spread: 50, origin: { y: 0.7 }, colors: ['#10b981'] });
+          } else {
+            this.islandCorrect = false;
+            this.attempts++;
+            const hintList = this.currentChallenge.hints || [];
+            const hintIdx = Math.min(this.attempts - 1, hintList.length - 1);
+            this.isFeedbackCorrect = false;
+            this.feedbackMsg = hintList[hintIdx] || 'Esa no es la tabla correcta.';
+            setTimeout(() => { this.islandSelection = null; this.islandCorrect = null; }, 800);
+          }
+        },
+
+        // ─── manual-join ───
+        checkManualStep(si) {
+          const step = this.activeExercise.steps[si];
+          const userVal = (this.manualAnswers[si] || '').trim().toLowerCase();
+          const correct = step.answer.toLowerCase();
+          const alts = (step.acceptAlso || []).map(a => a.toLowerCase());
+          
+          if (userVal === correct || alts.includes(userVal)) {
+            this.manualStep = si + 1;
+            if (this.manualStep >= this.activeExercise.steps.length) {
+              this.showRevelation = true;
+              this.isFeedbackCorrect = true;
+              this.feedbackMsg = '¡Completaste la búsqueda manual! Ahora imagina hacer eso con miles de registros...';
+              confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 }, colors: ['#10b981'] });
+            }
+          } else {
+            this.attempts++;
+            const hintList = this.currentChallenge.hints || [];
+            const hintIdx = Math.min(this.attempts - 1, hintList.length - 1);
+            this.feedbackMsg = hintList[hintIdx] || 'Revisa bien los datos en las tablas.';
+            this.isFeedbackCorrect = false;
+          }
+        },
+
+        // ─── connect-keys ───
+        getTableCols(name) { return this.dbTables[name] ? this.dbTables[name].cols : []; },
+        selectKeyCol(side, col) {
+          if (side === 'source') this.keySource = col;
+          else this.keyTarget = col;
+        },
+        verifyKeyConnection() {
+          const ex = this.activeExercise;
+          if (this.keySource === ex.correctSource && this.keyTarget === ex.correctTarget) {
+            this.isFeedbackCorrect = true;
+            this.feedbackMsg = '¡Conexión perfecta! Esas columnas son el puente lógico entre ambas tablas.';
+            confetti({ particleCount: 40, spread: 50, origin: { y: 0.7 }, colors: ['#10b981'] });
+          } else {
+            this.attempts++;
+            this.isFeedbackCorrect = false;
+            this.feedbackMsg = ex.errorMsg || 'Esa conexión no es correcta.';
+            this.keySource = null; this.keyTarget = null;
+          }
+        },
+
+        // ─── toggle-join (answer via options) ───
+        getUserName(id) {
+          const ex = this.activeExercise;
+          const user = ex.baseUsers.find(u => u.id === id);
+          return user ? user.nombre : '???';
+        },
+        submitAnswer(val) {
+          this.verifyStandard(val, this.activeExercise.answer);
+        },
+
+        // ─── Generic verify for fillgaps, reorder, tracetable, writecode ───
+        verifyAnswer() {
+          this.feedbackMsg = '';
+          const type = this.currentChallenge.type;
+          
+          if (type === 'reorder') {
+            this.verifyStandard(JSON.stringify(this.userWorkspace) === JSON.stringify(this.activeExercise.correct), true);
+          }
+          else if (type === 'fillgaps') {
+            let ok = true;
+            this.activeExercise.gaps.forEach(g => {
+              let v = (this.userAnswers[g.id] || '').trim().toLowerCase();
+              let match = v === g.answer.toLowerCase() || (g.acceptAlso || []).some(a => a.toLowerCase() === v);
+              if (!match) ok = false;
+            });
+            this.verifyStandard(ok, true);
+          }
+          else if (type === 'tracetable') {
+            let ok = true;
+            this.activeExercise.table.forEach((row, rIdx) => {
+              row.values.forEach((val, cIdx) => {
+                const u = (this.userAnswers[`${rIdx}-${cIdx}`] || '').trim().toLowerCase();
+                if (u !== String(val).toLowerCase()) ok = false;
+              });
+            });
+            this.verifyStandard(ok, true);
+          }
+          else if (type === 'writecode') {
+            let code = this.userCodeInput.toLowerCase().replace(/[""'']/g, "'").replace(/\s+/g, ' ');
+            let ok = true;
+            this.activeExercise.mustContain.forEach(w => { if (!code.includes(w)) ok = false; });
+            this.verifyStandard(ok, true);
+          }
+        },
+
+        verifyStandard(userInput, expected) {
+          this.attempts++;
+          if (userInput === expected) {
+            this.isFeedbackCorrect = true;
+            this.feedbackMsg = '¡Correcto! Excelente razonamiento.';
+            confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 }, colors: ['#10b981'] });
+          } else {
+            this.isFeedbackCorrect = false;
+            const hintList = this.activeExercise.hints || this.currentChallenge.hints || [];
+            const hintIdx = Math.min(this.attempts - 1, hintList.length - 1);
+            this.feedbackMsg = this.attempts >= 3
+              ? `Pista final: <strong>${hintList[hintList.length - 1] || 'Revisa la estructura de las tablas.'}</strong>`
+              : (hintList[hintIdx] || 'No es correcto. Intenta de nuevo.');
+          }
+        },
+
+        // ─── Navigation ───
+        nextExercise() {
+          if (this.currentExerciseIndex < this.currentChallenge.exercises.length - 1) {
+            this.currentExerciseIndex++;
+            this.resetExerciseState();
+            this.$nextTick(() => this.highlightCode());
+          } else {
+            if (!this.completedChallenges.includes(this.currentChallenge.id)) {
+              this.completedChallenges.push(this.currentChallenge.id);
+              localStorage.setItem('bd_duoc_join_v2', JSON.stringify(this.completedChallenges));
+              confetti({ particleCount: 150, zIndex: 100 });
+            }
+            if (this.completedChallenges.length >= this.challenges.length) {
+              this.state = 'results';
+              setTimeout(() => this.fireEndConfetti(), 500);
+            } else {
+              this.state = 'map';
+            }
+          }
+        },
+
+        resetProgress() {
+          this.completedChallenges = [];
+          localStorage.removeItem('bd_duoc_join_v2');
+          this.state = 'map';
+        },
+
+        // ─── Helpers ───
+        parseTemplate(template) {
+          if (!template) return [];
+          const parts = template.split('___');
+          const result = [];
+          parts.forEach((p, i) => {
+            if (p) result.push({ isGap: false, text: p });
+            if (i < parts.length - 1) result.push({ isGap: true, id: `g${i+1}` });
+          });
+          return result;
+        },
+        moveLine(idx, dir) {
+          const newIdx = idx + dir;
+          if (newIdx < 0 || newIdx >= this.userWorkspace.length) return;
+          const temp = this.userWorkspace[idx];
+          this.userWorkspace[idx] = this.userWorkspace[newIdx];
+          this.userWorkspace[newIdx] = temp;
+          this.$nextTick(() => this.highlightCode());
+        },
+        highlightCode() {
+          if (window.Prism) document.querySelectorAll('pre code').forEach(b => Prism.highlightElement(b));
+        },
+        fireEndConfetti() {
+          const duration = 3000, end = Date.now() + duration;
+          const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+          const rand = (min, max) => Math.random() * (max - min) + min;
+          const interval = setInterval(() => {
+            const left = end - Date.now();
+            if (left <= 0) return clearInterval(interval);
+            const count = 50 * (left / duration);
+            confetti({ ...defaults, particleCount: count, origin: { x: rand(0.1, 0.3), y: Math.random() - 0.2 } });
+            confetti({ ...defaults, particleCount: count, origin: { x: rand(0.7, 0.9), y: Math.random() - 0.2 } });
+          }, 250);
+        }
+      },
+      mounted() { this.highlightCode(); }
+    });
+    app.mount('#join-app');
+  </script>
+</body>
+</html>
