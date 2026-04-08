@@ -172,6 +172,48 @@ const appData = {
                 title: 'text-white', desc: 'text-slate-300',
                 btn: 'bg-white hover:bg-slate-200 text-slate-900'
             }
+        },
+        {
+            id: 'presentacion-join',
+            type: 'hero',
+            href: 'presentacion-join.html',
+            colSpan: 2,
+            date: '2026-04-07',
+            dateText: '7 Abr 2026',
+            tag: 'AULA INTERACTIVA', tagIcon: 'fa-chalkboard-user text-yellow-300',
+            badge: 'Proyector 1',
+            title: 'Presentación: Fundamentos de SQL JOIN',
+            description: 'Aborda la teoría y la práctica de las uniones básicas e intermedias (INNER, LEFT, RIGHT JOIN) con analogías visuales enfocadas en el DUA.',
+            btnText: 'Iniciar Acto 1', btnIcon: 'fa-desktop',
+            theme: {
+                outerBorder: 'border-fuchsia-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-indigo-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-fuchsia-500/20', circle2: 'bg-indigo-500/20',
+                tagBox: 'bg-fuchsia-900/50 text-fuchsia-200 border-fuchsia-700 backdrop-blur-sm', tagText: 'text-fuchsia-200', badgeTheme: 'bg-fuchsia-600 text-white border-fuchsia-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-indigo-200', btn: 'bg-gradient-to-r from-fuchsia-500 to-indigo-600 hover:from-fuchsia-600 hover:to-indigo-700 w-full justify-center text-white shadow-lg border border-fuchsia-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(236,72,153,0.6)]'
+            },
+            icon: 'fa-chalkboard', iconContainer: 'bg-fuchsia-900/40 border-fuchsia-500/30', iconColor: 'text-fuchsia-400'
+        },
+        {
+            id: 'presentacion-join-avanzado',
+            type: 'hero',
+            href: 'presentacion-join-avanzado.html',
+            colSpan: 2,
+            date: '2026-04-08',
+            dateText: '8 Abr 2026',
+            tag: 'AULA INTERACTIVA', tagIcon: 'fa-laptop-code text-rose-300',
+            badge: 'Proyector 2',
+            title: 'Presentación: JOINs Avanzados',
+            description: 'Explora cruces complejos y productos cartesianos (FULL, CROSS, SELF JOIN y Tablas Puente) con animaciones CSS y elementos didácticos.',
+            btnText: 'Iniciar Acto 2', btnIcon: 'fa-rocket',
+            theme: {
+                outerBorder: 'border-rose-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-rose-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-rose-500/20', circle2: 'bg-orange-500/20',
+                tagBox: 'bg-rose-900/50 text-rose-200 border-rose-700 backdrop-blur-sm', tagText: 'text-rose-200', badgeTheme: 'bg-rose-600 text-white border-rose-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-rose-200', btn: 'bg-gradient-to-r from-rose-500 to-orange-600 hover:from-rose-600 hover:to-orange-700 w-full justify-center text-white shadow-lg border border-rose-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(244,63,94,0.6)]'
+            },
+            icon: 'fa-microscope', iconContainer: 'bg-rose-900/40 border-rose-500/30', iconColor: 'text-rose-400'
         }
     ]
 };

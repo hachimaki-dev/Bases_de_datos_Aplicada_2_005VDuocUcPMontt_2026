@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación interactiva - SQL JOIN (Casos Avanzados)</title>
+    <!-- Configuración Centralizada -->
+    <script src="js/config.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- PrismJS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    
+    <style>
+        body, html {
+            overflow: hidden !important;
+            height: 100% !important;
+            margin: 0 !important;
+            background-color: #0f172a !important; 
+            color: #f1f5f9 !important; 
+        }
+        
+        #app {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+        }
+
+        pre[class*="language-"] {
+            margin: 0 !important;
+            padding: 2rem !important;
+            border-radius: 1.5rem !important;
+            font-size: 1.6rem !important; 
+            line-height: 1.4 !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+        }
+
+        .slide-element-title i { margin-right: 15px; }
+
+        /* Estilos DUA para detalles/resúmenes */
+        details {
+            background-color: rgba(30, 41, 59, 0.8);
+            border: 2px solid rgba(71, 85, 105, 0.8);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            color: #cbd5e1;
+            font-size: 1.6rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        details[open] {
+            border-color: rgba(99, 102, 241, 0.6);
+            background-color: rgba(30, 41, 59, 0.95);
+        }
+        summary {
+            font-weight: bold;
+            color: #818cf8;
+            outline: none;
+            display: flex;
+            align-items: center;
+        }
+        summary::before {
+            content: "\f05a"; /* fa-info-circle */
+            font-family: "Font Awesome 6 Free";
+            margin-right: 10px;
+        }
+        details > div {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(71, 85, 105, 0.8);
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app" tabindex="0" @keydown="handleKeydown" class="focus:outline-none">
+        
+        <!-- Header minimalista -->
+        <header class="p-6 flex justify-between items-center z-50 fixed top-0 w-full bg-slate-900/80 backdrop-blur-md border-b border-indigo-500/20 shadow-lg">
+            <a href="index.html" class="text-indigo-300 hover:text-white transition-colors flex items-center gap-2 font-bold text-lg">
+                <i class="fa-solid fa-arrow-left"></i> Volver al Diario
+            </a>
+            <div class="text-fuchsia-400 font-bold tracking-widest uppercase text-sm border border-fuchsia-500/30 px-4 py-1.5 rounded-full bg-fuchsia-900/30">
+                PENSAMIENTO CRÍTICO SQL: CASOS AVANZADOS
+            </div>
+            <div class="text-slate-300 font-bold text-xl px-4 py-1 rounded-lg bg-slate-800 border border-slate-700">
+                Diapositiva {{ currentIndex + 1 }} de {{ slides.length }}
+            </div>
+        </header>
+
+        <!-- Contenedor Principal de Slides -->
+        <main class="flex-grow flex flex-col items-center justify-center p-12 mt-20 mb-20 relative w-full h-full z-10 overflow-y-auto">
+            
+            <div class="w-full max-w-7xl mx-auto flex flex-col items-center justify-center pt-8">
+                
+                <!-- SLIDE TIPO TITLE -->
+                <div v-if="currentSlide.type === 'title'" class="text-center w-full fade-in">
+                    <i :class="['fa-solid text-9xl mb-12', currentSlide.icon || 'fa-network-wired', currentSlide.iconColor || 'text-indigo-500']"></i>
+                    <h1 class="text-7xl md:text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-pink-400 mb-8 drop-shadow-lg leading-tight">
+                        {{ currentSlide.title }}
+                    </h1>
+                    <p class="text-4xl text-slate-300 font-medium max-w-4xl mx-auto leading-[1.6] mt-10" v-html="currentSlide.subtitle"></p>
+                </div>
+
+                <!-- SLIDE TIPO SCENARIO (Misión / Correo Gerencial) -->
+                <div v-else-if="currentSlide.type === 'scenario'" class="w-full bg-gradient-to-r from-slate-900 to-slate-800 p-16 rounded-[3rem] border-2 border-slate-600 shadow-2xl relative overflow-hidden fade-in">
+                    <div class="absolute -right-10 -top-10 text-[300px] text-white/5 opacity-20"><i class="fa-solid fa-envelope"></i></div>
+                    <div class="flex items-center mb-10 border-b-2 border-slate-700 pb-8 relative z-10">
+                        <div class="bg-rose-500/20 p-6 rounded-3xl mr-8 border border-rose-500/50">
+                            <i class="fa-solid fa-envelope-open-text text-7xl text-rose-400"></i>
+                        </div>
+                        <h2 class="text-5xl font-extrabold text-white tracking-tight">{{ currentSlide.title }}</h2>
+                    </div>
+                    <div class="bg-slate-950 p-12 rounded-3xl border-l-[12px] border-rose-500 shadow-inner relative z-10">
+                        <div class="text-4xl text-slate-300 leading-[1.7] font-medium italic" v-html="currentSlide.context"></div>
+                    </div>
+                </div>
+
+                <!-- SLIDE TIPO ANALYSIS (Desglose Lógico) -->
+                <div v-else-if="currentSlide.type === 'analysis'" class="w-full text-left bg-gradient-to-br from-indigo-950 to-slate-900 p-16 rounded-[3rem] border-2 border-fuchsia-500/30 shadow-2xl fade-in">
+                    <h2 class="text-5xl font-extrabold text-white mb-12 border-b-2 border-slate-700 pb-8 flex items-center">
+                        <i class="fa-solid fa-microscope text-fuchsia-400 mr-8"></i> {{ currentSlide.title }}
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-2xl font-medium">
+                        
+                        <div class="bg-slate-800/80 p-8 rounded-[2rem] border border-slate-600 hover:border-indigo-400 transition-colors">
+                            <strong class="text-indigo-400 block mb-4 text-3xl"><i class="fa-solid fa-table-columns mr-3"></i> 1. Información Solicitada</strong>
+                            <p class="text-slate-200 mt-2 text-2xl leading-[1.6]" v-html="currentSlide.req_columns"></p>
+                        </div>
+                        
+                        <div class="bg-slate-800/80 p-8 rounded-[2rem] border border-slate-600 hover:border-pink-400 transition-colors">
+                            <strong class="text-pink-400 block mb-4 text-3xl"><i class="fa-solid fa-database mr-3"></i> 2. Listas de Origen</strong>
+                            <p class="text-slate-200 mt-2 text-2xl leading-[1.6]" v-html="currentSlide.req_tables"></p>
+                        </div>
+                        
+                        <div class="bg-slate-800/80 p-8 rounded-[2rem] border-2 border-emerald-600/60 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                            <strong class="text-emerald-400 block mb-4 text-3xl"><i class="fa-solid fa-bridge mr-3"></i> 3. Vínculo Lógico</strong>
+                            <div class="text-emerald-200 bg-[#1A1A1A] p-4 rounded-2xl block text-2xl leading-[1.6] border border-emerald-500/20 font-mono tracking-wide" v-html="currentSlide.bridge"></div>
+                        </div>
+                        
+                        <div class="bg-slate-800/80 p-8 rounded-[2rem] border border-slate-600 hover:border-yellow-400 transition-colors flex flex-col justify-center">
+                            <strong class="text-yellow-400 block mb-4 text-3xl"><i class="fa-solid fa-code-merge mr-3"></i> 4. Operación Designada</strong>
+                            <p class="text-white font-bold bg-slate-900 p-4 rounded-2xl border border-slate-700 text-3xl leading-[1.6] text-center" v-html="currentSlide.join_type"></p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- SLIDE TIPO ANALOGY (Analogía Visual DUA) -->
+                <div v-else-if="currentSlide.type === 'analogy'" class="w-full bg-slate-800/80 p-16 rounded-[3rem] border-2 border-slate-500 shadow-2xl fade-in text-center">
+                    <h2 class="text-5xl font-extrabold text-white mb-8"><i class="fa-solid fa-eye text-cyan-400 mr-4"></i> ¿Qué ocurre en el fondo?</h2>
+                    <p class="text-3xl text-slate-300 mb-10" v-html="currentSlide.description"></p>
+                    
+                    <div class="flex justify-center items-center gap-6 mt-8 bg-slate-900/50 p-8 rounded-[2rem]">
+                        <div class="flex flex-col gap-3">
+                            <div class="text-rose-400 font-bold text-2xl mb-2">{{ currentSlide.leftTable.name }}</div>
+                            <div v-for="item in currentSlide.leftTable.items" :key="item.id" 
+                                 :class="['p-3 border-2 rounded-xl text-xl font-bold flex items-center justify-center w-56 h-20', item.match ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300' : (item.isNull ? 'border-slate-600 bg-slate-800 text-slate-500 border-dashed' : 'border-rose-500 bg-rose-500/20 text-rose-300')]">
+                                 {{ item.label }}
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-3">
+                            <div class="text-transparent font-bold text-2xl mb-2">.</div>
+                            <div v-for="link in currentSlide.links" :key="link.id" 
+                                 class="flex items-center justify-center h-20 text-3xl w-16 relative">
+                                <i v-if="link.linked" class="fa-solid fa-check text-emerald-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.8)]"></i>
+                                <i v-else-if="link.cross" class="fa-solid fa-arrows-to-dot text-yellow-500"></i>
+                                <i v-else class="fa-solid fa-xmark text-slate-600"></i>
+                                
+                                <div v-if="link.crossLines" class="absolute inset-0">
+                                    <svg height="100%" width="100%"><line x1="0" y1="0" x2="100" y2="100" style="stroke:gold;stroke-width:2" /><line x1="0" y1="100" x2="100" y2="0" style="stroke:gold;stroke-width:2" /></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-3 relative">
+                            <div class="text-blue-400 font-bold text-2xl mb-2">{{ currentSlide.rightTable.name }}</div>
+                            <div v-for="item in currentSlide.rightTable.items" :key="item.id" 
+                                 :class="['p-3 border-2 rounded-xl text-xl font-bold flex items-center justify-center w-56 h-20 relative', item.match ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300' : (item.isNull ? 'border-slate-600 bg-slate-800 text-slate-500 border-dashed' : 'border-blue-500 bg-blue-500/20 text-blue-300')]">
+                                 {{ item.label }}
+                            </div>
+                            
+                            <!-- Espejo para Self Join -->
+                            <div v-if="currentSlide.isSelf" class="absolute -right-20 top-0 bottom-0 flex items-center justify-center">
+                                <i class="fa-solid fa-arrow-turn-up text-pink-500 text-6xl rotate-90 opacity-70"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SLIDE TIPO CODE (Para proyectar y escribir en BD) -->
+                <div v-else-if="currentSlide.type === 'code'" class="w-full fade-in">
+                    <div class="text-center mb-10">
+                        <h2 class="text-5xl font-bold text-emerald-400 mb-4 flex items-center justify-center gap-6 slide-element-title">
+                            <i class="fa-solid fa-laptop-code text-5xl"></i> Código SQL Operativo
+                        </h2>
+                        <p class="text-3xl text-slate-300 font-medium">{{ currentSlide.subtitle }}</p>
+                    </div>
+                    <div class="w-full relative group">
+                        <div class="absolute -inset-2 bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-500 rounded-[3rem] blur-xl opacity-30 group-hover:opacity-60 transition duration-500"></div>
+                        
+                        <div class="relative bg-[#1A1A1A] rounded-[2.5rem] border-2 border-slate-700 overflow-hidden shadow-2xl">
+                            <div class="px-8 py-4 bg-[#2D2D2D] flex gap-3 items-center justify-between">
+                                <div class="flex gap-4">
+                                    <div class="w-5 h-5 rounded-full bg-red-500"></div>
+                                    <div class="w-5 h-5 rounded-full bg-yellow-500"></div>
+                                    <div class="w-5 h-5 rounded-full bg-emerald-500"></div>
+                                </div>
+                                <div class="text-slate-400 font-mono text-xl tracking-widest">{{ currentSlide.title }}</div>
+                            </div>
+                            <pre><code class="language-sql">{{ currentSlide.sql }}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Controles Inferiores Flotantes -->
+        <div class="fixed bottom-12 left-0 w-full flex justify-center gap-16 z-50 pointer-events-none">
+            <button @click="prev" :disabled="currentIndex === 0" class="pointer-events-auto w-24 h-24 rounded-full flex items-center justify-center bg-slate-800 text-white text-5xl shadow-[0_0_20px_rgba(0,0,0,0.5)] hover:bg-indigo-600 disabled:opacity-30 disabled:hover:bg-slate-800 transition-all border-4 border-slate-600 hover:scale-110 active:scale-95 focus:outline-none">
+                <i class="fa-solid fa-chevron-left ml-[-5px]"></i>
+            </button>
+            <button @click="next" :disabled="currentIndex === slides.length - 1" class="pointer-events-auto w-24 h-24 rounded-full flex items-center justify-center bg-slate-800 text-white text-5xl shadow-[0_0_20px_rgba(0,0,0,0.5)] hover:bg-indigo-600 disabled:opacity-30 disabled:hover:bg-slate-800 transition-all border-4 border-slate-600 hover:scale-110 active:scale-95 focus:outline-none">
+                <i class="fa-solid fa-chevron-right mr-[-5px]"></i>
+            </button>
+        </div>
+
+        <!-- Barra de Progreso Inferior -->
+        <div class="fixed bottom-0 left-0 h-4 bg-slate-900 w-full z-50">
+            <div class="h-full bg-gradient-to-r from-cyan-400 via-indigo-500 to-fuchsia-500 transition-all duration-300" :style="{ width: progressPercentage + '%' }"></div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentIndex: 0,
+                    slides: [
+                        { type: 'title', title: 'Domina los Casos Complejos', subtitle: 'Acto 2: Entendiendo inconsistencias y relaciones M:N.<br>Cuando cruzar datos duele pero hay que hacerlo.<br><br>Presiona <kbd class="bg-slate-800 text-white border-b-4 border-slate-600 px-5 py-2 mx-2 rounded-xl shadow-lg">➡</kbd> para iniciar', icon: 'fa-shield-halved', iconColor: 'text-indigo-400' },
+                        
+                        // BLOQUE FULL OUTER JOIN
+                        { type: 'scenario', title: 'Diagnóstico Forense de Datos', context: '<span class="text-rose-400 font-bold not-italic">De: Mantenimiento de Software (TI)</span><br><br>"El sistema de membresías está actuando raro. Vamos a necesitar ver absolutamente toda la foto de la compañía:<br><br>Saca un listado que integre nuestra Padrón de Países junto al Registro de Usuarios. Necesito encontrar los países donde no tenemos a nadie, y TAMBIÉN encontrar si tenemos usuarios anotados a un país corrupto o borrado. Que no se escape nada de ninguna lista."' },
+                        { type: 'analysis', title: 'Desglose Lógico', req_columns: '<code class="text-indigo-300 bg-black/30 p-2 rounded block mb-2">Padrón Geográfico</code> <code class="text-indigo-300 bg-black/30 p-2 rounded block">Nombre Cliente</code>', req_tables: '<b class="text-pink-300 block mb-2">Catálogo de Países</b> <b class="text-pink-300 block">Padrón de Usuarios</b>', bridge: 'Verificamos si comparten el mismo identificador de territorio', join_type: 'FULL OUTER JOIN<br><span class="text-xl font-normal opacity-80">(Red de seguridad que salva ambos lados)</span>' },
+                        { 
+                            type: 'analogy', 
+                            description: 'La Red de Rescate Máxima. Guardamos bajo llave TODOS los registros. Si Maki tiene país asignado, se anota normal. Si la lista de Países tiene territorios sin gente (Colombia), los anota. Y si encontramos un cliente sin país marcado en su registro, lo anota también.',
+                            leftTable: { name: 'Padrón de Países', items: [{id:1, label:'Chile', match:true}, {id:2, label:'Colombia (Solo)', match:false}, {id:3, label:'(Nulo)', isNull:true}] },
+                            rightTable: { name: 'Registro Usuarios', items: [{id:1, label:'Maki', match:true}, {id:2, label:'(Nulo)', isNull:true}, {id:3, label:'Huerfano (Solo)', match:false}] },
+                            links: [{id:1, linked:true}, {id:2, linked:false}, {id:3, linked:false}]
+                        },
+                        { type: 'code', title: 'El Analizador de Inconsistencias', subtitle: 'Excelente para ver si la base de datos se desordenó. Junta los resultados del LEFT Join y del RIGHT Join en una sola pantalla colosal.', sql: '-- Recupera ambas listas protegiendo sus filas huérfanas.\nSELECT\n    p.nombre_pais,\n    u.nombre AS habitante\nFROM paises p\nFULL OUTER JOIN usuarios u    -- Mantiene TODO lo de arriba y TODO lo de abajo\n  ON p.id_pais = u.id_pais;' },
+
+                        // BLOQUE CROSS JOIN
+                        { type: 'scenario', title: 'Modelos de Negocios y Promociones', context: '<span class="text-rose-400 font-bold not-italic">De: Ingeniería de Precios (Pricing).</span><br><br>"Tenemos curiosidad financiera. Si por estrategia decidiéramos amarrar nuestro catálogo entero de Planes (Lite, Ultra) contra TODOS los Dispositivos permitidos (Consola, Web, Tv)...<br>Saca un listado rápido combinándomelos todos contra todos incondicionalmente, quiero ver las combinaciones."\n' },
+                        { type: 'analysis', title: 'Desglose Lógico', req_columns: '<code class="text-indigo-300 bg-black/30 p-2 rounded block mb-2">Tarifa Comercial</code> <code class="text-indigo-300 bg-black/30 p-2 rounded block">Soporte Tecnológico</code>', req_tables: '<b class="text-pink-300 block mb-2">Nómina de Planes</b> <b class="text-pink-300 block">Nómina de Dispositivos</b>', bridge: '<span class="text-rose-400 font-bold">Sin restricciones lógicas. Fuerza bruta.</span>', join_type: 'CROSS JOIN<br><span class="text-xl font-normal opacity-80">(La Máquina Multiplicadora)</span>' },
+                        { 
+                            type: 'analogy', 
+                            description: 'No buscamos quién tiene contratado qué. Tomamos un Plan Comercial, y forzosamente le pegamos todos y cada uno de los dispositivos en pantalla. Genera un producto inmenso de posibilidades teóricas.',
+                            leftTable: { name: 'Lista de Planes', items: [{id:1, label:'Plan Normal', match:false}, {id:2, label:'Plan Ultra', match:false}] },
+                            rightTable: { name: 'Catálogo Dispositivos', items: [{id:1, label:'SmartTV', match:false}, {id:2, label:'Web', match:false}] },
+                            links: [{id:1, cross:true}, {id:2, crossLine:true}],
+                        },
+                        { type: 'code', title: 'Generando Catálogos Ciegos', subtitle: 'Este comando puede botar la base de datos completa de Netflix si se usa mal, porque no empareja con la cláusula ON, solo multiplica los registros.', sql: '-- Genera combinatorias artificiales sin ON\nSELECT\n    pl.nombre_plan,\n    d.tipo_dispositivo\nFROM planes pl\nCROSS JOIN dispositivos d;   -- Carece de ON. Se genera un tornado.' },
+
+                        // BLOQUE SELF JOIN
+                        { type: 'scenario', title: 'Recomendaciones y Parejas', context: '<span class="text-rose-400 font-bold not-italic">De: Dpto. de Crecimiento Comunitario.</span><br><br>"Vamos a ensayar organizando juntas locales oficiales para nuestra comunidad.<br>Manejas el padrón de clientes. Te encargo que cruces la base de datos para hallarme pares de clientes (Clienta A y Cliente B) que resulten tener registrada la MISMA procedencia de País."' },
+                        { type: 'analysis', title: 'Desglose Lógico', req_columns: '<code class="text-indigo-300 bg-black/30 p-2 rounded block mb-2">Comprador 1</code> <code class="text-indigo-300 bg-black/30 p-2 rounded block">Comprador 2</code>', req_tables: '<b class="text-pink-300 block mb-2">Catálogo Único: Personas (Copia A)</b> <b class="text-pink-300 block">Catálogo Único: Personas (Copia B)</b>', bridge: 'Verificamos si Persona A vive donde vive Persona B', join_type: 'SELF JOIN<br><span class="text-xl font-normal opacity-80">(El efecto de la Fotocopia / Espejo)</span>' },
+                        { 
+                            type: 'analogy', 
+                            description: 'Agarramos el libro de los clientes corporativos. Le sacamos una fotocopia virtual temporal. Y luego leemos el libro original comparando nombre por nombre con la fotocopia, para hallar empates demográficos entre compatriotas.',
+                            leftTable: { name: 'Registro Clientes\n(Original)', items: [{id:1, label:'Maki', match:true}, {id:2, label:'Ana', match:true}] },
+                            rightTable: { name: 'Registro Clientes\n(Fotocopia Virtual)', items: [{id:1, label:'Maki', match:true}, {id:2, label:'Ana', match:true}] },
+                            links: [{id:1, linked:true}, {id:2, linked:true}],
+                            isSelf: true
+                        },
+                        { type: 'code', title: 'Fotocopiando Archivos (Alias)', subtitle: 'La única clave es darle apodos distintos ("u1" y "u2") para que la base de datos sepa de qué copia estás hablando.', sql: '-- Buscar vecinos dentro de un mismo archivo\nSELECT\n    u1.nombre AS potencial_anfitrion,\n    u2.nombre AS potencial_invitado\nFROM usuarios u1               -- Nuestra tabla original\nJOIN usuarios u2               -- La fotocopia virtual de la misma tabla\n  ON u1.id_pais = u2.id_pais\n AND u1.id_usuario < u2.id_usuario;  -- Para que la BD no compare a Maki con Maki' },
+
+                        // BLOQUE TABLA PUENTE
+                        { type: 'scenario', title: 'Seguimiento de Licencias y Regalías', context: '<span class="text-rose-400 font-bold not-italic">De: Negocios Multiplataforma.</span><br><br>"Tenemos qué declarar derechos de autor. Es súper urgente: <br>Sácame una vista gigante con el Título Comercial de cada obra que tenemos en cartelera. Pero debe venir acompañada del Género Cinematográfico (Horror, Anime, Drama).<br><br>Y claro, una película tuya puede ser Drama Y Romance. Tráemelo explícitamente detallado en diferentes líneas."' },
+                        { type: 'analysis', title: 'Desglose Lógico', req_columns: '<code class="text-indigo-300 bg-black/30 p-2 rounded block mb-2">Contenido Audiovisual</code> <code class="text-indigo-300 bg-black/30 p-2 rounded block">Género Cinematográfico</code>', req_tables: '<b class="text-pink-300 block mb-2">Cartelera Multimedia</b> ➡️ <b class="text-rose-300 block mb-2">(Hoja de Licencias)</b> ➡️ <b class="text-pink-300 block">Listado Géneros</b>', bridge: '1) La Hoja de Licencias reconoce la Peli y pasa información.<br>2) La Hoja toma el ID del género y busca la palabra explícita.', join_type: 'DOBLE JOIN ENCADENADO<br><span class="text-xl font-normal opacity-80">(La teoría de saltos y ferrocarriles)</span>' },
+                        { type: 'content', title: 'Sigue el Rastro de las Migas', icon: 'fa-shoe-prints', html: '¿Cómo relacionarías un catálogo de Series de Netflix con una lista suelta de Palabras Clave (Suspenso, TV Adultos, Comedia)? Jamás podrías meterlas de golpe. <br><br>La magia en el mundo del negocio moderno es tener **documentación intermedia ("Hojas de empalme")**. <br>En nuestra BD es <code>contenido_categoria</code>. Esa hoja solo guarda dos números: [ID Película - ID Etiqueta]. Tu deber es usarla como vía obligatoria de paso, conectando primero hacia ella, y desde ella cruzando hacia el catálogo de géneros final.' },
+                        { type: 'code', title: 'El Viaje a través del Puente', subtitle: 'Conectar tres espacios de datos distintos haciendo dos saltos lógicos secuenciales.', sql: '-- Extraer relaciones de muchos a muchos\nSELECT\n    con.titulo,\n    cat.nombre_categoria\nFROM contenidos con\nJOIN contenido_categoria cc     -- 🔌 Primer salto: Hacia el documento intermedio\n  ON con.id_contenido = cc.id_contenido\nJOIN categorias cat             -- 🔌 Segundo salto: Salir hacia nuestro destino final\n  ON cc.id_categoria = cat.id_categoria;' },
+                        
+                        { type: 'title', title: '¡Ahora piensas como un Ingeniero Data!', subtitle: 'Ya puedes extraer oro de bases de datos hostiles con millones de registros reales.', icon: 'fa-star', iconColor: 'text-amber-400' }
+                    ]
+                };
+            },
+            computed: {
+                currentSlide() {
+                    return this.slides[this.currentIndex];
+                },
+                progressPercentage() {
+                    return ((this.currentIndex + 1) / this.slides.length) * 100;
+                }
+            },
+            methods: {
+                next() {
+                    if (this.currentIndex < this.slides.length - 1) {
+                        this.currentIndex++;
+                        this.highlightCode();
+                    }
+                },
+                prev() {
+                    if (this.currentIndex > 0) {
+                        this.currentIndex--;
+                        this.highlightCode();
+                    }
+                },
+                handleKeydown(e) {
+                    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === ' ') this.next();
+                    else if (e.key === 'ArrowLeft' || e.key === 'a') this.prev();
+                },
+                highlightCode() {
+                    this.$nextTick(() => {
+                        Prism.highlightAll();
+                    });
+                }
+            },
+            mounted() {
+                this.$el.focus();
+                this.highlightCode();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

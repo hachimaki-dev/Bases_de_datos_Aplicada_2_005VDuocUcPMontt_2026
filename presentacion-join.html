@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación interactiva - SQL JOIN (Fundamentos)</title>
+    <!-- Configuración Centralizada -->
+    <script src="js/config.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- PrismJS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    
+    <style>
+        body, html {
+            overflow: hidden !important;
+            height: 100% !important;
+            margin: 0 !important;
+            background-color: #0f172a !important; 
+            color: #f1f5f9 !important; 
+        }
+        
+        #app {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+        }
+
+        pre[class*="language-"] {
+            margin: 0 !important;
+            padding: 2rem !important;
+            border-radius: 1.5rem !important;
+            font-size: 1.5rem !important; 
+            line-height: 1.4 !important;
+            max-height: 60vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+        }
+
+        .slide-element-title i { margin-right: 15px; }
+
+        /* Estilos resúmenes */
+        details {
+            background-color: rgba(30, 41, 59, 0.8);
+            border: 2px solid rgba(71, 85, 105, 0.8);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            color: #cbd5e1;
+            font-size: 1.6rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        details[open] {
+            border-color: rgba(99, 102, 241, 0.6);
+            background-color: rgba(30, 41, 59, 0.95);
+        }
+        summary {
+            font-weight: bold;
+            color: #818cf8;
+            outline: none;
+            display: flex;
+            align-items: center;
+        }
+        summary::before {
+            content: "\f05a"; /* fa-info-circle */
+            font-family: "Font Awesome 6 Free";
+            margin-right: 10px;
+        }
+        details > div {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(71, 85, 105, 0.8);
+            line-height: 1.6;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: 0.3s;
+            z-index: 10;
+        }
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app" tabindex="0" @keydown="handleKeydown" class="focus:outline-none">
+        
+        <!-- Header minimalista -->
+        <header class="p-6 flex justify-between items-center z-50 fixed top-0 w-full bg-slate-900/80 backdrop-blur-md border-b border-indigo-500/20 shadow-lg">
+            <a href="index.html" class="text-indigo-300 hover:text-white transition-colors flex items-center gap-2 font-bold text-lg">
+                <i class="fa-solid fa-arrow-left"></i> Volver al Diario
+            </a>
+            <div class="text-fuchsia-400 font-bold tracking-widest uppercase text-sm border border-fuchsia-500/30 px-4 py-1.5 rounded-full bg-fuchsia-900/30">
+                PENSAMIENTO CRÍTICO SQL: FUNDAMENTOS
+            </div>
+            <div class="text-slate-300 font-bold text-xl px-4 py-1 rounded-lg bg-slate-800 border border-slate-700">
+                Diapositiva {{ currentIndex + 1 }} de {{ slides.length }}
+            </div>
+        </header>
+
+        <!-- Contenedor Principal de Slides -->
+        <main class="flex-grow flex flex-col items-center justify-center p-12 mt-20 mb-20 relative w-full h-full z-10 overflow-y-auto">
+            
+            <div class="w-full max-w-7xl mx-auto flex flex-col items-center justify-center pt-8">
+                
+                <!-- SLIDE TIPO TITLE -->
+                <div v-if="currentSlide.type === 'title'" class="text-center w-full fade-in">
+                    <i :class="['fa-solid text-9xl mb-12', currentSlide.icon || 'fa-network-wired', currentSlide.iconColor || 'text-indigo-500']"></i>
+                    <h1 class="text-7xl md:text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-pink-400 mb-8 drop-shadow-lg leading-tight">
+                        {{ currentSlide.title }}
+                    </h1>
+                    <p class="text-4xl text-slate-300 font-medium max-w-4xl mx-auto leading-[1.6] mt-10" v-html="currentSlide.subtitle"></p>
+                </div>
+                
+                <!-- SLIDE TIPO DB SCRIPT -->
+                <div v-else-if="currentSlide.type === 'db_setup'" class="w-full fade-in">
+                    <div class="text-center mb-8">
+                        <h2 class="text-5xl font-bold text-emerald-400 mb-4 flex items-center justify-center gap-4">
+                            <i class="fa-solid fa-database"></i> Preparación del Laboratorio
+                        </h2>
+                        <p class="text-2xl text-slate-300 font-medium max-w-3xl mx-auto">Copia y ejecuta este script en tu Oracle SQL Developer para tener los mismos datos que usaremos en la clase.</p>
+                    </div>
+                    <div class="w-full relative group">
+                        <div class="relative bg-[#1A1A1A] rounded-[2rem] border-2 border-slate-700 overflow-hidden shadow-2xl">
+                            <button @click="copyDbScript" class="copy-btn">
+                                <i class="fa-solid fa-copy mb-1"></i> {{ copyBtnText }}
+                            </button>
+                            <pre><code class="language-sql">{{ dbScript }}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SLIDE TIPO CONTENT (Teoría simple) -->
+                <div v-else-if="currentSlide.type === 'content'" class="w-full bg-slate-800/80 p-16 rounded-[3rem] border-2 border-slate-700 shadow-2xl backdrop-blur-md fade-in">
+                    <div class="flex items-center mb-12 border-b-2 border-slate-700 pb-8">
+                        <div class="bg-indigo-500/20 p-6 rounded-3xl mr-8 border border-indigo-500/50">
+                            <i :class="['fa-solid text-7xl text-indigo-400', currentSlide.icon || 'fa-info-circle']"></i>
+                        </div>
+                        <h2 class="text-6xl font-extrabold text-white tracking-tight">{{ currentSlide.title }}</h2>
+                    </div>
+                    <div class="text-4xl text-slate-200 leading-[1.6] font-medium" v-html="currentSlide.html"></div>
+                    <details v-if="currentSlide.extraInfo">
+                        <summary>Contexto para ingenieros inquietos</summary>
+                        <div v-html="currentSlide.extraInfo"></div>
+                    </details>
+                </div>
+
+                <!-- SLIDE TIPO SCENARIO (Misión / Correo Gerencial) -->
+                <div v-else-if="currentSlide.type === 'scenario'" class="w-full bg-gradient-to-r from-slate-900 to-slate-800 p-16 rounded-[3rem] border-2 border-slate-600 shadow-2xl relative overflow-hidden fade-in">
+                    <div class="absolute -right-10 -top-10 text-[300px] text-white/5 opacity-20"><i class="fa-solid fa-envelope"></i></div>
+                    <div class="flex items-center mb-10 border-b-2 border-slate-700 pb-8 relative z-10">
+                        <div class="bg-rose-500/20 p-6 rounded-3xl mr-8 border border-rose-500/50">
+                            <i class="fa-solid fa-envelope-open-text text-7xl text-rose-400"></i>
+                        </div>
+                        <h2 class="text-5xl font-extrabold text-white tracking-tight">{{ currentSlide.title }}</h2>
+                    </div>
+                    <div class="bg-slate-950 p-12 rounded-3xl border-l-[12px] border-rose-500 shadow-inner relative z-10">
+                        <div class="text-4xl text-slate-300 leading-[1.7] font-medium italic" v-html="currentSlide.context"></div>
+                    </div>
+                </div>
+
+                <!-- SLIDE TIPO ANALYSIS (Desglose Lógico) -->
+                <div v-else-if="currentSlide.type === 'analysis'" class="w-full text-left bg-gradient-to-br from-indigo-950 to-slate-900 p-16 rounded-[3rem] border-2 border-fuchsia-500/30 shadow-2xl fade-in">
+                    <h2 class="text-5xl font-extrabold text-white mb-12 border-b-2 border-slate-700 pb-8 flex items-center">
+                        <i class="fa-solid fa-microscope text-fuchsia-400 mr-8"></i> {{ currentSlide.title }}
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-2xl font-medium">
+                        
+                        <div class="bg-slate-800/80 p-8 rounded-[2rem] border border-slate-600 hover:border-indigo-400 transition-colors">
+                            <strong class="text-indigo-400 block mb-4 text-3xl"><i class="fa-solid fa-table-columns mr-3"></i> 1. Información Solicitada</strong>
+                            <p class="text-slate-200 mt-2 text-2xl leading-[1.6]" v-html="currentSlide.req_columns"></p>
+                        </div>
+                        
+                        <div class="bg-slate-800/80 p-8 rounded-[2rem] border border-slate-600 hover:border-pink-400 transition-colors">
+                            <strong class="text-pink-400 block mb-4 text-3xl"><i class="fa-solid fa-database mr-3"></i> 2. Fuentes de Datos (Listas)</strong>
+                            <p class="text-slate-200 mt-2 text-2xl leading-[1.6]" v-html="currentSlide.req_tables"></p>
+                        </div>
+                        
+                        <div class="bg-slate-800/80 p-8 rounded-[2rem] border-2 border-emerald-600/60 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                            <strong class="text-emerald-400 block mb-4 text-3xl"><i class="fa-solid fa-bridge mr-3"></i> 3. ¿Cómo vinculamos esas listas?</strong>
+                            <div class="text-emerald-200 bg-[#1A1A1A] p-4 rounded-2xl block text-2xl leading-[1.6] border border-emerald-500/20 font-mono tracking-wide" v-html="currentSlide.bridge"></div>
+                        </div>
+                        
+                        <div class="bg-slate-800/80 p-8 rounded-[2rem] border border-slate-600 hover:border-yellow-400 transition-colors flex flex-col justify-center">
+                            <strong class="text-yellow-400 block mb-4 text-3xl"><i class="fa-solid fa-code-merge mr-3"></i> 4. Operación a usar</strong>
+                            <p class="text-white font-bold bg-slate-900 p-4 rounded-2xl border border-slate-700 text-3xl leading-[1.6] text-center" v-html="currentSlide.join_type"></p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- SLIDE TIPO ANALOGY (Analogía Visual) -->
+                <div v-else-if="currentSlide.type === 'analogy'" class="w-full bg-slate-800/80 p-16 rounded-[3rem] border-2 border-slate-500 shadow-2xl fade-in text-center">
+                    <h2 class="text-5xl font-extrabold text-white mb-8"><i class="fa-solid fa-eye text-cyan-400 mr-4"></i> ¿Qué está ocurriendo en la base?</h2>
+                    <p class="text-3xl text-slate-300 mb-10">{{ currentSlide.description }}</p>
+                    
+                    <div class="flex justify-center items-center gap-6 mt-8 bg-slate-900/50 p-8 rounded-[2rem]">
+                        <div class="flex flex-col gap-3">
+                            <div class="text-rose-400 font-bold text-2xl mb-2">{{ currentSlide.leftTable.name }}</div>
+                            <div v-for="item in currentSlide.leftTable.items" :key="item.id" 
+                                 :class="['p-3 border-2 rounded-xl text-xl font-bold flex items-center justify-center w-56 h-20', item.match ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300' : 'border-rose-500 bg-rose-500/20 text-rose-300']">
+                                 {{ item.label }}
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-3">
+                            <div class="text-transparent font-bold text-2xl mb-2">.</div>
+                            <div v-for="link in currentSlide.links" :key="link.id" 
+                                 class="flex items-center justify-center h-20 text-3xl w-16">
+                                <i v-if="link.linked" class="fa-solid fa-check text-emerald-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.8)]"></i>
+                                <i v-else class="fa-solid fa-xmark text-rose-600"></i>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-3">
+                            <div class="text-blue-400 font-bold text-2xl mb-2">{{ currentSlide.rightTable.name }}</div>
+                            <div v-for="item in currentSlide.rightTable.items" :key="item.id" 
+                                 :class="['p-3 border-2 rounded-xl text-xl font-bold flex items-center justify-center w-56 h-20', item.match ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300' : (item.isNull ? 'border-slate-600 bg-slate-800 text-slate-500 border-dashed' : 'border-blue-500 bg-blue-500/20 text-blue-300')]">
+                                 {{ item.label }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SLIDE TIPO CODE (Para proyectar y escribir en BD) -->
+                <div v-else-if="currentSlide.type === 'code'" class="w-full fade-in">
+                    <div class="text-center mb-10">
+                        <h2 class="text-5xl font-bold text-emerald-400 mb-4 flex items-center justify-center gap-6 slide-element-title">
+                            <i class="fa-solid fa-laptop-code text-5xl"></i> Código SQL Funcional
+                        </h2>
+                        <p class="text-3xl text-slate-300 font-medium">{{ currentSlide.subtitle }}</p>
+                    </div>
+                    <div class="w-full relative group">
+                        <div class="absolute -inset-2 bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-500 rounded-[3rem] blur-xl opacity-30 group-hover:opacity-60 transition duration-500"></div>
+                        
+                        <div class="relative bg-[#1A1A1A] rounded-[2.5rem] border-2 border-slate-700 overflow-hidden shadow-2xl">
+                            <div class="px-8 py-4 bg-[#2D2D2D] flex gap-3 items-center justify-between">
+                                <div class="flex gap-4">
+                                    <div class="w-5 h-5 rounded-full bg-red-500"></div>
+                                    <div class="w-5 h-5 rounded-full bg-yellow-500"></div>
+                                    <div class="w-5 h-5 rounded-full bg-emerald-500"></div>
+                                </div>
+                                <div class="text-slate-400 font-mono text-xl tracking-widest">{{ currentSlide.title }}</div>
+                            </div>
+                            <pre><code class="language-sql">{{ currentSlide.sql }}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SLIDE TIPO CLOSING ACTIVITY (KAHOOT STYLE) -->
+                <div v-else-if="currentSlide.type === 'closing_activity'" class="w-full text-center fade-in">
+                    <h2 class="text-7xl font-extrabold text-white mb-12 drop-shadow-lg"><i class="fa-solid fa-gamepad mr-4 text-purple-400"></i> ¡Kahoot Time!</h2>
+                    
+                    <div class="bg-gray-100 p-12 rounded-[3rem] shadow-[0_0_50px_rgba(255,255,255,0.1)] max-w-5xl mx-auto flex flex-col items-center border-[12px] border-white">
+                        <p class="text-5xl text-slate-900 font-bold mb-12 leading-[1.4]" v-html="currentSlide.question"></p>
+                        
+                        <div class="grid grid-cols-2 gap-6 w-full">
+                            <button v-for="(opt, idx) in currentSlide.options" :key="idx"
+                                @click="selectKahootOption(idx)"
+                                :class="[
+                                    'p-8 rounded-2xl font-bold text-4xl flex items-center justify-start border-b-8 transition-all transform hover:scale-105 active:scale-95 shadow-xl',
+                                    opt.colorClass,
+                                    currentSlide.answered && currentSlide.selectedIdx === idx ? 'scale-105 ring-8 ring-indigo-500 z-10' : '',
+                                    currentSlide.answered && currentSlide.selectedIdx !== idx ? 'opacity-30 grayscale' : ''
+                                ]"
+                                :disabled="currentSlide.answered">
+                                <span class="bg-black/20 w-16 h-16 rounded-xl flex items-center justify-center mr-6 shadow-inner">
+                                    <i :class="['fa-solid text-4xl text-white drop-shadow-md', opt.shape]"></i>
+                                </span>
+                                <span class="text-white drop-shadow-md">{{ opt.text }}</span>
+                                <i v-if="currentSlide.answered && currentSlide.selectedIdx === idx && opt.isCorrect" class="fa-solid fa-check text-6xl ml-auto text-white drop-shadow-lg"></i>
+                                <i v-if="currentSlide.answered && currentSlide.selectedIdx === idx && !opt.isCorrect" class="fa-solid fa-xmark text-6xl ml-auto text-white drop-shadow-lg"></i>
+                            </button>
+                        </div>
+
+                        <div v-if="currentSlide.answered" class="mt-12 text-center w-full fade-in">
+                            <div v-if="currentSlide.options[currentSlide.selectedIdx].isCorrect" class="bg-emerald-100 border-4 border-emerald-500 rounded-3xl p-8 shadow-xl">
+                                <h3 class="text-6xl font-black text-emerald-600 animate-bounce">
+                                    ¡Respuesta Correcta! 🎉
+                                </h3>
+                                <p class="text-emerald-800 text-3xl mt-6 font-bold" v-html="currentSlide.explanation"></p>
+                            </div>
+                            <div v-else class="bg-rose-100 border-4 border-rose-500 rounded-3xl p-8 shadow-xl">
+                                <h3 class="text-5xl font-black text-rose-600 animate-pulse">
+                                    ¡Incorrecto! 😓
+                                </h3>
+                                <button @click="currentSlide.answered = false; currentSlide.selectedIdx = null" class="mt-8 bg-rose-600 text-white font-bold py-4 px-10 rounded-full text-2xl hover:bg-rose-700 transition">Intentar de nuevo</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <div class="fixed bottom-12 left-0 w-full flex justify-center gap-16 z-50 pointer-events-none">
+            <button @click="prev" :disabled="currentIndex === 0" class="pointer-events-auto w-24 h-24 rounded-full flex items-center justify-center bg-slate-800 text-white text-4xl shadow-[0_0_20px_rgba(0,0,0,0.5)] hover:bg-indigo-600 disabled:opacity-30 disabled:hover:bg-slate-800 transition-all border-4 border-slate-600 hover:scale-110 active:scale-95 focus:outline-none">
+                <i class="fa-solid fa-chevron-left ml-[-5px]"></i>
+            </button>
+            <button @click="next" :disabled="currentIndex === slides.length - 1" class="pointer-events-auto w-24 h-24 rounded-full flex items-center justify-center bg-slate-800 text-white text-4xl shadow-[0_0_20px_rgba(0,0,0,0.5)] hover:bg-indigo-600 disabled:opacity-30 disabled:hover:bg-slate-800 transition-all border-4 border-slate-600 hover:scale-110 active:scale-95 focus:outline-none">
+                <i class="fa-solid fa-chevron-right mr-[-5px]"></i>
+            </button>
+        </div>
+
+        <div class="fixed bottom-0 left-0 h-4 bg-slate-900 w-full z-50">
+            <div class="h-full bg-gradient-to-r from-cyan-400 via-indigo-500 to-fuchsia-500 transition-all duration-300" :style="{ width: progressPercentage + '%' }"></div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentIndex: 0,
+                    dbScript: `DROP TABLE calificaciones CASCADE CONSTRAINTS PURGE;
+DROP TABLE visualizaciones CASCADE CONSTRAINTS PURGE;
+DROP TABLE suscripciones CASCADE CONSTRAINTS PURGE;
+DROP TABLE contenido_categoria CASCADE CONSTRAINTS PURGE;
+DROP TABLE contenidos CASCADE CONSTRAINTS PURGE;
+DROP TABLE categorias CASCADE CONSTRAINTS PURGE;
+DROP TABLE dispositivos CASCADE CONSTRAINTS PURGE;
+DROP TABLE planes CASCADE CONSTRAINTS PURGE;
+DROP TABLE plataformas CASCADE CONSTRAINTS PURGE;
+DROP TABLE usuarios CASCADE CONSTRAINTS PURGE;
+DROP TABLE paises CASCADE CONSTRAINTS PURGE;
+
+
+CREATE TABLE paises (
+    id_pais NUMBER PRIMARY KEY,
+    nombre_pais VARCHAR2(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE usuarios (
+    id_usuario NUMBER PRIMARY KEY,
+    nombre VARCHAR2(50) NOT NULL,
+    id_pais NUMBER NOT NULL,
+    fecha_registro DATE NOT NULL,
+    FOREIGN KEY (id_pais) REFERENCES paises(id_pais)
+);
+
+CREATE TABLE categorias (
+    id_categoria NUMBER PRIMARY KEY,
+    nombre_categoria VARCHAR2(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE contenidos (
+    id_contenido NUMBER PRIMARY KEY,
+    titulo VARCHAR2(100) NOT NULL,
+    duracion_min NUMBER NOT NULL,
+    rating NUMBER(3,1) NOT NULL,
+    fecha_estreno DATE,
+    CHECK (rating BETWEEN 0 AND 10),
+    CHECK (duracion_min > 0)
+);
+
+CREATE TABLE contenido_categoria (
+    id_contenido NUMBER NOT NULL,
+    id_categoria NUMBER NOT NULL,
+    PRIMARY KEY (id_contenido, id_categoria),
+    FOREIGN KEY (id_contenido) REFERENCES contenidos(id_contenido),
+    FOREIGN KEY (id_categoria) REFERENCES categorias(id_categoria)
+);
+
+CREATE TABLE plataformas (
+    id_plataforma NUMBER PRIMARY KEY,
+    nombre_plataforma VARCHAR2(50) UNIQUE NOT NULL,
+    id_pais NUMBER NOT NULL,
+    FOREIGN KEY (id_pais) REFERENCES paises(id_pais)
+);
+
+CREATE TABLE planes (
+    id_plan NUMBER PRIMARY KEY,
+    nombre_plan VARCHAR2(30) UNIQUE NOT NULL,
+    precio_mensual NUMBER(8,2) NOT NULL,
+    CHECK (precio_mensual >= 0)
+);
+
+CREATE TABLE dispositivos (
+    id_dispositivo NUMBER PRIMARY KEY,
+    tipo_dispositivo VARCHAR2(30) UNIQUE NOT NULL
+);
+
+CREATE TABLE suscripciones (
+    id_suscripcion NUMBER PRIMARY KEY,
+    id_usuario NUMBER NOT NULL,
+    id_plataforma NUMBER NOT NULL,
+    id_plan NUMBER NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario),
+    FOREIGN KEY (id_plataforma) REFERENCES plataformas(id_plataforma),
+    FOREIGN KEY (id_plan) REFERENCES planes(id_plan)
+);
+
+CREATE TABLE visualizaciones (
+    id_visualizacion NUMBER PRIMARY KEY,
+    id_suscripcion NUMBER NOT NULL,
+    id_contenido NUMBER NOT NULL,
+    id_dispositivo NUMBER NOT NULL,
+    fecha DATE NOT NULL,
+    progreso NUMBER NOT NULL,
+    FOREIGN KEY (id_suscripcion) REFERENCES suscripciones(id_suscripcion),
+    FOREIGN KEY (id_contenido) REFERENCES contenidos(id_contenido),
+    FOREIGN KEY (id_dispositivo) REFERENCES dispositivos(id_dispositivo),
+    CHECK (progreso BETWEEN 0 AND 100)
+);
+
+CREATE TABLE calificaciones (
+    id_calificacion NUMBER PRIMARY KEY,
+    id_usuario NUMBER NOT NULL,
+    id_contenido NUMBER NOT NULL,
+    fecha DATE NOT NULL,
+    puntuacion NUMBER(3,1) NOT NULL,
+    comentario VARCHAR2(200),
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario),
+    FOREIGN KEY (id_contenido) REFERENCES contenidos(id_contenido),
+    CHECK (puntuacion BETWEEN 0 AND 10)
+);
+
+
+INSERT INTO paises VALUES (1, 'Chile');
+INSERT INTO paises VALUES (2, 'Japón');
+INSERT INTO paises VALUES (3, 'USA');
+INSERT INTO paises VALUES (4, 'Argentina');
+INSERT INTO paises VALUES (5, 'China');
+INSERT INTO paises VALUES (6, 'UK');
+INSERT INTO paises VALUES (7, 'Corea del Sur');
+INSERT INTO paises VALUES (8, 'México');
+
+INSERT INTO usuarios VALUES (1, 'ana torres', 1, DATE '2023-01-10');
+INSERT INTO usuarios VALUES (2, 'LUIS ROJAS', 1, DATE '2023-03-22');
+INSERT INTO usuarios VALUES (3, 'mika tanaka', 2, DATE '2022-11-05');
+INSERT INTO usuarios VALUES (4, 'john smith', 3, DATE '2023-06-30');
+INSERT INTO usuarios VALUES (5, 'camila perez', 1, DATE '2023-07-15');
+INSERT INTO usuarios VALUES (6, 'diego muñoz', 1, DATE '2023-08-10');
+INSERT INTO usuarios VALUES (7, 'sofia garcia', 4, DATE '2023-02-18');
+INSERT INTO usuarios VALUES (8, 'li wei', 5, DATE '2022-12-01');
+INSERT INTO usuarios VALUES (9, 'emma brown', 6, DATE '2023-05-05');
+INSERT INTO usuarios VALUES (10, 'hana kim', 7, DATE '2023-09-12');
+
+INSERT INTO categorias VALUES (1, 'Anime');
+INSERT INTO categorias VALUES (2, 'Drama');
+INSERT INTO categorias VALUES (3, 'Sci-Fi');
+INSERT INTO categorias VALUES (4, 'Comedy');
+INSERT INTO categorias VALUES (5, 'Action');
+INSERT INTO categorias VALUES (6, 'Thriller');
+
+INSERT INTO contenidos VALUES (1, 'Attack on Titan', 24, 9.5, DATE '2013-09-01');
+INSERT INTO contenidos VALUES (2, 'Breaking Bad', 47, 9.7, DATE '2008-01-20');
+INSERT INTO contenidos VALUES (3, 'Demon Slayer', 23, 8.9, DATE '2019-04-06');
+INSERT INTO contenidos VALUES (4, 'Stranger Things', 50, 8.8, DATE '2016-07-15');
+INSERT INTO contenidos VALUES (5, 'One Piece', 22, 9.0, DATE '1999-10-20');
+INSERT INTO contenidos VALUES (6, 'Naruto', 23, 8.7, DATE '2002-10-03');
+INSERT INTO contenidos VALUES (7, 'Dark', 55, 9.1, DATE '2017-12-01');
+INSERT INTO contenidos VALUES (8, 'The Office', 22, 8.9, DATE '2005-03-24');
+INSERT INTO contenidos VALUES (9, 'Jujutsu Kaisen', 24, 9.2, DATE '2020-10-03');
+INSERT INTO contenidos VALUES (10, 'Interstellar', 169, 8.6, DATE '2014-11-07');
+INSERT INTO contenidos VALUES (11, 'Fullmetal Alchemist: Brotherhood', 24, 9.3, DATE '2009-04-05');
+INSERT INTO contenidos VALUES (12, 'Better Call Saul', 47, 9.6, DATE '2015-02-08');
+
+INSERT INTO contenido_categoria VALUES (1, 1);
+INSERT INTO contenido_categoria VALUES (1, 5);
+INSERT INTO contenido_categoria VALUES (2, 2);
+INSERT INTO contenido_categoria VALUES (2, 6);
+INSERT INTO contenido_categoria VALUES (3, 1);
+INSERT INTO contenido_categoria VALUES (3, 5);
+INSERT INTO contenido_categoria VALUES (4, 3);
+INSERT INTO contenido_categoria VALUES (4, 6);
+INSERT INTO contenido_categoria VALUES (5, 1);
+INSERT INTO contenido_categoria VALUES (5, 5);
+INSERT INTO contenido_categoria VALUES (6, 1);
+INSERT INTO contenido_categoria VALUES (6, 5);
+INSERT INTO contenido_categoria VALUES (7, 3);
+INSERT INTO contenido_categoria VALUES (7, 6);
+INSERT INTO contenido_categoria VALUES (8, 4);
+INSERT INTO contenido_categoria VALUES (8, 2);
+INSERT INTO contenido_categoria VALUES (9, 1);
+INSERT INTO contenido_categoria VALUES (9, 5);
+INSERT INTO contenido_categoria VALUES (10, 3);
+INSERT INTO contenido_categoria VALUES (10, 2);
+INSERT INTO contenido_categoria VALUES (11, 1);
+INSERT INTO contenido_categoria VALUES (11, 5);
+INSERT INTO contenido_categoria VALUES (11, 2);
+INSERT INTO contenido_categoria VALUES (12, 2);
+INSERT INTO contenido_categoria VALUES (12, 6);
+
+INSERT INTO plataformas VALUES (1, 'Netflix', 3);
+INSERT INTO plataformas VALUES (2, 'Crunchyroll', 2);
+INSERT INTO plataformas VALUES (3, 'Prime Video', 3);
+INSERT INTO plataformas VALUES (4, 'Max', 3);
+INSERT INTO plataformas VALUES (5, 'Disney+', 3);
+
+INSERT INTO planes VALUES (1, 'Basico', 6.99);
+INSERT INTO planes VALUES (2, 'Estandar', 10.99);
+INSERT INTO planes VALUES (3, 'Premium', 14.99);
+INSERT INTO planes VALUES (4, 'Familiar', 17.99);
+
+INSERT INTO dispositivos VALUES (1, 'Smart TV');
+INSERT INTO dispositivos VALUES (2, 'Laptop');
+INSERT INTO dispositivos VALUES (3, 'Tablet');
+INSERT INTO dispositivos VALUES (4, 'Mobile');
+INSERT INTO dispositivos VALUES (5, 'Desktop');
+
+INSERT INTO suscripciones VALUES (1, 1, 1, 2, DATE '2023-01-10', DATE '2024-01-10');
+INSERT INTO suscripciones VALUES (2, 2, 1, 3, DATE '2023-03-22', DATE '2024-03-22');
+INSERT INTO suscripciones VALUES (3, 3, 2, 2, DATE '2022-11-05', DATE '2024-11-05');
+INSERT INTO suscripciones VALUES (4, 4, 1, 1, DATE '2023-06-30', DATE '2024-06-30');
+INSERT INTO suscripciones VALUES (5, 5, 3, 2, DATE '2023-07-15', DATE '2024-07-15');
+INSERT INTO suscripciones VALUES (6, 6, 4, 3, DATE '2023-08-10', DATE '2024-08-10');
+INSERT INTO suscripciones VALUES (7, 7, 1, 2, DATE '2023-02-18', DATE '2024-02-18');
+INSERT INTO suscripciones VALUES (8, 8, 2, 1, DATE '2022-12-01', DATE '2024-12-01');
+INSERT INTO suscripciones VALUES (9, 9, 1, 2, DATE '2023-05-05', DATE '2024-05-05');
+INSERT INTO suscripciones VALUES (10, 10, 5, 3, DATE '2023-09-12', DATE '2024-09-12');
+INSERT INTO suscripciones VALUES (11, 1, 2, 1, DATE '2024-01-11', DATE '2025-01-11');
+INSERT INTO suscripciones VALUES (12, 5, 5, 1, DATE '2024-01-14', DATE '2025-01-14');
+
+INSERT INTO visualizaciones VALUES (1, 1, 1, 4, DATE '2024-01-01', 100);
+INSERT INTO visualizaciones VALUES (2, 1, 3, 3, DATE '2024-01-02', 50);
+INSERT INTO visualizaciones VALUES (3, 2, 2, 2, DATE '2024-01-03', 100);
+INSERT INTO visualizaciones VALUES (4, 3, 1, 1, DATE '2024-01-04', 80);
+INSERT INTO visualizaciones VALUES (5, 4, 4, 4, DATE '2024-01-05', 100);
+INSERT INTO visualizaciones VALUES (6, 5, 5, 3, DATE '2024-01-06', 30);
+INSERT INTO visualizaciones VALUES (7, 6, 3, 2, DATE '2024-01-07', 100);
+INSERT INTO visualizaciones VALUES (8, 7, 1, 1, DATE '2024-01-08', 100);
+INSERT INTO visualizaciones VALUES (9, 8, 6, 5, DATE '2024-01-09', 40);
+INSERT INTO visualizaciones VALUES (10, 9, 9, 4, DATE '2024-01-10', 100);
+
+INSERT INTO visualizaciones VALUES (11, 1, 2, 2, DATE '2024-01-08', 60);
+INSERT INTO visualizaciones VALUES (12, 2, 4, 1, DATE '2024-01-09', 100);
+INSERT INTO visualizaciones VALUES (13, 3, 7, 3, DATE '2024-01-10', 20);
+INSERT INTO visualizaciones VALUES (14, 4, 3, 4, DATE '2024-01-11', 100);
+INSERT INTO visualizaciones VALUES (15, 5, 8, 1, DATE '2024-01-12', 80);
+INSERT INTO visualizaciones VALUES (16, 6, 10, 5, DATE '2024-01-13', 100);
+INSERT INTO visualizaciones VALUES (17, 7, 11, 2, DATE '2024-01-13', 15);
+INSERT INTO visualizaciones VALUES (18, 8, 12, 3, DATE '2024-01-14', 95);
+INSERT INTO visualizaciones VALUES (19, 9, 7, 1, DATE '2024-01-14', 100);
+INSERT INTO visualizaciones VALUES (20, 10, 4, 4, DATE '2024-01-15', 75);
+INSERT INTO visualizaciones VALUES (21, 11, 9, 2, DATE '2024-01-15', 100);
+INSERT INTO visualizaciones VALUES (22, 12, 5, 1, DATE '2024-01-15', 50);
+INSERT INTO visualizaciones VALUES (23, 1, 10, 2, DATE '2024-01-16', 100);
+INSERT INTO visualizaciones VALUES (24, 5, 11, 4, DATE '2024-01-16', 100);
+INSERT INTO visualizaciones VALUES (25, 6, 2, 5, DATE '2024-01-16', 45);
+INSERT INTO visualizaciones VALUES (26, 7, 8, 3, DATE '2024-01-17', 100);
+INSERT INTO visualizaciones VALUES (27, 8, 1, 2, DATE '2024-01-17', 30);
+INSERT INTO visualizaciones VALUES (28, 9, 6, 4, DATE '2024-01-17', 100);
+INSERT INTO visualizaciones VALUES (29, 10, 12, 1, DATE '2024-01-18', 90);
+INSERT INTO visualizaciones VALUES (30, 3, 10, 2, DATE '2024-01-18', 100);
+
+INSERT INTO calificaciones VALUES (1, 1, 1, DATE '2024-01-05', 9.8, 'muy intensa y bien animada');
+INSERT INTO calificaciones VALUES (2, 2, 2, DATE '2024-01-06', 9.7, 'escritura brutal');
+INSERT INTO calificaciones VALUES (3, 3, 3, DATE '2024-01-07', 9.0, 'gran ritmo y musica');
+INSERT INTO calificaciones VALUES (4, 4, 4, DATE '2024-01-08', 8.8, 'engancha desde el inicio');
+INSERT INTO calificaciones VALUES (5, 5, 5, DATE '2024-01-09', 9.1, 'clasico total');
+INSERT INTO calificaciones VALUES (6, 6, 6, DATE '2024-01-10', 8.7, 'muy recordable');
+INSERT INTO calificaciones VALUES (7, 7, 7, DATE '2024-01-11', 9.2, 'excelente atmosfera');
+INSERT INTO calificaciones VALUES (8, 8, 8, DATE '2024-01-12', 8.9, 'humor simple y efectivo');
+INSERT INTO calificaciones VALUES (9, 9, 9, DATE '2024-01-13', 9.3, 'combate y estilo top');
+INSERT INTO calificaciones VALUES (10, 10, 10, DATE '2024-01-14', 8.6, 'visualmente potente');
+INSERT INTO calificaciones VALUES (11, 1, 11, DATE '2024-01-15', 9.4, 'muy bien hecha');
+INSERT INTO calificaciones VALUES (12, 5, 12, DATE '2024-01-16', 9.6, 'guion impresionante');
+INSERT INTO calificaciones VALUES (13, 2, 8, DATE '2024-01-17', 8.8, 'muy entretenida');
+INSERT INTO calificaciones VALUES (14, 3, 10, DATE '2024-01-18', 8.7, 'larga pero valiosa');
+INSERT INTO calificaciones VALUES (15, 4, 7, DATE '2024-01-19', 9.1, 'oscura y muy buena');
+
+commit;
+
+
+--DLC de la BD
+
+-- =========================
+-- PAISES
+-- =========================
+INSERT INTO paises VALUES (9, 'España');
+INSERT INTO paises VALUES (10, 'Brasil');
+INSERT INTO paises VALUES (11, 'Colombia'); -- país sin usuarios, ideal para LEFT JOIN
+
+-- =========================
+-- USUARIOS
+-- =========================
+INSERT INTO usuarios VALUES (11, 'maria lopez', 8, DATE '2024-02-01');
+INSERT INTO usuarios VALUES (12, 'pedro ramirez', 9, DATE '2024-02-10');
+INSERT INTO usuarios VALUES (13, 'soledad navarro', 10, DATE '2024-03-05');
+INSERT INTO usuarios VALUES (14, 'kevin diaz', 3, DATE '2024-03-12');
+INSERT INTO usuarios VALUES (15, 'julia fernandez', 1, DATE '2024-03-18');
+INSERT INTO usuarios VALUES (16, 'taro yamada', 2, DATE '2024-04-01');
+
+-- Usuarios 13 y 16 quedan sin suscripción a propósito,
+-- para practicar LEFT JOIN entre usuarios y suscripciones.
+
+-- =========================
+-- CATEGORIAS
+-- =========================
+INSERT INTO categorias VALUES (7, 'Mystery'); -- categoría sin contenidos
+INSERT INTO categorias VALUES (8, 'Romance'); -- categoría sin contenidos
+
+-- =========================
+-- CONTENIDOS
+-- =========================
+INSERT INTO contenidos VALUES (13, 'Chainsaw Man', 24, 8.7, DATE '2022-10-11');
+INSERT INTO contenidos VALUES (14, 'The Last of Us', 45, 8.9, DATE '2023-01-15');
+INSERT INTO contenidos VALUES (15, 'Violet Evergarden', 24, 9.1, DATE '2018-01-11');
+INSERT INTO contenidos VALUES (16, 'Arcane', 40, 9.2, DATE '2021-11-06');
+INSERT INTO contenidos VALUES (17, 'The Boys', 60, 8.7, DATE '2019-07-26');
+INSERT INTO contenidos VALUES (18, 'Your Name', 106, 9.2, DATE '2016-08-26');
+INSERT INTO contenidos VALUES (19, 'Frieren: Beyond Journey''s End', 24, 9.3, DATE '2023-09-29');
+INSERT INTO contenidos VALUES (20, 'Oppenheimer', 181, 8.8, DATE '2023-07-21');
+
+-- =========================
+-- CONTENIDO_CATEGORIA
+-- =========================
+INSERT INTO contenido_categoria VALUES (13, 1);
+INSERT INTO contenido_categoria VALUES (13, 5);
+INSERT INTO contenido_categoria VALUES (13, 6);
+
+INSERT INTO contenido_categoria VALUES (14, 2);
+INSERT INTO contenido_categoria VALUES (14, 6);
+
+INSERT INTO contenido_categoria VALUES (15, 1);
+INSERT INTO contenido_categoria VALUES (15, 2);
+
+INSERT INTO contenido_categoria VALUES (16, 3);
+INSERT INTO contenido_categoria VALUES (16, 5);
+
+INSERT INTO contenido_categoria VALUES (17, 5);
+INSERT INTO contenido_categoria VALUES (17, 6);
+
+INSERT INTO contenido_categoria VALUES (18, 2);
+
+INSERT INTO contenido_categoria VALUES (19, 1);
+INSERT INTO contenido_categoria VALUES (19, 2);
+
+INSERT INTO contenido_categoria VALUES (20, 2);
+INSERT INTO contenido_categoria VALUES (20, 6);
+
+-- =========================
+-- PLATAFORMAS
+-- =========================
+INSERT INTO plataformas VALUES (6, 'Mubi', 1);
+INSERT INTO plataformas VALUES (7, 'AnimeOne', 2);
+INSERT INTO plataformas VALUES (8, 'Hulu', 11); -- plataforma en país sin usuarios
+
+-- =========================
+-- PLANES
+-- =========================
+INSERT INTO planes VALUES (5, 'Lite', 4.99);
+INSERT INTO planes VALUES (6, 'Ultra', 19.99);
+
+-- =========================
+-- DISPOSITIVOS
+-- =========================
+INSERT INTO dispositivos VALUES (6, 'Console');
+INSERT INTO dispositivos VALUES (7, 'Web Browser');
+INSERT INTO dispositivos VALUES (8, 'Projector');
+
+-- =========================
+-- SUSCRIPCIONES
+-- =========================
+INSERT INTO suscripciones VALUES (13, 11, 8, 5, DATE '2024-02-01', NULL);
+INSERT INTO suscripciones VALUES (14, 12, 6, 6, DATE '2024-02-10', DATE '2025-02-10');
+INSERT INTO suscripciones VALUES (15, 13, 7, 1, DATE '2024-03-05', NULL);
+INSERT INTO suscripciones VALUES (16, 14, 1, 4, DATE '2024-03-12', DATE '2025-03-12');
+INSERT INTO suscripciones VALUES (17, 15, 2, 3, DATE '2024-03-18', NULL);
+INSERT INTO suscripciones VALUES (18, 16, 7, 2, DATE '2024-04-01', NULL);
+
+-- Suscripciones extra para usuarios que ya existían:
+INSERT INTO suscripciones VALUES (19, 1, 3, 1, DATE '2025-01-01', NULL);
+INSERT INTO suscripciones VALUES (20, 1, 2, 2, DATE '2025-06-01', NULL);
+INSERT INTO suscripciones VALUES (21, 5, 5, 4, DATE '2025-07-01', DATE '2026-07-01');
+INSERT INTO suscripciones VALUES (22, 2, 6, 5, DATE '2025-08-01', NULL);
+
+-- =========================
+-- VISUALIZACIONES
+-- =========================
+INSERT INTO visualizaciones VALUES (31, 13, 13, 4, DATE '2024-02-03', 100);
+INSERT INTO visualizaciones VALUES (32, 13, 16, 7, DATE '2024-02-04', 35);
+
+INSERT INTO visualizaciones VALUES (33, 14, 15, 1, DATE '2024-02-11', 100);
+INSERT INTO visualizaciones VALUES (34, 14, 19, 1, DATE '2024-02-12', 70);
+
+INSERT INTO visualizaciones VALUES (35, 15, 13, 2, DATE '2024-03-06', 20);
+INSERT INTO visualizaciones VALUES (36, 15, 15, 2, DATE '2024-03-07', 100);
+
+INSERT INTO visualizaciones VALUES (37, 16, 14, 6, DATE '2024-03-13', 80);
+INSERT INTO visualizaciones VALUES (38, 16, 20, 6, DATE '2024-03-14', 100);
+
+INSERT INTO visualizaciones VALUES (39, 17, 18, 1, DATE '2024-03-19', 100);
+INSERT INTO visualizaciones VALUES (40, 17, 16, 8, DATE '2024-03-20', 60);
+
+INSERT INTO visualizaciones VALUES (41, 18, 19, 7, DATE '2024-04-02', 100);
+INSERT INTO visualizaciones VALUES (42, 18, 17, 7, DATE '2024-04-03', 45);
+
+INSERT INTO visualizaciones VALUES (43, 19, 2, 7, DATE '2025-01-02', 100);
+INSERT INTO visualizaciones VALUES (44, 20, 12, 1, DATE '2025-06-02', 50);
+INSERT INTO visualizaciones VALUES (45, 21, 11, 8, DATE '2025-07-02', 100);
+INSERT INTO visualizaciones VALUES (46, 22, 10, 6, DATE '2025-08-02', 100);
+INSERT INTO visualizaciones VALUES (47, 22, 4, 6, DATE '2025-08-03', 25);
+
+-- =========================
+-- CALIFICACIONES
+-- =========================
+INSERT INTO calificaciones VALUES (16, 11, 13, DATE '2024-02-05', 9.0, 'muy frenetica');
+INSERT INTO calificaciones VALUES (17, 12, 13, DATE '2024-02-06', 8.8, 'caotica pero buena');
+
+INSERT INTO calificaciones VALUES (18, 13, 14, DATE '2024-03-08', 9.1, 'emocionante');
+INSERT INTO calificaciones VALUES (19, 14, 14, DATE '2024-03-09', 9.1, 'muy solida');
+
+INSERT INTO calificaciones VALUES (20, 15, 15, DATE '2024-03-10', 9.4, 'poetica y sensible');
+
+INSERT INTO calificaciones VALUES (21, 1, 16, DATE '2024-03-11', 9.2, 'animacion brutal');
+INSERT INTO calificaciones VALUES (22, 2, 16, DATE '2024-03-12', 9.2, 'visual top');
+
+INSERT INTO calificaciones VALUES (23, 5, 17, DATE '2024-03-13', 8.6, 'oscura y divertida');
+INSERT INTO calificaciones VALUES (24, 7, 17, DATE '2024-03-14', 8.6, 'gran ironia');
+
+INSERT INTO calificaciones VALUES (25, 8, 18, DATE '2024-03-15', 9.5, 'emocionante');
+INSERT INTO calificaciones VALUES (26, 9, 18, DATE '2024-03-16', 9.3, 'muy hermosa');
+
+INSERT INTO calificaciones VALUES (27, 11, 19, DATE '2024-03-17', 9.6, 'sutil y profunda');
+-- Dejo Oppenheimer sin calificación para practicar LEFT JOIN contenidos-calificaciones.
+
+commit;`,
+                    copyBtnText: 'Copiar Script',
+                    slides: [
+                        { type: 'title', title: 'Fundamentos de SQL JOIN', subtitle: 'Analicemos cómo combinar información que está fragmentada.<br><br>Presiona <kbd class="bg-slate-800 text-white border-b-4 border-slate-600 px-5 py-2 mx-2 rounded-xl shadow-lg">➡</kbd> para iniciar', icon: 'fa-network-wired', iconColor: 'text-indigo-400' },
+                        
+                        { type: 'content', title: 'Ticket de Entrada', icon: 'fa-ticket-simple', html: '<div class="text-center w-full fade-in"><p class="text-6xl text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-orange-400 mb-8 font-extrabold drop-shadow-md">🎬 ¡Emergencia en los Servidores!</p><div class="bg-slate-900/60 p-10 rounded-3xl border border-rose-500/50 text-left max-w-5xl mx-auto shadow-2xl relative overflow-hidden"><i class="fa-solid fa-server absolute right-[-20px] bottom-[-20px] text-9xl text-white/5 rotate-12"></i><p class="text-3xl text-slate-200 leading-[1.6]">La base de datos acaba de colapsar 💥. Solo lograste rescatar carpetas físicas tiradas por el piso:<br><br>📦 Una pila de hojas dice <b class="text-pink-400">"Lista de Perfiles de Usuarios"</b>.<br>📦 Otra pila dice <b class="text-cyan-400">"Historial de Películas Vistas"</b>.<br><br>El jefe te grita desesperado: <i>"¡¿Qué película estaba viendo el usuario Pedro Pascal antes del apagón?!"</i><br><br><span class="text-4xl text-emerald-400 font-bold block mt-8 text-center bg-slate-950/50 p-4 rounded-xl border border-emerald-500/30">🧠 ¿Qué "pista" o "puente" usarías para volver a unir la hoja de la película con la hoja de Pedro Pascal sin equivocarte?</span></p></div><span class="text-amber-400 mt-10 block italic font-bold text-3xl animate-pulse">Discute tu plan de rescate con tu colega de lado. Tienen 60 segundos ⏱️...</span></div>' },
+
+                        { type: 'db_setup' },
+
+                        { type: 'content', title: 'El Principio del Join', icon: 'fa-cubes-stacked', html: '¿Te has dado cuenta que en nuestro sistema los nombres de las personas están en un lugar, pero el país solo es un número que apunta a otra parte?<br><br><b>La información se divide a propósito para que sea fácil actualizarla</b>. El <code>JOIN</code> es nuestra herramienta para volver a pegar las piezas como un rompecabezas cuando necesitamos entregarle un informe completo y legible a una persona real.', extraInfo: '<b>Si las bases de datos guardaran todo junto (desnormalizadas):</b> Imagina que el país "Brasil" cambia de nombre comercial. Tendríamos que entrar a actualizar a la paciente el rut 1, 2, 8, 30... un caos. Al dividirlo, cambiamos el nombre del país en su sola lista, y la etiqueta en los clientes se refleja al instante al hacer el JOIN.' },
+
+                        // BLOQUE 1: INNER JOIN
+                        { type: 'scenario', title: 'Requerimiento de Ventas', context: '<span class="text-rose-400 font-bold not-italic">De: Supervisor de Bodegas y Envíos.</span><br><br>"Hola equipo. Para preparar regalos físicos, requiero una lista del Nombre de nuestros clientes y el País donde están ubicados.<br><br><strong>OJO:</strong> Si un cliente no registró ningún país válido en el sistema, no lo pongan en esta lista. Solo me sirven usuarios que yo sepa exactamente dónde quedan para poder despacharles algo."' },
+                        { type: 'analysis', title: 'Desglose Lógico', req_columns: '<code class="text-indigo-300 bg-black/30 p-2 rounded block mb-2">Nombre del Cliente</code> <code class="text-indigo-300 bg-black/30 p-2 rounded block">Nombre del País</code>', req_tables: '<b class="text-pink-300 block mb-2">Nómina de Usuarios</b> <b class="text-pink-300 block">Nómina de Países</b>', bridge: 'Revisamos que la etiqueta del territorio del usuario coincida con la lista oficial.', join_type: 'INNER JOIN<br><span class="text-xl font-normal opacity-80">(Exigimos una coincidencia estricta)</span>' },
+                        { 
+                            type: 'analogy', 
+                            description: 'Cruzamos la lista de clientes con la lista de países disponibles. Toda persona que no tenga registrada su etiqueta territorial, simplemente se rechaza y no entra al reporte temporal.',
+                            leftTable: { name: 'Registro Clientes', items: [{id:1, label:'Maki', match:true}, {id:2, label:'Ana', match:true}, {id:3, label:'Usuario Falso', match:false}] },
+                            rightTable: { name: 'Registro Países', items: [{id:1, label:'Chile', match:true}, {id:2, label:'Perú', match:true}, {id:3, label:'(Ninguno)', isNull:true}] },
+                            links: [{id:1, linked:true}, {id:2, linked:true}, {id:3, linked:false}]
+                        },
+                        { type: 'code', title: 'INNER JOIN', subtitle: 'La persona sin país pierde su oportunidad y desaparece de este reporte.', sql: '-- Extrae solo a los usuarios que registraron correctamente su pais\nSELECT\n    u.nombre,\n    p.nombre_pais\nFROM usuarios u\nINNER JOIN paises p\n  ON u.id_pais = p.id_pais;' },
+                        
+                        // BLOQUE 2: LEFT JOIN
+                        { type: 'scenario', title: 'Requerimiento Analítico', context: '<span class="text-rose-400 font-bold not-italic">De: Vicepresidencia de Expansión.</span><br><br>"Necesito ver un informe global de presencia.\n\nGenera una lista oficial con TODOS los territorios que manejamos actualmente. Acompaña cada territorio con el nombre de los clientes que residen allí.<br><br><strong>CRÍTICO:</strong> Me interesa de sobremanera ver todos aquellos países vacíos donde nadie nos haya contratado aún (Como Colombia). Esos territorios deben salir en el informe igual."' },
+                        { type: 'analysis', title: 'Desglose Lógico', req_columns: '<code class="text-indigo-300 bg-black/30 p-2 rounded block mb-2">Nombre del País</code> <code class="text-indigo-300 bg-black/30 p-2 rounded block">Nombres de Clientes</code>', req_tables: '<b class="text-pink-300 block mb-2">El Catálogo Patrón: Países</b> <b class="text-pink-300 block">Información anexa: Usuarios</b>', bridge: 'Buscamos si en nuestra bolsa de usuarios alguien habita cada país del catálogo.', join_type: 'LEFT JOIN<br><span class="text-xl font-normal opacity-80">(Mantenemos intacto nuestro catálogo base)</span>' },
+                        { 
+                            type: 'analogy', 
+                            description: 'Nuestra base inamovible de análisis ahora es la lista de Países. Revisamos el listado territorial, preguntando: ¿Hay clientes en Colombia? Si la respuesta es no, Colombia no se borra, simplemente se le anota con lápiz "VACÍO" (NULL).',
+                            leftTable: { name: 'Base Principal (Países)', items: [{id:1, label:'Chile', match:true}, {id:2, label:'Colombia', match:false}] },
+                            rightTable: { name: 'Información a anexar', items: [{id:1, label:'Maki', match:true}, {id:2, label:'(Nadie)', isNull:true}] },
+                            links: [{id:1, linked:true}, {id:2, linked:false}]
+                        },
+                        { type: 'code', title: 'LEFT JOIN', subtitle: 'La tabla de países se posiciona como el FROM principal (Izquierda) evitando borrados.', sql: '-- Informe analítico de territorios poblados y vacíos\nSELECT\n    p.nombre_pais,\n    u.nombre AS cliente_que_habita\nFROM paises p                   -- Base que queremos estudiar\nLEFT JOIN usuarios u            -- Intentar pegarle usuarios si se puede\n  ON p.id_pais = u.id_pais;' },
+
+                        // BLOQUE 3: RIGHT JOIN
+                        { type: 'scenario', title: 'Requerimiento de Calidad', context: '<span class="text-rose-400 font-bold not-italic">De: Calidad de Contenidos.</span><br><br>"El equipo directivo está revisando si los estrenos funcionan.<br>Necesito un reporte combinando la Puntuación registrada por los usuarios, y el Título de la obra a la que pertenece.<br><br><strong>PRIORIDAD:</strong> Nuestro Catálogo de Películas debe salir intacto. Si un estreno aún no recibe ninguna calificación (como Oppenheimer), tiene que figurar igual en listado, dejando sus áreas de calificación en blanco."' },
+                        { type: 'analysis', title: 'Desglose Lógico', req_columns: '<code class="text-indigo-300 bg-black/30 p-2 rounded block mb-2">Puntuación de Usuario</code> <code class="text-indigo-300 bg-black/30 p-2 rounded block">Título de la Obra</code>', req_tables: '<b class="text-pink-300 block mb-2">Registro de Calificaciones</b> <b class="text-pink-300 block">Catálogo Cartelera (Protegida)</b>', bridge: 'Revisamos a qué película pertenece cada calificación.', join_type: 'RIGHT JOIN<br><span class="text-xl font-normal opacity-80">(Conservamos la segunda tabla listada)</span>' },
+                        { 
+                            type: 'analogy', 
+                            description: 'Tiene exactamente el mismo efecto protector, pero ahora salvaguarda a la tabla que se escribió en segunda posición (Derecha). Forzaremos a que cada Película aparezca, incluso si le tenemos que inventar un vacío a su lado.',
+                            leftTable: { name: 'Registro Calificaciones', items: [{id:1, label:'Nota: 9.6', match:true}, {id:2, label:'(Ausente)', isNull:true}] },
+                            rightTable: { name: 'Catálogo de Cartelera', items: [{id:1, label:'Frieren', match:true}, {id:2, label:'Oppenheimer', match:false}] },
+                            links: [{id:1, linked:true}, {id:2, linked:false}]
+                        },
+                        { type: 'code', title: 'RIGHT JOIN', subtitle: 'En la práctica, muchos ingenieros recomiendan invertir el código y reescribirlo usando un LEFT JOIN (Son matemáticamente idénticos).', sql: '-- Recupera toda la cartelera publicando sus notas, o NULL si recién se estrenaron.\nSELECT\n    cal.puntuacion AS nota_asignada,\n    con.titulo\nFROM calificaciones cal\nRIGHT JOIN contenidos con       -- Orden de no desaparecer al Contenido.\n  ON cal.id_contenido = con.id_contenido;' },
+
+                        { type: 'content', title: 'Misión Grupal: A su Proyecto', icon: 'fa-people-group', html: '<div class="bg-slate-900/80 p-10 rounded-3xl border-2 border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.2)]"><h3 class="text-4xl text-rose-400 font-extrabold mb-8"><i class="fa-solid fa-list-check mr-3"></i> Tarea Formativa Evaluada</h3><ul class="list-disc list-inside text-left text-3xl space-y-6 ml-4"><li class="text-slate-200">Creen una presentación <b class="text-indigo-300">(/PPT/Canva)</b> con una consulta funcional para cada tipo de JOIN visto.</li><li class="text-slate-200">Debe aplicarse <b>exclusivamente</b> al modelo de base de datos de su propio proyecto grupal.</li><li class="text-slate-200">Planteen una <b class="text-emerald-400">breve necesidad de negocio</b> (Ej: "La cajera requiere...") por cada consulta.</li><li class="text-slate-200">Suban el PPT a una <b class="text-pink-400">rama de su GitHub</b> y entreguen el link al profesor antes de finalizar la clase.</li></ul></div>' },
+
+                        { 
+                          type: 'closing_activity', 
+                          question: 'Misión Crítica: ¿Qué tipo de JOIN utilizas si quieres excluir a usuarios que NO tienen un país y pedir la coincidencia EXACTA?', 
+                          options: [
+                              { text: 'LEFT JOIN', colorClass: 'bg-[#e21b3c] border-[#b0102b]', shape: 'fa-play fa-rotate-270', isCorrect: false },
+                              { text: 'CROSS JOIN', colorClass: 'bg-[#1368ce] border-[#0a4891]', shape: 'fa-square fa-rotate-45', isCorrect: false },
+                              { text: 'INNER JOIN', colorClass: 'bg-[#d89e00] border-[#9c7200]', shape: 'fa-circle', isCorrect: true },
+                              { text: 'RIGHT JOIN', colorClass: 'bg-[#26890c] border-[#1b6108]', shape: 'fa-square', isCorrect: false }
+                          ],
+                          explanation: 'El <b>INNER JOIN</b> exige que el dato exista en ambas tablas. Si una fila carece de país, entonces no cumple la coincidencia exacta y se omite en tu reporte de resultados.',
+                          answered: false,
+                          selectedIdx: null 
+                        },
+
+                        { type: 'title', title: '¡Manejaste los Fundamentos!', subtitle: 'Ya puedes cruzar datos garantizando resultados de negocio.<br>En la clase 2 veremos herramientas paramédicas como el FULL OUTER, generadores CROSS, y el temido JOIN encadenado.', icon: 'fa-graduation-cap', iconColor: 'text-amber-400' }
+                    ]
+                };
+            },
+            computed: {
+                currentSlide() {
+                    return this.slides[this.currentIndex];
+                },
+                progressPercentage() {
+                    return ((this.currentIndex + 1) / this.slides.length) * 100;
+                }
+            },
+            methods: {
+                selectKahootOption(idx) {
+                    this.currentSlide.answered = true;
+                    this.currentSlide.selectedIdx = idx;
+                },
+                next() {
+                    if (this.currentIndex < this.slides.length - 1) {
+                        this.currentIndex++;
+                        this.highlightCode();
+                    }
+                },
+                prev() {
+                    if (this.currentIndex > 0) {
+                        this.currentIndex--;
+                        this.highlightCode();
+                    }
+                },
+                handleKeydown(e) {
+                    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === ' ') this.next();
+                    else if (e.key === 'ArrowLeft' || e.key === 'a') this.prev();
+                },
+                highlightCode() {
+                    this.$nextTick(() => {
+                        Prism.highlightAll();
+                    });
+                },
+                copyDbScript() {
+                    navigator.clipboard.writeText(this.dbScript).then(() => {
+                        this.copyBtnText = '¡Copiado al Portapapeles!';
+                        setTimeout(() => this.copyBtnText = 'Copiar Script', 3000);
+                    });
+                }
+            },
+            mounted() {
+                this.$el.focus();
+                this.highlightCode();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
