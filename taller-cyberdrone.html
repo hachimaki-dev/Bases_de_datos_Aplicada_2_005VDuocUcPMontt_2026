@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taller CyberDrone Rentals - BD Aplicada 2</title>
+<script src="js/config.js"></script>
+<style>
+.hint-block{display:none;opacity:0;transition:opacity .5s ease}
+.hint-block.visible{display:block;opacity:1}
+.tab-content{display:none}.tab-content.active{display:block;animation:fadeIn .4s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease;padding:0 1rem}
+.acc-open .acc-body{max-height:500px;padding:1rem}
+.acc-open .acc-icon{transform:rotate(180deg)}
+.match-btn{transition:all .2s}.match-btn.matched{opacity:.4;pointer-events:none}
+.match-btn.sel{ring:3px solid #ec4899;transform:scale(1.05)}
+.dua-badge{display:none}.dua-on .dua-badge{display:inline-flex}
+.quiz-bar{height:6px;border-radius:3px;transition:width .5s ease}
+</style>
+</head>
+<body class="font-sans antialiased min-h-screen pb-20 text-gray-800 bg-slate-50">
+<div id="taller-app" :class="{'dua-on':duaMode}">
+<app-nav></app-nav>
+
+<!-- DUA FLOAT BUTTON -->
+<button @click="toggleDUA" class="fixed bottom-6 right-6 z-50 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-5 rounded-full shadow-2xl text-sm flex items-center gap-2 transition-transform hover:scale-110" :class="duaMode?'ring-4 ring-yellow-300':''">
+<i class="fa-solid fa-universal-access text-lg"></i> <span v-text="duaMode?'DUA Activo ✓':'Modo Accesible'"></span></button>
+
+<!-- HEADER -->
+<header class="max-w-6xl mx-auto px-6 text-center mb-8">
+<div class="inline-block bg-purple-100 px-6 py-2.5 rounded-full text-purple-700 font-bold text-base mb-4 border-2 border-purple-200 shadow-sm">
+<i class="fa-solid fa-gamepad text-purple-500 mr-2"></i> TALLER PRÁCTICO INTEGRAL</div>
+<h1 class="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 mb-4">CyberDrone Rentals</h1>
+<p class="text-xl text-gray-700 bg-white inline-flex items-center gap-3 px-8 py-4 rounded-full shadow-md border-2 border-purple-100 font-bold">
+Laboratorio de SQL con Verificación de Comprensión <i class="fa-solid fa-robot text-purple-400 text-2xl"></i></p>
+<!-- DUA Banner -->
+<div v-if="duaMode" class="mt-4 bg-yellow-100 border-2 border-yellow-300 rounded-2xl p-4 text-yellow-800 font-bold text-lg max-w-2xl mx-auto">
+🌈 Modo Accesible Activo — Verás vocabulario simplificado, analogías y pistas extendidas</div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 space-y-10" id="main-content">
+
+<!-- PROGRESS BAR -->
+<div class="bg-white rounded-2xl p-6 shadow-md border border-slate-200">
+<h3 class="font-bold text-slate-700 mb-3"><i class="fa-solid fa-chart-line text-pink-500 mr-2"></i> Tu Progreso</h3>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div v-for="(label,key) in {strings:'Texto',dates:'Fechas',agrupacion:'Agrupación',subconsultas:'Subconsultas'}" :key="key" class="text-center">
+<div class="text-sm font-bold mb-1" :class="isQuizDone(key)?'text-emerald-600':'text-gray-500'">
+<span v-if="isQuizDone(key)">✅</span><span v-else>⬜</span> {{label}}</div>
+<div class="bg-gray-200 rounded-full overflow-hidden"><div class="quiz-bar bg-gradient-to-r from-pink-500 to-purple-500" :style="{width:quizProgress(key)+'%'}"></div></div>
+</div></div></div>
+
+<!-- DOWNLOAD + DIAGRAM -->
+<section class="bg-white rounded-[2rem] p-6 shadow-lg border-2 border-blue-200 flex flex-col md:flex-row gap-6 items-center justify-between">
+<div><h2 class="text-2xl font-bold text-blue-800 mb-2"><i class="fa-solid fa-download text-blue-500 mr-2"></i> Material del Alumno</h2>
+<p class="text-gray-600">Descarga el script SQL y ejecútalo en Oracle SQL Developer antes de comenzar.</p></div>
+<a href="BD_cyberdrone.sql" download class="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg px-8 py-4 rounded-xl shadow-lg transition-transform hover:scale-105 flex items-center">
+<i class="fa-solid fa-database text-2xl mr-3"></i> Descargar BD_cyberdrone.sql</a></section>
+
+<!-- CHECKLIST PRERREQUISITOS -->
+<section class="bg-amber-50 rounded-[2rem] p-6 shadow-lg border-2 border-amber-200">
+<h2 class="text-xl font-bold text-amber-800 mb-4"><i class="fa-solid fa-list-check text-amber-500 mr-2"></i> Antes de empezar — Checklist</h2>
+<p class="text-sm text-amber-700 mb-4">Confirma que cumples estos pasos antes de resolver las misiones:</p>
+<div class="space-y-3">
+<label class="flex items-center gap-3 bg-white p-3 rounded-xl border border-amber-100 cursor-pointer hover:bg-amber-50 transition-colors">
+<input type="checkbox" class="w-5 h-5 accent-amber-500"> <span class="text-sm font-medium">Abrí Oracle SQL Developer y me conecté a mi esquema</span></label>
+<label class="flex items-center gap-3 bg-white p-3 rounded-xl border border-amber-100 cursor-pointer hover:bg-amber-50 transition-colors">
+<input type="checkbox" class="w-5 h-5 accent-amber-500"> <span class="text-sm font-medium">Ejecuté el script <code class="bg-slate-100 px-1 rounded">BD_cyberdrone.sql</code> completo sin errores</span></label>
+<label class="flex items-center gap-3 bg-white p-3 rounded-xl border border-amber-100 cursor-pointer hover:bg-amber-50 transition-colors">
+<input type="checkbox" class="w-5 h-5 accent-amber-500"> <span class="text-sm font-medium">Verifiqué con <code class="bg-slate-100 px-1 rounded">SELECT * FROM DRON</code> que hay 12 registros</span></label>
+<label class="flex items-center gap-3 bg-white p-3 rounded-xl border border-amber-100 cursor-pointer hover:bg-amber-50 transition-colors">
+<input type="checkbox" class="w-5 h-5 accent-amber-500"> <span class="text-sm font-medium">Revisé la sección <strong>"La Materia"</strong> y completé los quizzes de comprensión</span></label>
+</div></section>
+
+<section class="bg-slate-900 rounded-[2rem] p-6 shadow-2xl border-4 border-slate-700">
+<h2 class="text-2xl font-bold text-yellow-400 mb-4"><i class="fa-solid fa-sitemap mr-2"></i> Diagrama Entidad-Relación</h2>
+<div class="bg-slate-800 p-4 rounded-xl overflow-x-auto text-center border border-slate-600">
+<div class="mermaid">
+erDiagram
+    REGION ||--o{ EMPLEADO : "tiene"
+    REGION ||--o{ CLIENTE : "tiene"
+    ESTADO_CIVIL ||--o{ EMPLEADO : "tiene"
+    ESTADO_CIVIL ||--o{ CLIENTE : "tiene"
+    TIPO_SALUD ||--o{ EMPLEADO : "posee"
+    TIPO_CLIENTE ||--o{ CLIENTE : "clasificado"
+    MARCA ||--o{ DRON : "fabrica"
+    TIPO_DRON ||--o{ DRON : "categoria"
+    EMPLEADO ||--o{ DRON : "encargado"
+    CLIENTE ||--o{ ARRIENDO_DRON : "solicita"
+    DRON ||--o{ ARRIENDO_DRON : "arrendado"
+    PORC_BONIF_ANNOS { NUMBER sueldo_desde NUMBER sueldo_hasta NUMBER porcentaje }
+    HIST_ARRIENDO_ANUAL_DRON { VARCHAR2 placa VARCHAR2 modelo NUMBER ano_proceso NUMBER cant_arriendos NUMBER total_dias }
+</div>
+<p class="text-xs text-slate-400 mt-2"><i class="fa-solid fa-info-circle mr-1"></i> <code>HIST_ARRIENDO_ANUAL_DRON</code> es una tabla de respaldo sin relaciones FK (se puebla vía INSERT INTO...SELECT en la Misión 3).</p></div></section>
+
+
+<!-- ══════ LA MATERIA ══════ -->
+<section class="bg-white rounded-[2.5rem] p-8 shadow-xl border-2 border-emerald-200">
+<h2 class="text-3xl font-bold text-emerald-800 mb-4 border-b-2 border-emerald-100 pb-4 flex items-center">
+<i class="fa-solid fa-book-open text-emerald-500 bg-emerald-100 p-3 rounded-xl mr-4"></i> La Materia</h2>
+<p class="text-gray-600 mb-6 bg-emerald-50 p-4 rounded-xl border border-emerald-100"><i class="fa-solid fa-route text-emerald-500 mr-2"></i> <strong>Flujo recomendado:</strong> Primero estudia los fundamentos teóricos de cada módulo y completa su quiz de comprensión. Luego baja a la <strong>Bandeja de Entrada Corporativa</strong> para aplicar lo aprendido resolviendo las misiones SQL. Cada misión combina funciones de varios módulos.</p>
+<div class="flex flex-wrap gap-2 mb-6">
+<button v-for="(label,key) in {strings:'1. Texto',dates:'2. Fechas',agrupacion:'3. Agrupación',subconsultas:'4. Subconsultas'}" :key="key"
+@click="openTab('tab-'+key)" class="px-5 py-2 rounded-full font-bold transition-colors text-sm"
+:class="activeTab==='tab-'+key?'bg-emerald-600 text-white shadow':'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'">
+{{label}} <span v-if="isQuizDone(key)" class="ml-1">✅</span></button></div>
+
+<!-- TAB: STRINGS -->
+<div v-show="activeTab==='tab-strings'" class="space-y-6">
+<div class="grid md:grid-cols-2 gap-6">
+<div>
+<h3 class="text-2xl font-bold text-pink-600 mb-3">SUBSTR <span class="dua-badge bg-pink-100 text-pink-700 text-xs px-2 py-1 rounded-full ml-2">✂️ Tijeras de texto</span></h3>
+<p class="mb-3">Extrae un fragmento de texto. Sintaxis: <code class="bg-slate-100 text-pink-700 px-2 py-1 rounded">SUBSTR(columna, inicio, cantidad)</code></p>
+<ul class="list-disc ml-6 space-y-1 text-sm">
+<li><code class="bg-slate-100">SUBSTR('CyberDrone', 1, 5)</code> → 'Cyber'</li>
+<li><code class="bg-slate-100">SUBSTR('CyberDrone', 6, 5)</code> → 'Drone'</li>
+<li><code class="bg-slate-100">SUBSTR('ABC', -1, 1)</code> → 'C' <strong>(última letra)</strong></li>
+</ul>
+<div v-if="duaMode" class="mt-3 bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-sm">
+<strong>🧒 En simple:</strong> Imagina que cada letra tiene un número. SUBSTR dice "dame desde la letra N, un total de M letras".</div>
+</div>
+<div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+<h3 class="text-lg font-bold text-blue-600 mb-2">Concatenación <span class="dua-badge bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full ml-2">🧩 Pegar textos</span></h3>
+<p class="text-sm mb-2">Usa <code class="font-bold text-lg text-blue-700">||</code> para pegar textos:</p>
+<pre><code class="language-sql">SELECT pnombre || ' ' || appaterno AS nombre,
+       SUBSTR(appaterno, 1, 2) || '@empresa.cl' AS correo
+FROM EMPLEADO;</code></pre>
+</div></div>
+<!-- Wiki: Ir más allá -->
+<details class="bg-slate-50 rounded-xl border border-slate-200">
+<summary class="cursor-pointer p-4 font-bold text-slate-700 hover:text-pink-600"><i class="fa-solid fa-microscope mr-2"></i> Ir Más Allá 🔬 (Wiki)</summary>
+<div class="p-4 pt-0 text-sm space-y-3 text-gray-700">
+<p><strong>Sintaxis Oracle oficial:</strong> <code>SUBSTR(char, position [, substring_length])</code></p>
+<p><strong>Caso real:</strong> En banca, el RUT se guarda como '12345678-9'. Para sacar el dígito verificador: <code>SUBSTR(rut, INSTR(rut,'-')+1, 1)</code></p>
+<p><strong>Funciones relacionadas:</strong> <code>INSTR(texto, búsqueda)</code> encuentra la posición de un carácter. <code>REPLACE(texto, viejo, nuevo)</code> reemplaza texto. <code>TRIM(texto)</code> quita espacios.</p>
+<table class="w-full text-xs mt-2 border"><tr class="bg-rose-50"><th class="p-2 border">Error</th><th class="p-2 border">Causa</th><th class="p-2 border">Fix</th></tr>
+<tr><td class="p-2 border">Resultado NULL</td><td class="p-2 border">Posición > largo</td><td class="p-2 border">Valida con LENGTH()</td></tr>
+<tr><td class="p-2 border">Resultado vacío</td><td class="p-2 border">length=0</td><td class="p-2 border">Usa 1 mínimo</td></tr></table>
+</div></details>
+<!-- QUIZ CHECKPOINT -->
+<div class="bg-pink-50 rounded-2xl p-6 border-2 border-pink-200 mt-4">
+<h4 class="font-bold text-pink-700 mb-4"><i class="fa-solid fa-clipboard-check mr-2"></i> Quiz de Comprensión: Texto
+<span v-if="isQuizDone('strings')" class="ml-2 bg-emerald-500 text-white text-xs px-3 py-1 rounded-full">Completado ✓</span></h4>
+<div class="space-y-4" v-if="quizState.strings">
+<template v-for="(item,idx) in quizState.strings" :key="idx">
+<!-- V/F -->
+<div v-if="item.type==='vf'" class="bg-white p-4 rounded-xl border border-pink-100">
+<p class="font-medium mb-3">{{idx+1}}. <code class="bg-slate-100 px-1 rounded">{{item.statement}}</code></p>
+<div class="flex gap-3">
+<button @click="answerVF('strings',idx,true)" class="px-6 py-2 rounded-full font-bold text-sm transition-colors" :class="item.answered&&item.userAnswer===true?(item.correct?'bg-emerald-500 text-white':'bg-red-500 text-white'):'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'">✓ Verdadero</button>
+<button @click="answerVF('strings',idx,false)" class="px-6 py-2 rounded-full font-bold text-sm transition-colors" :class="item.answered&&item.userAnswer===false?(item.correct?'bg-emerald-500 text-white':'bg-red-500 text-white'):'bg-red-100 text-red-700 hover:bg-red-200'">✗ Falso</button></div>
+<p v-if="item.showExplain" class="mt-2 text-sm p-3 rounded-lg" :class="item.correct?'bg-emerald-50 text-emerald-800':'bg-red-50 text-red-800'">{{item.explain}}</p></div>
+<!-- Multi -->
+<div v-if="item.type==='multi'" class="bg-white p-4 rounded-xl border border-pink-100">
+<p class="font-medium mb-3">{{idx+1}}. {{item.prompt}}</p>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+<button v-for="(opt,oi) in item.options" :key="oi" @click="answerMulti('strings',idx,oi)" class="text-left p-3 rounded-lg font-medium text-sm border-2 transition-colors"
+:class="item.answered&&oi===item.answer?'border-emerald-500 bg-emerald-50':item.answered&&oi===item.userAnswer&&!item.correct?'border-red-400 bg-red-50':'border-gray-200 hover:border-pink-300'">{{opt}}</button></div>
+<p v-if="item.showExplain" class="mt-2 text-sm p-3 rounded-lg" :class="item.correct?'bg-emerald-50 text-emerald-800':'bg-red-50 text-red-800'">{{item.explain}}</p></div>
+</template></div></div>
+</div>
+
+<!-- TAB: DATES -->
+<div v-show="activeTab==='tab-dates'" class="space-y-6">
+<h3 class="text-2xl font-bold text-emerald-600 mb-3">Manejo del Tiempo en SQL</h3>
+<p>Las fechas NO se restan como números si quieres meses exactos. Usa funciones nativas:</p>
+<div class="grid md:grid-cols-3 gap-4 mt-4">
+<div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200">
+<strong class="text-emerald-800">MONTHS_BETWEEN <span class="dua-badge bg-emerald-200 text-xs px-2 py-0.5 rounded-full">📅 Cuenta meses</span></strong>
+<p class="text-sm mt-1">Meses exactos entre dos fechas: <code class="text-xs bg-white p-1 rounded block mt-1">MONTHS_BETWEEN(f1, f2) / 12 = años</code></p>
+<div v-if="duaMode" class="mt-2 bg-yellow-50 p-2 rounded text-xs border border-yellow-200">🧒 Cuenta cuántos cuadros del calendario hay entre una fecha y otra.</div></div>
+<div class="bg-yellow-50 p-4 rounded-2xl border border-yellow-200">
+<strong class="text-yellow-800">LAST_DAY <span class="dua-badge bg-yellow-200 text-xs px-2 py-0.5 rounded-full">📆 Fin de mes</span></strong>
+<p class="text-sm mt-1">Último día del mes: <code class="text-xs bg-white p-1 rounded block mt-1">LAST_DAY(SYSDATE)</code></p></div>
+<div class="bg-blue-50 p-4 rounded-2xl border border-blue-200">
+<strong class="text-blue-800">EXTRACT <span class="dua-badge bg-blue-200 text-xs px-2 py-0.5 rounded-full">🔍 Lupa de fechas</span></strong>
+<p class="text-sm mt-1">Solo el año o mes: <code class="text-xs bg-white p-1 rounded block mt-1">EXTRACT(YEAR FROM fecha)</code></p></div></div>
+<details class="bg-slate-50 rounded-xl border border-slate-200 mt-4">
+<summary class="cursor-pointer p-4 font-bold text-slate-700 hover:text-emerald-600"><i class="fa-solid fa-microscope mr-2"></i> Ir Más Allá 🔬</summary>
+<div class="p-4 pt-0 text-sm space-y-2">
+<p><strong>TRUNC vs ROUND en fechas:</strong> <code>TRUNC(MONTHS_BETWEEN(...))</code> elimina decimales (redondea hacia abajo). <code>ROUND</code> redondea al entero más cercano.</p>
+<p><strong>ADD_MONTHS(fecha, n):</strong> Suma n meses a una fecha. Útil para calcular vencimientos.</p>
+<p><strong>TO_DATE vs TO_CHAR:</strong> <code>TO_DATE('01/01/2026','DD/MM/YYYY')</code> convierte texto a fecha. <code>TO_CHAR(SYSDATE,'YYYY')</code> convierte fecha a texto.</p></div></details>
+<!-- QUIZ: MATCHING -->
+<div class="bg-emerald-50 rounded-2xl p-6 border-2 border-emerald-200 mt-4">
+<h4 class="font-bold text-emerald-700 mb-4"><i class="fa-solid fa-clipboard-check mr-2"></i> Quiz: Términos Pareados
+<span v-if="isQuizDone('dates')" class="ml-2 bg-emerald-500 text-white text-xs px-3 py-1 rounded-full">Completado ✓</span></h4>
+<div v-if="quizState.dates">
+<template v-for="(item,idx) in quizState.dates" :key="idx">
+<div v-if="item.type==='match'" class="bg-white p-4 rounded-xl border border-emerald-100 mb-3">
+<p class="font-medium mb-3 text-sm">Haz clic en un concepto de la izquierda, luego en su definición de la derecha:</p>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2"><div v-for="(p,pi) in item.pairs" :key="'l'+pi"
+@click="selectMatch('dates',idx,'left',pi)"
+class="match-btn p-3 rounded-lg border-2 text-sm font-mono cursor-pointer transition-all"
+:class="[isMatchDone('dates',idx,pi)?'matched bg-emerald-50 border-emerald-300':'border-gray-200 hover:border-pink-400', isMatchSelected('dates',idx,'left',pi)?'ring-2 ring-pink-500 scale-105':'']">{{p.left}}</div></div>
+<div class="space-y-2"><div v-for="(p,pi) in item.pairs" :key="'r'+pi"
+@click="selectMatch('dates',idx,'right',pi)"
+class="match-btn p-3 rounded-lg border-2 text-sm cursor-pointer transition-all"
+:class="[isMatchDone('dates',idx,pi)?'matched bg-emerald-50 border-emerald-300':'border-gray-200 hover:border-pink-400', isMatchSelected('dates',idx,'right',pi)?'ring-2 ring-pink-500 scale-105':'']">{{p.right}}</div></div></div>
+<p v-if="item.showExplain" class="mt-3 text-sm bg-emerald-50 text-emerald-800 p-3 rounded-lg">¡Correcto! Todas las parejas están conectadas.</p></div>
+<!-- VF and Multi for dates -->
+<div v-if="item.type==='vf'" class="bg-white p-4 rounded-xl border border-emerald-100 mb-3">
+<p class="font-medium mb-3 text-sm">{{idx+1}}. <code class="bg-slate-100 px-1 rounded">{{item.statement}}</code></p>
+<div class="flex gap-3">
+<button @click="answerVF('dates',idx,true)" class="px-5 py-2 rounded-full font-bold text-xs" :class="item.answered&&item.userAnswer===true?(item.correct?'bg-emerald-500 text-white':'bg-red-500 text-white'):'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'">✓ V</button>
+<button @click="answerVF('dates',idx,false)" class="px-5 py-2 rounded-full font-bold text-xs" :class="item.answered&&item.userAnswer===false?(item.correct?'bg-emerald-500 text-white':'bg-red-500 text-white'):'bg-red-100 text-red-700 hover:bg-red-200'">✗ F</button></div>
+<p v-if="item.showExplain" class="mt-2 text-xs p-2 rounded-lg" :class="item.correct?'bg-emerald-50 text-emerald-800':'bg-red-50 text-red-800'">{{item.explain}}</p></div>
+<div v-if="item.type==='multi'" class="bg-white p-4 rounded-xl border border-emerald-100 mb-3">
+<p class="font-medium mb-3 text-sm">{{idx+1}}. {{item.prompt}}</p>
+<div class="space-y-2"><button v-for="(opt,oi) in item.options" :key="oi" @click="answerMulti('dates',idx,oi)" class="w-full text-left p-3 rounded-lg font-medium text-sm border-2 transition-colors"
+:class="item.answered&&oi===item.answer?'border-emerald-500 bg-emerald-50':item.answered&&oi===item.userAnswer&&!item.correct?'border-red-400 bg-red-50':'border-gray-200 hover:border-emerald-300'">{{opt}}</button></div>
+<p v-if="item.showExplain" class="mt-2 text-xs p-2 rounded-lg" :class="item.correct?'bg-emerald-50 text-emerald-800':'bg-red-50 text-red-800'">{{item.explain}}</p></div>
+</template></div></div>
+</div>
+
+<!-- TAB: AGRUPACION -->
+<div v-show="activeTab==='tab-agrupacion'" class="space-y-6">
+<h3 class="text-2xl font-bold text-orange-600 mb-3">Resúmenes: GROUP BY</h3>
+<div class="bg-orange-50 p-5 rounded-xl border border-orange-200 relative">
+<i class="fa-solid fa-triangle-exclamation absolute top-4 right-4 text-2xl text-orange-300"></i>
+<h4 class="font-bold text-orange-800 text-lg mb-2">Regla de Oro <span class="dua-badge bg-orange-200 text-xs px-2 py-0.5 rounded-full">📦 Separar en cajones</span></h4>
+<p><strong>Toda columna en el SELECT sin función de grupo DEBE estar en el GROUP BY.</strong></p>
+<div v-if="duaMode" class="mt-2 bg-yellow-50 p-3 rounded text-sm border border-yellow-200">🧒 Imagina que tienes una caja de LEGO de colores mezclados. GROUP BY es como separarlos por color en distintos platos. COUNT(*) te dice cuántos hay en cada plato.</div></div>
+<div class="grid md:grid-cols-2 gap-4">
+<div><h4 class="font-bold mb-2">HAVING vs WHERE <span class="dua-badge bg-slate-100 text-xs px-2 py-0.5 rounded-full">🚫 vs 🚫📦</span></h4>
+<ul class="list-disc ml-6 space-y-2 text-sm">
+<li><code class="bg-slate-100 font-bold">WHERE</code> filtra filas individuales <strong>antes</strong> de agrupar.</li>
+<li><code class="bg-slate-100 font-bold">HAVING</code> filtra grupos <strong>después</strong> del cálculo.</li></ul></div>
+<div class="bg-slate-800 p-4 rounded-xl text-white">
+<h4 class="font-bold text-yellow-400 mb-2">INSERT INTO...SELECT <span class="dua-badge bg-yellow-900 text-yellow-300 text-xs px-2 py-0.5 rounded-full">📥 Copiar masivo</span></h4>
+<code class="text-xs text-green-300 block">INSERT INTO HIST_ARRIENDO_ANUAL_DRON<br>(placa, modelo, ano_proceso, cant_arriendos, total_dias)<br>SELECT d.placa, d.modelo, EXTRACT(YEAR FROM SYSDATE),<br>COUNT(*), SUM(a.dias_solicitados)<br>FROM ARRIENDO_DRON a JOIN DRON d ON a.placa=d.placa<br>GROUP BY d.placa, d.modelo;</code></div></div>
+<details class="bg-slate-50 rounded-xl border border-slate-200"><summary class="cursor-pointer p-4 font-bold text-slate-700"><i class="fa-solid fa-microscope mr-2"></i> Ir Más Allá 🔬</summary>
+<div class="p-4 pt-0 text-sm space-y-2"><p><strong>Funciones de grupo Oracle:</strong> COUNT(*), COUNT(col), SUM(col), AVG(col), MIN(col), MAX(col), STDDEV(col), VARIANCE(col).</p>
+<p><strong>ROLLUP y CUBE:</strong> Variantes avanzadas de GROUP BY que generan subtotales automáticos (contenido avanzado, fuera de evaluación).</p></div></details>
+<!-- QUIZ -->
+<div class="bg-orange-50 rounded-2xl p-6 border-2 border-orange-200 mt-4">
+<h4 class="font-bold text-orange-700 mb-4"><i class="fa-solid fa-clipboard-check mr-2"></i> Quiz: Agrupación
+<span v-if="isQuizDone('agrupacion')" class="ml-2 bg-emerald-500 text-white text-xs px-3 py-1 rounded-full">Completado ✓</span></h4>
+<div v-if="quizState.agrupacion" class="space-y-3">
+<template v-for="(item,idx) in quizState.agrupacion" :key="idx">
+<div v-if="item.type==='vf'" class="bg-white p-4 rounded-xl border border-orange-100">
+<p class="font-medium mb-3 text-sm">{{idx+1}}. {{item.statement}}</p>
+<div class="flex gap-3">
+<button @click="answerVF('agrupacion',idx,true)" class="px-5 py-2 rounded-full font-bold text-xs" :class="item.answered&&item.userAnswer===true?(item.correct?'bg-emerald-500 text-white':'bg-red-500 text-white'):'bg-emerald-100 text-emerald-700'">✓ V</button>
+<button @click="answerVF('agrupacion',idx,false)" class="px-5 py-2 rounded-full font-bold text-xs" :class="item.answered&&item.userAnswer===false?(item.correct?'bg-emerald-500 text-white':'bg-red-500 text-white'):'bg-red-100 text-red-700'">✗ F</button></div>
+<p v-if="item.showExplain" class="mt-2 text-xs p-2 rounded-lg" :class="item.correct?'bg-emerald-50 text-emerald-800':'bg-red-50 text-red-800'">{{item.explain}}</p></div>
+<div v-if="item.type==='multi'" class="bg-white p-4 rounded-xl border border-orange-100">
+<p class="font-medium mb-3 text-sm">{{idx+1}}. {{item.prompt}}</p>
+<div class="space-y-2"><button v-for="(opt,oi) in item.options" :key="oi" @click="answerMulti('agrupacion',idx,oi)" class="w-full text-left p-3 rounded-lg font-medium text-xs border-2 transition-colors font-mono"
+:class="item.answered&&oi===item.answer?'border-emerald-500 bg-emerald-50':item.answered&&oi===item.userAnswer&&!item.correct?'border-red-400 bg-red-50':'border-gray-200 hover:border-orange-300'">{{opt}}</button></div>
+<p v-if="item.showExplain" class="mt-2 text-xs p-2 rounded-lg" :class="item.correct?'bg-emerald-50 text-emerald-800':'bg-red-50 text-red-800'">{{item.explain}}</p></div>
+</template></div></div>
+</div>
+
+<!-- TAB: SUBCONSULTAS -->
+<div v-show="activeTab==='tab-subconsultas'" class="space-y-6">
+<h3 class="text-2xl font-bold text-purple-600 mb-3">Queries dentro de Queries <span class="dua-badge bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full">🪆 Muñecas rusas</span></h3>
+<div class="grid md:grid-cols-2 gap-6">
+<div class="bg-purple-50 p-5 rounded-2xl border border-purple-200">
+<strong class="text-purple-800 text-lg">1. Escalar (WHERE/SELECT) <span class="dua-badge bg-purple-200 text-xs px-2 py-0.5 rounded-full">1️⃣ Un dato</span></strong>
+<p class="text-sm my-2">Devuelve exactamente 1 fila y 1 columna.</p>
+<pre><code class="language-sql">SELECT pnombre_emp, appaterno_emp FROM EMPLEADO
+WHERE sueldo_base > (SELECT AVG(sueldo_base) FROM EMPLEADO);</code></pre></div>
+<div class="bg-pink-50 p-5 rounded-2xl border border-pink-200">
+<strong class="text-pink-800 text-lg">2. Inline View (FROM) <span class="dua-badge bg-pink-200 text-xs px-2 py-0.5 rounded-full">👻 Tabla fantasma</span></strong>
+<p class="text-sm my-2">Un SELECT completo <strong>dentro del FROM</strong>, usado como tabla temporal.</p>
+<pre><code class="language-sql">SELECT e.pnombre_emp, sub.total
+FROM EMPLEADO e JOIN (
+  SELECT d.numrun_emp, COUNT(*) as total
+  FROM ARRIENDO_DRON a JOIN DRON d ON a.placa=d.placa
+  GROUP BY d.numrun_emp
+) sub ON e.numrun_emp = sub.numrun_emp;</code></pre></div></div>
+<div v-if="duaMode" class="bg-yellow-50 p-4 rounded-xl border border-yellow-200 mt-3 text-sm">
+🧒 <strong>Piénsalo así:</strong> Una subconsulta es como pedirle a un compañero que calcule algo y te pase el resultado en un papelito. Tú usas ese papelito para completar tu consulta principal.</div>
+<details class="bg-slate-50 rounded-xl border border-slate-200 mt-3"><summary class="cursor-pointer p-4 font-bold text-slate-700"><i class="fa-solid fa-microscope mr-2"></i> Ir Más Allá 🔬</summary>
+<div class="p-4 pt-0 text-sm space-y-2"><p><strong>Subconsulta correlacionada:</strong> Cuando la subconsulta interna referencia columnas de la consulta externa. Se ejecuta UNA VEZ por cada fila. Más lento pero poderoso.</p>
+<p><strong>EXISTS vs IN:</strong> <code>WHERE EXISTS (SELECT ...)</code> verifica si la subconsulta devuelve al menos 1 fila. <code>IN</code> compara contra una lista de valores.</p></div></details>
+<!-- QUIZ -->
+<div class="bg-purple-50 rounded-2xl p-6 border-2 border-purple-200 mt-4">
+<h4 class="font-bold text-purple-700 mb-4"><i class="fa-solid fa-clipboard-check mr-2"></i> Quiz: Subconsultas
+<span v-if="isQuizDone('subconsultas')" class="ml-2 bg-emerald-500 text-white text-xs px-3 py-1 rounded-full">Completado ✓</span></h4>
+<div v-if="quizState.subconsultas" class="space-y-3">
+<template v-for="(item,idx) in quizState.subconsultas" :key="idx">
+<div v-if="item.type==='fill'" class="bg-white p-4 rounded-xl border border-purple-100">
+<p class="font-medium mb-2 text-sm">{{idx+1}}. {{item.prompt}}</p>
+<div class="bg-slate-800 text-green-400 p-3 rounded-lg font-mono text-sm">
+<span v-for="(part,pi) in item.template.split('___')" :key="pi">{{part}}<input v-if="pi<item.template.split('___').length-1" v-model="fillState['subconsultas_'+item.gaps[pi].id]" class="bg-slate-700 text-yellow-300 border-b-2 border-pink-400 outline-none font-mono text-center w-32 mx-1 px-1" placeholder="?" /></span></div>
+<button @click="answerFill('subconsultas',idx)" class="mt-3 bg-purple-600 text-white font-bold py-2 px-6 rounded-full text-sm hover:bg-purple-700">Verificar</button>
+<p v-if="item.showExplain" class="mt-2 text-xs p-2 rounded-lg" :class="item.correct?'bg-emerald-50 text-emerald-800':'bg-red-50 text-red-800'">{{item.explain}}</p></div>
+<div v-if="item.type==='vf'" class="bg-white p-4 rounded-xl border border-purple-100">
+<p class="font-medium mb-3 text-sm">{{idx+1}}. {{item.statement}}</p>
+<div class="flex gap-3">
+<button @click="answerVF('subconsultas',idx,true)" class="px-5 py-2 rounded-full font-bold text-xs" :class="item.answered&&item.userAnswer===true?(item.correct?'bg-emerald-500 text-white':'bg-red-500 text-white'):'bg-emerald-100 text-emerald-700'">✓ V</button>
+<button @click="answerVF('subconsultas',idx,false)" class="px-5 py-2 rounded-full font-bold text-xs" :class="item.answered&&item.userAnswer===false?(item.correct?'bg-emerald-500 text-white':'bg-red-500 text-white'):'bg-red-100 text-red-700'">✗ F</button></div>
+<p v-if="item.showExplain" class="mt-2 text-xs p-2 rounded-lg" :class="item.correct?'bg-emerald-50 text-emerald-800':'bg-red-50 text-red-800'">{{item.explain}}</p></div>
+<div v-if="item.type==='multi'" class="bg-white p-4 rounded-xl border border-purple-100">
+<p class="font-medium mb-3 text-sm">{{idx+1}}. {{item.prompt}}</p>
+<div class="space-y-2"><button v-for="(opt,oi) in item.options" :key="oi" @click="answerMulti('subconsultas',idx,oi)" class="w-full text-left p-3 rounded-lg font-medium text-xs border-2"
+:class="item.answered&&oi===item.answer?'border-emerald-500 bg-emerald-50':item.answered&&oi===item.userAnswer&&!item.correct?'border-red-400 bg-red-50':'border-gray-200 hover:border-purple-300'">{{opt}}</button></div>
+<p v-if="item.showExplain" class="mt-2 text-xs p-2 rounded-lg" :class="item.correct?'bg-emerald-50 text-emerald-800':'bg-red-50 text-red-800'">{{item.explain}}</p></div>
+</template></div></div>
+</div>
+</section>
+
+<!-- ══════ MISIONES ══════ -->
+<section class="text-center mt-12">
+<h2 class="text-4xl font-extrabold text-slate-800 mb-3"><i class="fa-solid fa-inbox text-pink-500 mr-2"></i> Bandeja de Entrada Corporativa</h2>
+<p class="text-lg text-gray-600 max-w-3xl mx-auto mb-3">Hoy es tu primer día como DBA Junior en <strong>CyberDrone Rentals</strong>. Esta es tu bandeja de correos. Cada mensaje es un pedido real de la empresa que debes traducir a SQL.</p>
+<p class="text-sm text-gray-400 max-w-2xl mx-auto mb-8">Lee el contexto, entiende el problema de negocio, y luego escribe la query. Si te estancas, usa la Asistencia IA progresiva.</p></section>
+<section class="bg-white rounded-3xl shadow-xl border-2 border-blue-200 overflow-hidden relative">
+<div class="absolute top-0 right-0 bg-blue-100 text-blue-800 font-bold px-6 py-2 rounded-bl-3xl text-sm">25 pts</div>
+<!-- HEADER -->
+<div class="bg-gradient-to-r from-blue-50 to-white p-6 border-b border-blue-100">
+<div class="flex items-center gap-2 mb-1"><span class="text-2xl font-extrabold text-blue-700">Misión 1</span></div>
+<div class="flex flex-wrap gap-2 mt-2"><span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">SUBSTR</span><span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">CASE WHEN</span><span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">JOIN</span><span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">Concatenación ||</span></div></div>
+<!-- EMAIL -->
+<div class="p-6">
+<div class="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden mb-6">
+<div class="bg-slate-100 px-5 py-3 border-b border-slate-200 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm shadow-md">AT</div>
+<div><p class="font-bold text-slate-800 text-sm leading-tight">Akira Tanaka</p>
+<p class="text-xs text-slate-500">Directora de Comunicaciones — CyberDrone Neo-Tokyo</p></div>
+<div class="ml-auto text-xs text-slate-400 font-medium"><i class="fa-solid fa-clock mr-1"></i> Hace 2 horas</div></div>
+<div class="px-5 py-2 bg-white border-b border-slate-100">
+<p class="text-sm"><span class="font-bold text-slate-500">Asunto:</span> <span class="font-bold text-slate-800">🚨 URGENTE: Sistema de correos caído, necesito los mails reconstruidos</span></p></div>
+<div class="px-5 py-4 text-sm text-slate-700 leading-relaxed">¡Hola DBA!<br><br>
+El servidor de correos corporativo sufrió una <strong>falla crítica</strong> y perdimos la lista de emails de todos los encargados técnicos de nuestra flota de drones. El directorio necesita los correos reconstruidos antes de la reunión con el cliente japonés en <strong>2 horas</strong>.<br><br>
+Nuestro protocolo interno genera los correos así: se toma el <strong>3er dígito del RUN</strong> del encargado, luego <strong>2 letras de su apellido materno</strong> (las cuales varían según el tipo de dron que supervisa), y se agrega <code>@cyberdrone.neo</code>.<br><br>
+Te adjunto las reglas por tipo de dron:
+<ul class="list-disc ml-6 mt-2 space-y-1">
+<li><strong>Carga / Exploración:</strong> 1era + 3ra letra del apellido materno</li>
+<li><strong>Carrera / Vigilancia:</strong> 2da + última letra del apellido materno</li>
+<li><strong>Fotografía y otros:</strong> 2da + 3ra letra</li></ul><br>
+Ordéname el catálogo primero por tipo de dron (A-Z) y luego por valor de arriendo (del más caro al más barato). ¡Gracias, corro a la sala de reuniones!</div></div>
+<!-- REFLEXIÓN -->
+<div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3">
+<span class="text-2xl">🤔</span>
+<div><p class="font-bold text-amber-800 text-sm mb-1">Antes de codificar, piensa:</p>
+<p class="text-sm text-amber-700">¿Qué tablas necesitas unir para tener en un mismo resultado el modelo del dron, su tipo, y el apellido materno de su encargado? ¿Cuáles son las llaves que las conectan?</p></div></div>
+<!-- TU ROL -->
+<div class="bg-blue-50 rounded-2xl p-5 border border-blue-200 mb-6">
+<h4 class="font-bold text-blue-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-screwdriver-wrench"></i> Tu Rol como DBA — Traducción Técnica</h4>
+<div class="text-sm text-gray-700 space-y-2"><p>Necesitas <strong>cruzar 3 tablas</strong>: <code>DRON</code> → <code>TIPO_DRON</code> → <code>EMPLEADO</code>.</p>
+<div class="bg-blue-100 border border-blue-200 rounded-lg p-3 text-xs"><i class="fa-solid fa-lightbulb text-blue-500 mr-1"></i> <strong>Dato clave:</strong> <code>numrun_emp</code> es <code>NUMBER</code> en la BD. Para usar SUBSTR sobre él necesitas convertirlo a texto con <code>TO_CHAR(e.numrun_emp)</code>.</div>
+<details class="mt-3 bg-white rounded-xl border border-blue-100" open>
+<summary class="p-3 font-bold text-blue-700 text-xs cursor-pointer">📋 Mini-muestra de datos reales (clic para ver)</summary>
+<div class="p-3 pt-0 overflow-x-auto">
+<p class="text-xs font-bold text-gray-500 mt-2 mb-1">DRON (parcial):</p>
+<table class="w-full text-xs border border-slate-200"><tr class="bg-blue-50 font-bold"><td class="p-1.5 border">placa</td><td class="p-1.5 border">modelo</td><td class="p-1.5 border">valor_arriendo_dia</td><td class="p-1.5 border">id_tipo_dron</td><td class="p-1.5 border">numrun_emp</td></tr>
+<tr><td class="p-1.5 border">CD001</td><td class="p-1.5 border">AeroSwift X1</td><td class="p-1.5 border">120000</td><td class="p-1.5 border">D</td><td class="p-1.5 border">9499044</td></tr>
+<tr><td class="p-1.5 border">CD006</td><td class="p-1.5 border">CargoLift 750</td><td class="p-1.5 border">60000</td><td class="p-1.5 border">T</td><td class="p-1.5 border">8533901</td></tr>
+<tr><td class="p-1.5 border">CD011</td><td class="p-1.5 border">SpyEye 160</td><td class="p-1.5 border">35000</td><td class="p-1.5 border">S</td><td class="p-1.5 border">12567890</td></tr></table>
+<p class="text-xs font-bold text-gray-500 mt-3 mb-1">TIPO_DRON:</p>
+<table class="w-full text-xs border border-slate-200"><tr class="bg-blue-50 font-bold"><td class="p-1.5 border">id</td><td class="p-1.5 border">nombre</td></tr>
+<tr><td class="p-1.5 border">D</td><td class="p-1.5 border">Carrera</td></tr><tr><td class="p-1.5 border">T</td><td class="p-1.5 border">Carga</td></tr><tr><td class="p-1.5 border">N</td><td class="p-1.5 border">Vigilancia</td></tr><tr><td class="p-1.5 border">S</td><td class="p-1.5 border">Fotografia</td></tr><tr><td class="p-1.5 border">R</td><td class="p-1.5 border">Exploracion</td></tr></table>
+<p class="text-xs font-bold text-gray-500 mt-3 mb-1">EMPLEADO (parcial):</p>
+<table class="w-full text-xs border border-slate-200"><tr class="bg-blue-50 font-bold"><td class="p-1.5 border">numrun_emp</td><td class="p-1.5 border">apmaterno</td></tr>
+<tr><td class="p-1.5 border">9499044</td><td class="p-1.5 border">Soto</td></tr><tr><td class="p-1.5 border">8533901</td><td class="p-1.5 border">Garcia</td></tr><tr><td class="p-1.5 border">12567890</td><td class="p-1.5 border">Flores</td></tr></table>
+</div></details>
+<details class="mt-3 bg-emerald-50 rounded-xl border border-emerald-200">
+<summary class="p-3 font-bold text-emerald-700 text-xs cursor-pointer">✅ Ejemplo de salida esperada (primeras filas)</summary>
+<div class="p-3 pt-0 overflow-x-auto">
+<table class="w-full text-xs border border-emerald-200 mt-2"><tr class="bg-emerald-100 font-bold"><td class="p-1.5 border">MODELO</td><td class="p-1.5 border">TIPO_DRON</td><td class="p-1.5 border">CORREO</td></tr>
+<tr><td class="p-1.5 border">CargoLift 750</td><td class="p-1.5 border">Carga</td><td class="p-1.5 border">3Gr@cyberdrone.neo</td></tr>
+<tr><td class="p-1.5 border">CargoPro 900</td><td class="p-1.5 border">Carga</td><td class="p-1.5 border">8Vr@cyberdrone.neo</td></tr>
+<tr><td class="p-1.5 border">Omega Drone V</td><td class="p-1.5 border">Carrera</td><td class="p-1.5 border">4iz@cyberdrone.neo</td></tr>
+<tr><td class="p-1.5 border">AeroSwift X1</td><td class="p-1.5 border">Carrera</td><td class="p-1.5 border">9oo@cyberdrone.neo</td></tr>
+<tr class="text-gray-400"><td class="p-1.5 border" colspan="3">... continúa</td></tr></table>
+<p class="text-xs text-gray-500 mt-2">💡 RUN 9499044 → 3er dígito = "9". Apmaterno "Soto", Carrera → 2da + última = "o"+"o" → "9oo@cyberdrone.neo"</p>
+</div></details>
+<p class="mt-3"><strong>ORDER BY:</strong> <code>nombre_tipo_dron ASC, valor_arriendo_dia DESC</code>.</p></div></div>
+<!-- TERMINAL + HINTS -->
+<div class="bg-slate-900 p-6 rounded-2xl border-2 border-slate-700">
+<div class="flex justify-between items-center mb-4">
+<span class="font-bold text-emerald-400"><i class="fa-solid fa-terminal mr-2"></i> Terminal SQL</span>
+<button @click="revealHint('m1')" class="bg-pink-600 hover:bg-pink-700 hover:scale-105 transition-transform text-white font-bold py-2.5 px-5 rounded-full text-sm shadow-[0_0_15px_rgba(219,39,119,0.5)]">
+<i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Asistencia IA</button></div>
+<div id="m1-hints" class="space-y-4"><div class="hint-block bg-slate-800 border-l-4 border-yellow-400 p-4 rounded-r-lg" data-level="1">
+<p class="font-bold text-yellow-400"><i class="fa-solid fa-lightbulb mr-2"></i> Pista 1 (Conceptual):</p>
+<div class="text-slate-200 mt-1 text-sm">Necesitas unir <code>DRON</code>, <code>TIPO_DRON</code> y <code>EMPLEADO</code> con JOIN. Para las letras condicionales usa <code>CASE nombre_tipo_dron WHEN ... THEN SUBSTR(...)</code>.</div></div><div class="hint-block bg-slate-800 border-l-4 border-emerald-400 p-4 rounded-r-lg" data-level="2">
+<p class="font-bold text-emerald-400"><i class="fa-solid fa-puzzle-piece mr-2"></i> Pista 2 (Estructura):</p>
+<div class="text-slate-200 mt-1 text-sm"><pre class="bg-black/50 p-3 rounded-xl mt-1"><code class="language-sql text-xs">SELECT d.modelo, t.nombre_tipo_dron,
+  SUBSTR(TO_CHAR(e.numrun_emp), 3, 1) ||
+  CASE t.nombre_tipo_dron
+    WHEN 'Carga' THEN SUBSTR(e.apmaterno_emp,1,1)||SUBSTR(e.apmaterno_emp,3,1)
+    WHEN 'Exploracion' THEN SUBSTR(e.apmaterno_emp,1,1)||SUBSTR(e.apmaterno_emp,3,1)
+    WHEN 'Carrera' THEN SUBSTR(e.apmaterno_emp,2,1)||SUBSTR(e.apmaterno_emp,____,1)
+    WHEN 'Vigilancia' THEN SUBSTR(e.apmaterno_emp,2,1)||SUBSTR(e.apmaterno_emp,____,1)
+    ELSE SUBSTR(e.apmaterno_emp,2,1)||SUBSTR(e.apmaterno_emp,3,1)
+  END || '@cyberdrone.neo' as correo
+FROM DRON d JOIN TIPO_DRON t ON d.id_tipo_dron=t.id_tipo_dron
+JOIN EMPLEADO e ON d.numrun_emp=e.numrun_emp
+ORDER BY t.nombre_tipo_dron ASC, d.valor_arriendo_dia DESC;</code></pre></div></div><div class="hint-block bg-slate-800 border-l-4 border-blue-400 p-4 rounded-r-lg" data-level="3">
+<p class="font-bold text-blue-400"><i class="fa-solid fa-code mr-2"></i> Pista 3 (Parcial):</p>
+<div class="text-slate-200 mt-1 text-sm"><span v-if="duaMode">El blank <code>____</code> debe ser <code>LENGTH(e.apmaterno_emp)</code> o <code>-1</code>. Para Vigilancia, copia la misma lógica que Carrera.</span><span v-else>Piensa: ¿cómo obtienes la última posición de un string? Oracle permite posiciones negativas en SUBSTR: <code>-1</code> significa "desde el final".</span></div></div><div class="hint-block bg-slate-800 border-l-4 border-purple-400 p-4 rounded-r-lg" data-level="4">
+<p class="font-bold text-purple-400"><i class="fa-solid fa-check mr-2"></i> Pista 4 (Solución Comentada):</p>
+<div class="text-slate-200 mt-1 text-sm"><span v-if="duaMode">Solución: Usa <code>-1</code> en SUBSTR para Carrera y Vigilancia. Las llaves de unión son <code>id_tipo_dron</code> y <code>numrun_emp</code>.</span><span v-else>Usa <code>SUBSTR(e.apmaterno_emp, -1, 1)</code> para obtener la última letra. Los JOINs van por <code>id_tipo_dron</code> y <code>numrun_emp</code>.</span></div></div></div></div>
+</div></section><section class="bg-white rounded-3xl shadow-xl border-2 border-emerald-200 overflow-hidden relative">
+<div class="absolute top-0 right-0 bg-emerald-100 text-emerald-800 font-bold px-6 py-2 rounded-bl-3xl text-sm">25 pts</div>
+<!-- HEADER -->
+<div class="bg-gradient-to-r from-emerald-50 to-white p-6 border-b border-emerald-100">
+<div class="flex items-center gap-2 mb-1"><span class="text-2xl font-extrabold text-emerald-700">Misión 2</span></div>
+<div class="flex flex-wrap gap-2 mt-2"><span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">MONTHS_BETWEEN</span><span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">LAST_DAY</span><span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">Non-Equi JOIN</span><span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">BETWEEN</span></div></div>
+<!-- EMAIL -->
+<div class="p-6">
+<div class="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden mb-6">
+<div class="bg-slate-100 px-5 py-3 border-b border-slate-200 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm shadow-md">KW</div>
+<div><p class="font-bold text-slate-800 text-sm leading-tight">Kenji Watanabe</p>
+<p class="text-xs text-slate-500">Gerente de Recursos Humanos — Nómina Confidencial</p></div>
+<div class="ml-auto text-xs text-slate-400 font-medium"><i class="fa-solid fa-clock mr-1"></i> Hace 45 min</div></div>
+<div class="px-5 py-2 bg-white border-b border-slate-100">
+<p class="text-sm"><span class="font-bold text-slate-500">Asunto:</span> <span class="font-bold text-slate-800">📋 CONFIDENCIAL: Lista de bonificados por Renovación Tecnológica</span></p></div>
+<div class="px-5 py-4 text-sm text-slate-700 leading-relaxed">DBA, necesito esto con urgencia y <strong>discreción total</strong>.<br><br>
+Este mes se activa el programa <em>"Bono de Renovación Tecnológica"</em> para empleados que llevan <strong>MENOS de 25 años</strong> en la empresa. Los años se calculan al <strong>último día del mes actual</strong>, no al día de hoy (política contable).<br><br>
+El porcentaje del bono depende del tramo salarial del empleado. Tenemos una tabla interna llamada <code>PORC_BONIF_ANNOS</code> que tiene rangos (<code>sueldo_desde</code> y <code>sueldo_hasta</code>) con su porcentaje asociado.<br><br>
+La fórmula es: <code>Monto = (sueldo_base × porcentaje) / 100</code><br><br>
+Necesito: RUT, nombre completo, fecha de contrato y el monto exacto del bono. Si se pasa un peso de más de lo aprobado por directorio, me echan a mí. ¡Preciso, por favor!</div></div>
+<!-- REFLEXIÓN -->
+<div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3">
+<span class="text-2xl">🤔</span>
+<div><p class="font-bold text-amber-800 text-sm mb-1">Antes de codificar, piensa:</p>
+<p class="text-sm text-amber-700">La tabla de tramos de bono NO se une con un "=" como los joins normales. ¿Qué operador usarías para verificar si un sueldo "cae dentro de un rango"?</p></div></div>
+<!-- TU ROL -->
+<div class="bg-emerald-50 rounded-2xl p-5 border border-emerald-200 mb-6">
+<h4 class="font-bold text-emerald-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-screwdriver-wrench"></i> Tu Rol como DBA — Traducción Técnica</h4>
+<div class="text-sm text-gray-700 space-y-2"><p>Calcula los años con <code>MONTHS_BETWEEN(LAST_DAY(SYSDATE), fecha_contrato) / 12</code>. Compara directamente con <code>&lt; 25</code> (sin usar TRUNC).</p>
+<div class="bg-emerald-100 border border-emerald-200 rounded-lg p-3 text-xs mt-2"><i class="fa-solid fa-user mr-1"></i> <strong>"Nombre completo"</strong> = <code>pnombre_emp || ' ' || appaterno_emp</code> (primer nombre + apellido paterno).</div>
+<details class="mt-3 bg-white rounded-xl border border-emerald-100" open>
+<summary class="p-3 font-bold text-emerald-700 text-xs cursor-pointer">📋 Mini-muestra de datos reales</summary>
+<div class="p-3 pt-0 overflow-x-auto">
+<p class="text-xs font-bold text-gray-500 mt-2 mb-1">EMPLEADO (parcial):</p>
+<table class="w-full text-xs border border-slate-200"><tr class="bg-emerald-50 font-bold"><td class="p-1.5 border">numrun</td><td class="p-1.5 border">nombre</td><td class="p-1.5 border">fecha_contrato</td><td class="p-1.5 border">sueldo_base</td></tr>
+<tr><td class="p-1.5 border">9499044</td><td class="p-1.5 border">Juan Riquelme</td><td class="p-1.5 border">10/03/1996</td><td class="p-1.5 border">950000</td></tr>
+<tr><td class="p-1.5 border">10234567</td><td class="p-1.5 border">Diego Rivera</td><td class="p-1.5 border">05/11/2002</td><td class="p-1.5 border">750000</td></tr>
+<tr><td class="p-1.5 border">12567890</td><td class="p-1.5 border">Elena Reyes</td><td class="p-1.5 border">18/03/2005</td><td class="p-1.5 border">880000</td></tr></table>
+<p class="text-xs font-bold text-gray-500 mt-3 mb-1">PORC_BONIF_ANNOS:</p>
+<table class="w-full text-xs border border-slate-200"><tr class="bg-emerald-50 font-bold"><td class="p-1.5 border">sueldo_desde</td><td class="p-1.5 border">sueldo_hasta</td><td class="p-1.5 border">%</td></tr>
+<tr><td class="p-1.5 border">0</td><td class="p-1.5 border">799999</td><td class="p-1.5 border">2.0</td></tr>
+<tr><td class="p-1.5 border">800000</td><td class="p-1.5 border">1499999</td><td class="p-1.5 border">3.0</td></tr>
+<tr><td class="p-1.5 border">1500000</td><td class="p-1.5 border">9999999</td><td class="p-1.5 border">8.0</td></tr></table>
+</div></details>
+<details class="mt-3 bg-emerald-50 rounded-xl border border-emerald-200">
+<summary class="p-3 font-bold text-emerald-700 text-xs cursor-pointer">✅ Ejemplo de salida esperada</summary>
+<div class="p-3 pt-0 overflow-x-auto">
+<table class="w-full text-xs border border-emerald-200 mt-2"><tr class="bg-emerald-100 font-bold"><td class="p-1.5 border">RUN</td><td class="p-1.5 border">NOMBRE</td><td class="p-1.5 border">CONTRATO</td><td class="p-1.5 border">BONO</td></tr>
+<tr><td class="p-1.5 border">8533901</td><td class="p-1.5 border">Pablo Fuentes</td><td class="p-1.5 border">30/06/2001</td><td class="p-1.5 border">24600</td></tr>
+<tr><td class="p-1.5 border">10234567</td><td class="p-1.5 border">Diego Rivera</td><td class="p-1.5 border">05/11/2002</td><td class="p-1.5 border">15000</td></tr>
+<tr><td class="p-1.5 border">12567890</td><td class="p-1.5 border">Elena Reyes</td><td class="p-1.5 border">18/03/2005</td><td class="p-1.5 border">26400</td></tr></table>
+<p class="text-xs text-gray-500 mt-2">💡 Pablo: sueldo 820000 cae en tramo 800000-1499999 → 3%. Bono = 820000×3/100 = 24600</p>
+<p class="text-xs text-gray-500">💡 Diego: sueldo 750000 cae en tramo 0-799999 → 2%. Bono = 750000×2/100 = 15000</p>
+<p class="text-xs text-gray-500">💡 Elena: sueldo 880000 cae en tramo 800000-1499999 → 3%. Bono = 880000×3/100 = 26400</p>
+<p class="text-xs text-amber-600 mt-2 font-medium">⚠️ Nota: Los resultados dependen de SYSDATE. Esta salida es válida para abril 2026 (los 3 empleados con menos de 25 años de servicio al último día del mes).</p>
+</div></details></div></div>
+<!-- TERMINAL + HINTS -->
+<div class="bg-slate-900 p-6 rounded-2xl border-2 border-slate-700">
+<div class="flex justify-between items-center mb-4">
+<span class="font-bold text-emerald-400"><i class="fa-solid fa-terminal mr-2"></i> Terminal SQL</span>
+<button @click="revealHint('m2')" class="bg-pink-600 hover:bg-pink-700 hover:scale-105 transition-transform text-white font-bold py-2.5 px-5 rounded-full text-sm shadow-[0_0_15px_rgba(219,39,119,0.5)]">
+<i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Asistencia IA</button></div>
+<div id="m2-hints" class="space-y-4"><div class="hint-block bg-slate-800 border-l-4 border-yellow-400 p-4 rounded-r-lg" data-level="1">
+<p class="font-bold text-yellow-400"><i class="fa-solid fa-lightbulb mr-2"></i> Pista 1 (Conceptual):</p>
+<div class="text-slate-200 mt-1 text-sm">Usa <code>MONTHS_BETWEEN(LAST_DAY(SYSDATE), fecha_contrato)/12</code> para los años. Para el bono, haz un <code>JOIN...ON sueldo BETWEEN desde AND hasta</code>.</div></div><div class="hint-block bg-slate-800 border-l-4 border-emerald-400 p-4 rounded-r-lg" data-level="2">
+<p class="font-bold text-emerald-400"><i class="fa-solid fa-puzzle-piece mr-2"></i> Pista 2 (Estructura):</p>
+<div class="text-slate-200 mt-1 text-sm"><pre class="bg-black/50 p-3 rounded-xl mt-1"><code class="language-sql text-xs">SELECT e.numrun_emp, e.pnombre_emp||' '||e.appaterno_emp as Nombre,
+  e.fecha_contrato,
+  (e.sueldo_base * p.porcentaje / 100) AS monto_bono
+FROM EMPLEADO e
+JOIN PORC_BONIF_ANNOS p ON e.sueldo_base BETWEEN p.sueldo_desde AND ________
+WHERE MONTHS_BETWEEN(_________, e.fecha_contrato) / 12 < 25;</code></pre></div></div><div class="hint-block bg-slate-800 border-l-4 border-blue-400 p-4 rounded-r-lg" data-level="3">
+<p class="font-bold text-blue-400"><i class="fa-solid fa-code mr-2"></i> Pista 3 (Parcial):</p>
+<div class="text-slate-200 mt-1 text-sm"><span v-if="duaMode">Los blancos son: <code>p.sueldo_hasta</code> y <code>LAST_DAY(SYSDATE)</code>.</span><span v-else>Blank 1: la columna que cierra el rango salarial. Blank 2: una función que te da el último día del mes actual.</span></div></div><div class="hint-block bg-slate-800 border-l-4 border-purple-400 p-4 rounded-r-lg" data-level="4">
+<p class="font-bold text-purple-400"><i class="fa-solid fa-check mr-2"></i> Pista 4 (Solución Comentada):</p>
+<div class="text-slate-200 mt-1 text-sm"><span v-if="duaMode">El JOIN con BETWEEN es un "Non-Equi Join": no compara con =, sino con un rango. Es como buscar en qué tramo de impuesto caes según tu sueldo.</span><span v-else>Completa: <code>p.sueldo_hasta</code> y <code>LAST_DAY(SYSDATE)</code>. El Non-Equi Join conecta tablas sin "=" usando BETWEEN.</span></div></div></div></div>
+</div></section><section class="bg-white rounded-3xl shadow-xl border-2 border-orange-200 overflow-hidden relative">
+<div class="absolute top-0 right-0 bg-orange-100 text-orange-800 font-bold px-6 py-2 rounded-bl-3xl text-sm">25 pts</div>
+<!-- HEADER -->
+<div class="bg-gradient-to-r from-orange-50 to-white p-6 border-b border-orange-100">
+<div class="flex items-center gap-2 mb-1"><span class="text-2xl font-extrabold text-orange-700">Misión 3</span></div>
+<div class="flex flex-wrap gap-2 mt-2"><span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full">EXTRACT</span><span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full">GROUP BY</span><span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full">HAVING</span><span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full">INSERT SELECT</span></div></div>
+<!-- EMAIL -->
+<div class="p-6">
+<div class="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden mb-6">
+<div class="bg-slate-100 px-5 py-3 border-b border-slate-200 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm shadow-md">⚙️</div>
+<div><p class="font-bold text-slate-800 text-sm leading-tight">Sistema Automático</p>
+<p class="text-xs text-slate-500">Panel de Control de Flota — Mantenimiento Predictivo</p></div>
+<div class="ml-auto text-xs text-slate-400 font-medium"><i class="fa-solid fa-clock mr-1"></i> Hace 20 min</div></div>
+<div class="px-5 py-2 bg-white border-b border-slate-100">
+<p class="text-sm"><span class="font-bold text-slate-500">Asunto:</span> <span class="font-bold text-slate-800">⚠️ ALERTA: Drones sobreexplotados detectados — Respaldar para auditoría</span></p></div>
+<div class="px-5 py-4 text-sm text-slate-700 leading-relaxed"><strong>🚨 ALERTA AUTOMÁTICA DEL SISTEMA</strong><br><br>
+El módulo de mantenimiento predictivo ha detectado que ciertos drones están siendo <strong>sobreexplotados</strong> este año. Para poder programar la revisión técnica anual y cumplir con la certificación de seguridad, necesitamos identificar cuáles drones tuvieron <strong>2 o más arriendos durante el año en curso</strong>.<br><br>
+El equipo de auditoría requiere que este informe se <strong>respalde en una tabla histórica</strong> (<code>HIST_ARRIENDO_ANUAL_DRON</code>) con las columnas: placa, modelo, año del proceso, cantidad de arriendos y total de días arrendados.<br><br>
+Primero construye el SELECT que genera los datos, verifica que funcione, y luego envuélvelo con un <code>INSERT INTO ... SELECT</code> para respaldar los datos oficialmente.</div></div>
+<div class="bg-blue-50 border border-blue-200 rounded-xl p-3 mx-6 -mt-4 mb-4 text-xs text-blue-800"><i class="fa-solid fa-circle-info mr-1"></i> <strong>Entregable:</strong> La query final debe ser un <code>INSERT INTO HIST_ARRIENDO_ANUAL_DRON (...) SELECT ...</code>. Te recomendamos probar primero solo el SELECT para verificar los datos, y luego envolver con el INSERT. La tabla <code>HIST_ARRIENDO_ANUAL_DRON</code> ya fue creada al ejecutar el script.</div>
+<!-- REFLEXIÓN -->
+<div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3">
+<span class="text-2xl">🤔</span>
+<div><p class="font-bold text-amber-800 text-sm mb-1">Antes de codificar, piensa:</p>
+<p class="text-sm text-amber-700">¿Cuál es la diferencia entre filtrar con WHERE y filtrar con HAVING? ¿En qué momento del "pipeline" SQL actúa cada uno?</p></div></div>
+<!-- TU ROL -->
+<div class="bg-orange-50 rounded-2xl p-5 border border-orange-200 mb-6">
+<h4 class="font-bold text-orange-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-screwdriver-wrench"></i> Tu Rol como DBA — Traducción Técnica</h4>
+<div class="text-sm text-gray-700 space-y-2"><p>Filtra el año actual con <code>WHERE EXTRACT(YEAR FROM fecha_ini_arriendo) = EXTRACT(YEAR FROM SYSDATE)</code>.</p>
+<details class="mt-3 bg-white rounded-xl border border-orange-100" open>
+<summary class="p-3 font-bold text-orange-700 text-xs cursor-pointer">📋 Mini-muestra de datos reales</summary>
+<div class="p-3 pt-0 overflow-x-auto">
+<p class="text-xs font-bold text-gray-500 mt-2 mb-1">ARRIENDO_DRON (2026, parcial):</p>
+<table class="w-full text-xs border border-slate-200"><tr class="bg-orange-50 font-bold"><td class="p-1.5 border">id</td><td class="p-1.5 border">placa</td><td class="p-1.5 border">fecha_ini</td><td class="p-1.5 border">días</td></tr>
+<tr><td class="p-1.5 border">23</td><td class="p-1.5 border">CD001</td><td class="p-1.5 border">05/01/2026</td><td class="p-1.5 border">4</td></tr>
+<tr><td class="p-1.5 border">31</td><td class="p-1.5 border">CD001</td><td class="p-1.5 border">08/02/2026</td><td class="p-1.5 border">5</td></tr>
+<tr><td class="p-1.5 border">41</td><td class="p-1.5 border">CD001</td><td class="p-1.5 border">02/03/2026</td><td class="p-1.5 border">4</td></tr>
+<tr><td class="p-1.5 border">24</td><td class="p-1.5 border">CD002</td><td class="p-1.5 border">08/01/2026</td><td class="p-1.5 border">5</td></tr>
+<tr><td class="p-1.5 border">32</td><td class="p-1.5 border">CD002</td><td class="p-1.5 border">10/02/2026</td><td class="p-1.5 border">4</td></tr></table>
+<p class="text-xs text-gray-400 mt-1">📌 CD001 aparece 3 veces en 2026 → cumple (>=2). CD011 aparece 1 vez → NO clasifica.</p>
+</div></details>
+<details class="mt-3 bg-emerald-50 rounded-xl border border-emerald-200">
+<summary class="p-3 font-bold text-emerald-700 text-xs cursor-pointer">✅ Ejemplo de salida esperada del SELECT</summary>
+<div class="p-3 pt-0 overflow-x-auto">
+<table class="w-full text-xs border border-emerald-200 mt-2"><tr class="bg-emerald-100 font-bold"><td class="p-1.5 border">PLACA</td><td class="p-1.5 border">MODELO</td><td class="p-1.5 border">AÑO</td><td class="p-1.5 border">CANT</td><td class="p-1.5 border">TOTAL_DÍAS</td></tr>
+<tr><td class="p-1.5 border">CD001</td><td class="p-1.5 border">AeroSwift X1</td><td class="p-1.5 border">2026</td><td class="p-1.5 border">3</td><td class="p-1.5 border">13</td></tr>
+<tr><td class="p-1.5 border">CD002</td><td class="p-1.5 border">SkyHawk 250</td><td class="p-1.5 border">2026</td><td class="p-1.5 border">3</td><td class="p-1.5 border">14</td></tr>
+<tr><td class="p-1.5 border">CD003</td><td class="p-1.5 border">CyberNinja Z</td><td class="p-1.5 border">2026</td><td class="p-1.5 border">3</td><td class="p-1.5 border">12</td></tr>
+<tr class="text-gray-400"><td class="p-1.5 border" colspan="5">... 10 drones clasifican</td></tr></table>
+<p class="text-xs text-gray-500 mt-2">💡 Luego de verificar este SELECT, <strong>envuélvelo</strong> con INSERT INTO para respaldarlo.</p>
+</div></details>
+<p class="mt-3">El filtro "2 o más" es <strong>post-agrupación</strong> → va en <code>HAVING</code>, no en WHERE.</p></div></div>
+<!-- TERMINAL + HINTS -->
+<div class="bg-slate-900 p-6 rounded-2xl border-2 border-slate-700">
+<div class="flex justify-between items-center mb-4">
+<span class="font-bold text-emerald-400"><i class="fa-solid fa-terminal mr-2"></i> Terminal SQL</span>
+<button @click="revealHint('m3')" class="bg-pink-600 hover:bg-pink-700 hover:scale-105 transition-transform text-white font-bold py-2.5 px-5 rounded-full text-sm shadow-[0_0_15px_rgba(219,39,119,0.5)]">
+<i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Asistencia IA</button></div>
+<div id="m3-hints" class="space-y-4"><div class="hint-block bg-slate-800 border-l-4 border-yellow-400 p-4 rounded-r-lg" data-level="1">
+<p class="font-bold text-yellow-400"><i class="fa-solid fa-lightbulb mr-2"></i> Pista 1 (Conceptual):</p>
+<div class="text-slate-200 mt-1 text-sm">El año actual se filtra en <code>WHERE EXTRACT(YEAR FROM fecha_ini_arriendo) = EXTRACT(YEAR FROM SYSDATE)</code>. El '2 o más' va en <code>HAVING COUNT(*)>=2</code>.</div></div><div class="hint-block bg-slate-800 border-l-4 border-emerald-400 p-4 rounded-r-lg" data-level="2">
+<p class="font-bold text-emerald-400"><i class="fa-solid fa-puzzle-piece mr-2"></i> Pista 2 (Estructura):</p>
+<div class="text-slate-200 mt-1 text-sm"><pre class="bg-black/50 p-3 rounded-xl mt-1"><code class="language-sql text-xs">SELECT a.placa, d.modelo,
+  EXTRACT(YEAR FROM SYSDATE), COUNT(a.id_arriendo),
+  SUM(a.dias_solicitados)
+FROM ARRIENDO_DRON a JOIN DRON d ON a.placa=d.placa
+WHERE EXTRACT(YEAR FROM a.____________) = EXTRACT(YEAR FROM SYSDATE)
+GROUP BY a.placa, d.modelo
+HAVING ____________ >= 2;</code></pre></div></div><div class="hint-block bg-slate-800 border-l-4 border-blue-400 p-4 rounded-r-lg" data-level="3">
+<p class="font-bold text-blue-400"><i class="fa-solid fa-code mr-2"></i> Pista 3 (Parcial):</p>
+<div class="text-slate-200 mt-1 text-sm"><span v-if="duaMode">Los blancos: <code>fecha_ini_arriendo</code> y <code>COUNT(a.id_arriendo)</code>. Para el INSERT, pon <code>INSERT INTO HIST_ARRIENDO_ANUAL_DRON (placa, modelo, ano_proceso, cant_arriendos, total_dias)</code> delante del SELECT.</span><span v-else>Blank 1: la columna de fecha del arriendo. Blank 2: una función de grupo que cuenta registros. Para el INSERT, agrega el encabezado con las 5 columnas de la tabla histórica.</span></div></div><div class="hint-block bg-slate-800 border-l-4 border-purple-400 p-4 rounded-r-lg" data-level="4">
+<p class="font-bold text-purple-400"><i class="fa-solid fa-check mr-2"></i> Pista 4 (Solución Comentada):</p>
+<div class="text-slate-200 mt-1 text-sm"><span v-if="duaMode">WHERE filtra ANTES de agrupar (filas individuales). HAVING filtra DESPUÉS (grupos ya calculados). Son momentos distintos del pipeline SQL.</span><span v-else>WHERE filtra filas individuales ANTES de agrupar. HAVING filtra los grupos YA calculados. <code>INSERT INTO HIST_ARRIENDO_ANUAL_DRON (placa, modelo, ano_proceso, cant_arriendos, total_dias)</code> va justo antes del SELECT.</span></div></div></div></div>
+</div></section><section class="bg-white rounded-3xl shadow-xl border-2 border-purple-200 overflow-hidden relative">
+<div class="absolute top-0 right-0 bg-purple-100 text-purple-800 font-bold px-6 py-2 rounded-bl-3xl text-sm">25 pts</div>
+<!-- HEADER -->
+<div class="bg-gradient-to-r from-purple-50 to-white p-6 border-b border-purple-100">
+<div class="flex items-center gap-2 mb-1"><span class="text-2xl font-extrabold text-purple-700">Misión 4</span></div>
+<div class="flex flex-wrap gap-2 mt-2"><span class="bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full">Subconsulta</span><span class="bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full">Inline View</span><span class="bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full">JOIN</span><span class="bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full">EXTRACT</span></div></div>
+<!-- EMAIL -->
+<div class="p-6">
+<div class="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden mb-6">
+<div class="bg-slate-100 px-5 py-3 border-b border-slate-200 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold text-sm shadow-md">YN</div>
+<div><p class="font-bold text-slate-800 text-sm leading-tight">Yuki Nakamura</p>
+<p class="text-xs text-slate-500">CEO — CyberDrone Rentals Neo-Tokyo</p></div>
+<div class="ml-auto text-xs text-slate-400 font-medium"><i class="fa-solid fa-clock mr-1"></i> Hace 5 min</div></div>
+<div class="px-5 py-2 bg-white border-b border-slate-100">
+<p class="text-sm"><span class="font-bold text-slate-500">Asunto:</span> <span class="font-bold text-slate-800">🏆 RE: Cena de premiación anual — Ranking de operadores estrella</span></p></div>
+<div class="px-5 py-4 text-sm text-slate-700 leading-relaxed">¡Hola equipo de datos!<br><br>
+Este viernes celebramos la cena anual de CyberDrone y quiero <strong>premiar a los operadores que más arriendos gestionaron este año</strong>. Necesito un ranking que muestre cuántos arriendos hizo cada encargado y que calcule un bono proporcional:<br><br>
+<code>Monto Premio = (sueldo_base × cantidad_arriendos) / 100</code><br><br>
+Solo incluir a los que gestionaron <strong>más de 1 arriendo</strong> (los de un solo arriendo no clasifican para el premio).<br><br>
+<strong>⚠️ IMPORTANTE:</strong> El auditor externo (sí, el pesado de siempre) exige que el conteo de arriendos se calcule en una <strong>subconsulta separada</strong> por temas de trazabilidad. Dice que no es "buena práctica" mezclar la agregación con los datos personales en la misma query. No me pregunten por qué, es cosa del auditor... pero hay que cumplir.<br><br>
+Ordéname por apellido descendente para el programa de la cena. ¡Gracias, equipo! 🎉</div></div>
+<!-- REFLEXIÓN -->
+<div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3">
+<span class="text-2xl">🤔</span>
+<div><p class="font-bold text-amber-800 text-sm mb-1">Antes de codificar, piensa:</p>
+<p class="text-sm text-amber-700">Si metes el COUNT(*) directamente en la query principal junto con los datos del empleado, ¿qué error te lanzaría Oracle? ¿Por qué el auditor prefiere una subconsulta?</p></div></div>
+<!-- TU ROL -->
+<div class="bg-purple-50 rounded-2xl p-5 border border-purple-200 mb-6">
+<h4 class="font-bold text-purple-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-screwdriver-wrench"></i> Tu Rol como DBA — Traducción Técnica</h4>
+<div class="text-sm text-gray-700 space-y-2"><p>Arma primero la <strong>subconsulta interna</strong> y luego ponla en el FROM.</p>
+<details class="mt-3 bg-white rounded-xl border border-purple-100" open>
+<summary class="p-3 font-bold text-purple-700 text-xs cursor-pointer">📋 Cómo funciona la Inline View — paso a paso</summary>
+<div class="p-3 pt-0 overflow-x-auto">
+<p class="text-xs font-bold text-gray-500 mt-2 mb-1">Paso 1 — La subconsulta sola (Inline View):</p>
+<p class="text-xs text-amber-600 mb-1">⚠️ <code>ARRIENDO_DRON</code> no tiene <code>numrun_emp</code> directamente. Necesitas hacer JOIN con <code>DRON</code> para obtener el encargado de cada dron arrendado.</p>
+<table class="w-full text-xs border border-slate-200"><tr class="bg-purple-50 font-bold"><td class="p-1.5 border">numrun_emp (vía DRON)</td><td class="p-1.5 border">total_arriendos</td></tr>
+<tr><td class="p-1.5 border">9499044</td><td class="p-1.5 border">3</td></tr>
+<tr><td class="p-1.5 border">11996940</td><td class="p-1.5 border">3</td></tr>
+<tr><td class="p-1.5 border">8716085</td><td class="p-1.5 border">3</td></tr>
+<tr class="text-gray-400"><td class="p-1.5 border" colspan="2">... solo empleados con >1 arriendo</td></tr></table>
+<p class="text-xs font-bold text-gray-500 mt-3 mb-1">Paso 2 — JOIN con EMPLEADO para obtener datos personales:</p>
+<table class="w-full text-xs border border-slate-200"><tr class="bg-purple-50 font-bold"><td class="p-1.5 border">RUN</td><td class="p-1.5 border">APELLIDO</td><td class="p-1.5 border">SUELDO</td><td class="p-1.5 border">ARRIENDOS</td></tr>
+<tr><td class="p-1.5 border">9499044</td><td class="p-1.5 border">Riquelme</td><td class="p-1.5 border">950000</td><td class="p-1.5 border">3</td></tr>
+<tr><td class="p-1.5 border">11996940</td><td class="p-1.5 border">Valenzuela</td><td class="p-1.5 border">1200000</td><td class="p-1.5 border">3</td></tr></table>
+<p class="text-xs text-gray-400 mt-1">📌 El JOIN conecta <code>sub.numrun_emp = e.numrun_emp</code></p>
+</div></details>
+<details class="mt-3 bg-emerald-50 rounded-xl border border-emerald-200">
+<summary class="p-3 font-bold text-emerald-700 text-xs cursor-pointer">✅ Ejemplo de salida esperada</summary>
+<div class="p-3 pt-0 overflow-x-auto">
+<table class="w-full text-xs border border-emerald-200 mt-2"><tr class="bg-emerald-100 font-bold"><td class="p-1.5 border">RUN</td><td class="p-1.5 border">APELLIDO</td><td class="p-1.5 border">ARRIENDOS</td><td class="p-1.5 border">MONTO</td></tr>
+<tr><td class="p-1.5 border">11996940</td><td class="p-1.5 border">Valenzuela</td><td class="p-1.5 border">3</td><td class="p-1.5 border">36000</td></tr>
+<tr><td class="p-1.5 border">9499044</td><td class="p-1.5 border">Riquelme</td><td class="p-1.5 border">3</td><td class="p-1.5 border">28500</td></tr>
+<tr><td class="p-1.5 border">12459100</td><td class="p-1.5 border">Morales</td><td class="p-1.5 border">3</td><td class="p-1.5 border">44400</td></tr>
+<tr class="text-gray-400"><td class="p-1.5 border" colspan="4">... ordenado por apellido DESC</td></tr></table>
+<p class="text-xs text-gray-500 mt-2">💡 Valenzuela: 1200000×3/100 = 36000. ORDER BY appaterno DESC pone Valenzuela primero.</p>
+</div></details>
+<p class="mt-3"><strong>ORDER BY:</strong> <code>appaterno_emp DESC</code>.</p></div></div>
+<!-- TERMINAL + HINTS -->
+<div class="bg-slate-900 p-6 rounded-2xl border-2 border-slate-700">
+<div class="flex justify-between items-center mb-4">
+<span class="font-bold text-emerald-400"><i class="fa-solid fa-terminal mr-2"></i> Terminal SQL</span>
+<button @click="revealHint('m4')" class="bg-pink-600 hover:bg-pink-700 hover:scale-105 transition-transform text-white font-bold py-2.5 px-5 rounded-full text-sm shadow-[0_0_15px_rgba(219,39,119,0.5)]">
+<i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Asistencia IA</button></div>
+<div id="m4-hints" class="space-y-4"><div class="hint-block bg-slate-800 border-l-4 border-yellow-400 p-4 rounded-r-lg" data-level="1">
+<p class="font-bold text-yellow-400"><i class="fa-solid fa-lightbulb mr-2"></i> Pista 1 (Conceptual):</p>
+<div class="text-slate-200 mt-1 text-sm">Primero arma la consulta pequeña: <code>SELECT d.numrun_emp, COUNT(*) FROM ARRIENDO_DRON a JOIN DRON d ON a.placa=d.placa... GROUP BY d.numrun_emp HAVING COUNT(*)>1</code>. Recuerda: <code>ARRIENDO_DRON</code> no tiene <code>numrun_emp</code> directamente, por eso necesitas el JOIN con <code>DRON</code>. Luego pon esa subconsulta en <code>FROM (...) sub</code> y haz JOIN con EMPLEADO.</div></div><div class="hint-block bg-slate-800 border-l-4 border-emerald-400 p-4 rounded-r-lg" data-level="2">
+<p class="font-bold text-emerald-400"><i class="fa-solid fa-puzzle-piece mr-2"></i> Pista 2 (Estructura):</p>
+<div class="text-slate-200 mt-1 text-sm"><pre class="bg-black/50 p-3 rounded-xl mt-1"><code class="language-sql text-xs">SELECT e.numrun_emp, e.appaterno_emp, sub.total_arriendos,
+  (e.sueldo_base * sub.total_arriendos) / 100 as Monto
+FROM EMPLEADO e JOIN (
+  SELECT d.numrun_emp, COUNT(a.id_arriendo) as total_arriendos
+  FROM ARRIENDO_DRON a JOIN DRON d ON a.placa=d.placa
+  WHERE EXTRACT(YEAR FROM a.fecha_ini_arriendo)=EXTRACT(YEAR FROM SYSDATE)
+  GROUP BY d.numrun_emp HAVING COUNT(a.id_arriendo)>1
+) sub ON e.numrun_emp=sub.numrun_emp
+ORDER BY e.appaterno_emp DESC;</code></pre></div></div><div class="hint-block bg-slate-800 border-l-4 border-blue-400 p-4 rounded-r-lg" data-level="3">
+<p class="font-bold text-blue-400"><i class="fa-solid fa-code mr-2"></i> Pista 3 (Parcial):</p>
+<div class="text-slate-200 mt-1 text-sm"><span v-if="duaMode">La subconsulta actúa como una "tabla temporal" llamada <code>sub</code>. Desde afuera puedes usar <code>sub.total_arriendos</code> como si fuera una columna real.</span><span v-else>El alias <code>sub</code> convierte la subconsulta en una "tabla virtual". Accede a sus columnas con <code>sub.total_arriendos</code> como si fueran columnas de una tabla real.</span></div></div><div class="hint-block bg-slate-800 border-l-4 border-purple-400 p-4 rounded-r-lg" data-level="4">
+<p class="font-bold text-purple-400"><i class="fa-solid fa-check mr-2"></i> Pista 4 (Solución Comentada):</p>
+<div class="text-slate-200 mt-1 text-sm"><span v-if="duaMode">Si necesitas filtrar por empleados activos, agrega un WHERE en la consulta externa (fuera de la subconsulta).</span><span v-else>La fórmula del premio es <code>(e.sueldo_base * sub.total_arriendos) / 100</code>. El ORDER BY va en la consulta externa, no dentro de la subconsulta.</span></div></div></div></div>
+</div></section>
+<!-- ══════ CLÍNICA DE ERRORES ══════ -->
+<section class="bg-white rounded-[2rem] p-8 shadow-xl border-2 border-orange-200 mt-10">
+<h2 class="text-2xl font-bold text-orange-600 mb-6 flex items-center"><i class="fa-solid fa-truck-medical bg-orange-100 p-3 rounded-xl mr-4"></i> Clínica de Errores SQL</h2>
+<p class="text-gray-600 mb-6">Si Oracle te lanza un error rojo, búscalo aquí antes de llamar al profesor:</p>
+<div class="space-y-2">
+<div v-for="err in TALLER.errores" :key="err.code" class="border border-slate-200 rounded-xl overflow-hidden" :id="'err-'+err.code">
+<button @click="toggleAcc('body-'+err.code)" class="w-full text-left p-4 font-bold text-slate-700 hover:text-orange-500 flex justify-between items-center">
+<span>❌ {{err.code}}: {{err.title}}</span><i class="fa-solid fa-chevron-down text-sm acc-icon transition-transform"></i></button>
+<div :id="'body-'+err.code" class="acc-body text-sm text-gray-600">
+<p><strong class="text-rose-500">Causa:</strong> {{err.causa}}</p>
+<p class="mt-1"><strong class="text-emerald-500">Fix:</strong> {{err.fix}}</p></div></div></div></section>
+
+</main>
+<app-footer></app-footer>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="js/taller-data.js"></script>
+<script src="js/taller-engine.js"></script>
+<script src="js/components.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>TallerApp.mount('#taller-app');</script>
+</body></html>

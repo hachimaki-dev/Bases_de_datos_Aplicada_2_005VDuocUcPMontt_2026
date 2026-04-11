@@ -214,6 +214,27 @@ const appData = {
                 iconShadow: 'drop-shadow-[0_0_15px_rgba(244,63,94,0.6)]'
             },
             icon: 'fa-microscope', iconContainer: 'bg-rose-900/40 border-rose-500/30', iconColor: 'text-rose-400'
+        },
+        {
+            id: 'taller-cyberdrone',
+            type: 'hero',
+            href: 'taller-cyberdrone.html',
+            colSpan: 2,
+            date: '2026-04-09',
+            dateText: '9 Abr 2026',
+            tag: 'SIMULADOR', tagIcon: 'fa-robot text-purple-300',
+            badge: 'Taller Evaluable',
+            title: 'Taller: CyberDrone Rentals',
+            description: 'Participa en una simulación interactiva con un sistema de ayuda por IA progresiva. Prepara tu lógica SQL resolviendo misiones para una flota robótica de Neo-Tokyo.',
+            btnText: 'Iniciar Misiones', btnIcon: 'fa-gamepad',
+            theme: {
+                outerBorder: 'border-purple-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-purple-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-purple-500/20', circle2: 'bg-blue-500/20',
+                tagBox: 'bg-purple-900/50 text-purple-200 border-purple-700 backdrop-blur-sm', tagText: 'text-purple-200', badgeTheme: 'bg-purple-600 text-white border-purple-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-purple-200', btn: 'bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 w-full justify-center text-white shadow-lg border border-purple-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(168,85,247,0.6)]'
+            },
+            icon: 'fa-user-astronaut', iconContainer: 'bg-purple-900/40 border-purple-500/30', iconColor: 'text-purple-400'
         }
     ]
 };
