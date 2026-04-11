@@ -93,6 +93,259 @@ erDiagram
 </div>
 <p class="text-xs text-slate-400 mt-2"><i class="fa-solid fa-info-circle mr-1"></i> <code>HIST_ARRIENDO_ANUAL_DRON</code> es una tabla de respaldo sin relaciones FK (se puebla vía INSERT INTO...SELECT en la Misión 3).</p></div></section>
 
+<!-- ══════ CHEATSHEET SQL ══════ -->
+<section class="bg-indigo-50 rounded-[2.5rem] p-8 shadow-xl border-2 border-indigo-200" id="cheatsheet">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b-2 border-indigo-100 pb-4 gap-4">
+    <h2 class="text-3xl font-extrabold text-indigo-800 flex items-center">
+    <i class="fa-solid fa-bolt text-indigo-500 bg-indigo-100 p-3 rounded-xl mr-4 transform transition-transform hover:scale-110"></i> Cheatsheet SQL Pro</h2>
+    
+    <div class="relative w-full md:w-64">
+        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <i class="fa-solid fa-search text-indigo-400"></i>
+        </div>
+        <input type="text" oninput="filterCheatsheet(this.value)" class="bg-white border border-indigo-200 text-indigo-900 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-2.5 shadow-sm" placeholder="Buscar función, ej: JOIN">
+    </div>
+</div>
+
+<p class="text-indigo-900 mb-6 text-sm">El arsenal completo para las Misiones de CyberDrone. <br><span class="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-medium"><i class="fa-solid fa-circle-info text-indigo-500 mr-1"></i> Despliega los detalles (<i class="fa-solid fa-caret-right"></i>) para ver <strong>ejemplos reales en la base de datos</strong>, o usa el ícono <i class="fa-solid fa-copy"></i> para copiar la sintaxis.</span></p>
+
+<div class="grid xl:grid-cols-2 gap-6">
+
+<!-- PIPELINE -->
+<div class="cheat-item bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm transition-transform hover:shadow-md">
+<h3 class="text-xl font-bold text-indigo-700 mb-4 flex items-center"><i class="fa-solid fa-route mr-2"></i> Orden del Pipeline Real</h3>
+<ol class="space-y-4 relative border-l-2 border-indigo-100 ml-3 text-sm">
+<li class="pl-4"><span class="absolute -left-3.5 bg-indigo-500 text-white w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm shadow">1</span>
+<strong class="text-indigo-900">FROM / JOIN</strong> – <span class="text-gray-600">Junta tablas.</span>
+<details class="text-[11px] mt-1 bg-indigo-50 p-2 rounded-lg cursor-pointer"><summary class="font-bold text-indigo-700 hover:text-indigo-500 transition-colors">Ver Ejemplo BD_cyberdrone</summary><div class="relative group mt-1 bg-slate-900 p-2 rounded"><code class="font-mono text-emerald-300 break-all block">FROM EMPLEADO e JOIN DRON d ON e.numrun_emp=d.numrun_emp</code><button onclick="copyCode(this, 'FROM EMPLEADO e JOIN DRON d ON e.numrun_emp=d.numrun_emp')" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-copy text-slate-400 hover:text-white"></i></button></div></details></li>
+<li class="pl-4"><span class="absolute -left-3.5 bg-indigo-500 text-white w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm shadow">2</span>
+<strong class="text-indigo-900">WHERE</strong> – <span class="text-gray-600">Filtra filas individuales antes de calcular totales.</span>
+<details class="text-[11px] mt-1 bg-indigo-50 p-2 rounded-lg cursor-pointer"><summary class="font-bold text-indigo-700 hover:text-indigo-500 transition-colors">Ver Ejemplo BD_cyberdrone</summary><div class="relative group mt-1 bg-slate-900 p-2 rounded"><code class="font-mono text-emerald-300 break-all block">WHERE EXTRACT(YEAR FROM fecha_contrato) = 2026</code><button onclick="copyCode(this, 'WHERE EXTRACT(YEAR FROM fecha_contrato) = 2026')" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-copy text-slate-400 hover:text-white"></i></button></div></details></li>
+<li class="pl-4"><span class="absolute -left-3.5 bg-indigo-500 text-white w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm shadow">3</span>
+<strong class="text-indigo-900">GROUP BY</strong> – <span class="text-gray-600">Agrupa resultados por categorías idénticas.</span>
+<details class="text-[11px] mt-1 bg-indigo-50 p-2 rounded-lg cursor-pointer"><summary class="font-bold text-indigo-700 hover:text-indigo-500 transition-colors">Ver Ejemplo BD_cyberdrone</summary><div class="relative group mt-1 bg-slate-900 p-2 rounded"><code class="font-mono text-emerald-300 break-all block">GROUP BY d.modelo, d.id_tipo_dron</code><button onclick="copyCode(this, 'GROUP BY d.modelo, d.id_tipo_dron')" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-copy text-slate-400 hover:text-white"></i></button></div></details></li>
+<li class="pl-4"><span class="absolute -left-3.5 bg-indigo-500 text-white w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm shadow">4</span>
+<strong class="text-indigo-900">HAVING</strong> – <span class="text-gray-600">Filtra grupos completos usando estadísticas.</span>
+<details class="text-[11px] mt-1 bg-indigo-50 p-2 rounded-lg cursor-pointer"><summary class="font-bold text-indigo-700 hover:text-indigo-500 transition-colors">Ver Ejemplo BD_cyberdrone</summary><div class="relative group mt-1 bg-slate-900 p-2 rounded"><code class="font-mono text-emerald-300 break-all block">HAVING COUNT(*) &gt;= 2</code><button onclick="copyCode(this, 'HAVING COUNT(*) >= 2')" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-copy text-slate-400 hover:text-white"></i></button></div></details></li>
+<li class="pl-4"><span class="absolute -left-3.5 bg-indigo-500 text-white w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm shadow">5</span>
+<strong class="text-indigo-900">SELECT</strong> – <span class="text-gray-600">Extrae las columnas finales.</span></li>
+<li class="pl-4"><span class="absolute -left-3.5 bg-indigo-500 text-white w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm shadow">6</span>
+<strong class="text-indigo-900">ORDER BY</strong> – <span class="text-gray-600">Ordena output visual (ASC o DESC).</span>
+<details class="text-[11px] mt-1 bg-indigo-50 p-2 rounded-lg cursor-pointer"><summary class="font-bold text-indigo-700 hover:text-indigo-500 transition-colors">Ver Ejemplo</summary><div class="relative group mt-1 bg-slate-900 p-2 rounded"><code class="font-mono text-emerald-300 break-all block">ORDER BY e.appaterno_emp DESC, d.valor_arriendo_dia ASC</code><button onclick="copyCode(this, 'ORDER BY e.appaterno_emp DESC, d.valor_arriendo_dia ASC')" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-copy text-slate-400 hover:text-white"></i></button></div></details></li>
+</ol>
+<div v-if="duaMode" class="mt-4 bg-yellow-50 p-3 rounded-xl border border-yellow-200 text-xs text-yellow-800 shadow-sm transition-all animate-pulse duration-1000">
+🧒 <strong>Tip DUA activo:</strong> Imagina organizar cartas. <code>WHERE</code> saca jockers antes de repartir. <code>GROUP BY</code> hace una torre por cada pinta. <code>HAVING</code> bota la torre si tiene pocas cartas.
+</div>
+</div>
+
+<!-- JOINS & DML -->
+<div class="bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm flex flex-col gap-6 transition-transform hover:shadow-md">
+    <div class="cheat-item">
+    <h3 class="text-xl font-bold text-teal-600 mb-4 flex items-center"><i class="fa-solid fa-link mr-2"></i> Tipos de JOIN</h3>
+    <div class="space-y-4">
+    <div class="flex items-start gap-3"><div class="w-8 h-8 rounded shrink-0 text-center leading-8 bg-teal-100 text-teal-700 font-black"><i class="fa-solid fa-compress text-sm"></i></div>
+    <div class="w-full"><p class="font-bold text-sm text-slate-800">INNER JOIN <span class="text-gray-400 font-normal">o solo JOIN</span></p>
+    <p class="text-[11px] text-gray-500">Trae <strong>solo</strong> los que hacen match perfecto. Ex: <em>Solo drones que SÍ tienen encargado asigando</em>.</p></div></div>
+    <div class="flex items-start gap-3"><div class="w-8 h-8 rounded shrink-0 text-center leading-8 bg-teal-100 text-teal-700 font-black"><i class="fa-solid fa-arrow-left text-sm"></i></div>
+    <div class="w-full"><p class="font-bold text-sm text-slate-800">LEFT / RIGHT JOIN</p>
+    <p class="text-[11px] text-gray-500">Inclusivos: Protegen TODO de una tabla, rellenando con NULL si la otra no tiene registro.</p></div></div>
+    <div class="flex items-start gap-3"><div class="w-8 h-8 rounded shrink-0 text-center leading-8 bg-blue-100 text-blue-700 font-black"><i class="fa-solid fa-arrows-to-circle text-sm"></i></div>
+    <div class="w-full"><p class="font-bold text-sm text-slate-800">NON-EQUI JOIN <span class="bg-blue-100 text-blue-600 px-1 py-0.5 rounded ml-1 text-[10px]">Misión 2</span></p>
+    <p class="text-[11px] text-gray-500">Une tablas sin `=`. Usa rangos (BETWEEN). Clave para identificar el % del bono salarial.</p>
+    <details class="text-[11px] mt-1 bg-slate-50 p-2 rounded-lg cursor-pointer"><summary class="font-bold text-blue-700 hover:text-blue-500">Ver Ejemplo BD_cyberdrone</summary><div class="relative group mt-1 bg-slate-900 p-2 rounded"><code class="font-mono text-blue-300 break-all block">... JOIN PORC_BONIF_ANNOS p <br>ON e.sueldo_base BETWEEN p.sueldo_desde AND p.sueldo_hasta</code><button onclick="copyCode(this, `JOIN PORC_BONIF_ANNOS p ON e.sueldo_base BETWEEN p.sueldo_desde AND p.sueldo_hasta`)" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-copy text-slate-400 hover:text-white"></i></button></div></details>
+    </div></div>
+    </div>
+    </div>
+    
+    <div class="cheat-item">
+    <h3 class="text-xl font-bold text-orange-600 mb-2 flex items-center"><i class="fa-solid fa-truck-ramp-box mr-2"></i> Respaldo Masivo</h3>
+    <p class="text-[11px] text-gray-600 mb-2">Guardar resultados directos hacia otra tabla (Misión 3).</p>
+    <details class="text-[11px] bg-orange-50 p-2 rounded-lg cursor-pointer border border-orange-200"><summary class="font-bold text-orange-700 hover:text-orange-500">Ver Sintaxis: INSERT INTO ... SELECT</summary>
+    <div class="relative group mt-1 bg-slate-900 p-3 rounded-lg"><code class="font-mono text-emerald-300 leading-relaxed block">INSERT INTO HIST_ARRIENDO_ANUAL_DRON (placa, modelo, total_dias)<br>SELECT d.placa, d.modelo, SUM(a.dias_solicitados)<br>FROM ARRIENDO_DRON a JOIN DRON d ON a.placa=d.placa<br>GROUP BY d.placa, d.modelo;</code><button onclick="copyCode(this, `INSERT INTO HIST_ARRIENDO_ANUAL_DRON (placa, modelo, total_dias)\nSELECT d.placa, d.modelo, SUM(a.dias_solicitados)\nFROM ARRIENDO_DRON a JOIN DRON d ON a.placa=d.placa\nGROUP BY d.placa, d.modelo;`)" class="absolute top-2 right-2 bg-slate-700 p-1.5 rounded text-white opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-copy"></i> Copiar</button></div></details>
+    </div>
+</div>
+
+<!-- FUNCIONES & CONVERSIONES -->
+<div class="xl:col-span-2 bg-slate-900 p-6 sm:p-8 rounded-2xl border-2 border-slate-700 text-slate-200 transition-transform hover:shadow-md">
+<h3 class="text-2xl font-bold text-pink-400 mb-6 flex items-center"><i class="fa-solid fa-toolbox mr-3"></i> Taller Toolbox Avanzado</h3>
+<div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+<!-- A. Texto -->
+<div class="cheat-item bg-slate-800 p-5 rounded-xl border border-slate-700 hover:border-pink-500/50 transition-colors">
+<h4 class="font-bold text-white mb-3 text-sm border-b border-slate-600 pb-2 text-pink-300"><i class="fa-solid fa-font fa-fw mr-1"></i> Textos</h4>
+<ul class="text-[11px] space-y-4">
+<li><div class="flex justify-between items-center mb-1"><span><code class="text-pink-300 font-mono text-xs">SUBSTR(col, in, ext)</code></span><button onclick="copyCode(this, 'SUBSTR(col, inicio, n)')" title="Copiar"><i class="fa-solid fa-copy text-slate-500 hover:text-pink-300 transition-colors"></i></button></div>
+<span class="text-slate-400 block">Cortar strings. Misión 1.</span>
+<details class="mt-2 bg-slate-900 rounded-lg p-2 border border-slate-700 cursor-pointer"><summary class="text-pink-500 font-bold hover:text-pink-400">Ver Ejemplo CyberDrone</summary><code class="text-emerald-300 mt-2 block font-mono text-xs">SUBSTR(apmaterno_emp, -1, 1)<br><span class="text-slate-500 block mt-1">-- Saca la últ. letra. 'Soto' -> 'o'</span></code></details></li>
+
+<li><div class="flex justify-between items-center mb-1"><span><code class="text-pink-300 font-mono text-xs">||</code> <span>(Concatenar)</span></span><button onclick="copyCode(this, '||')" title="Copiar"><i class="fa-solid fa-copy text-slate-500 hover:text-pink-300 transition-colors"></i></button></div>
+<span class="text-slate-400 block">Une textos para fabricar correos (Mis. 1).</span>
+<details class="mt-2 bg-slate-900 rounded-lg p-2 border border-slate-700 cursor-pointer"><summary class="text-pink-500 font-bold hover:text-pink-400">Ver Ejemplo</summary><code class="text-emerald-300 mt-2 block font-mono text-xs">SUBSTR(numrun,3,1) || '@cyber.net'</code></details></li>
+</ul>
+</div>
+
+<!-- B. Fechas -->
+<div class="cheat-item bg-slate-800 p-5 rounded-xl border border-slate-700 hover:border-emerald-500/50 transition-colors">
+<h4 class="font-bold text-white mb-3 text-sm border-b border-slate-600 pb-2 text-emerald-300"><i class="fa-regular fa-calendar-days fa-fw mr-1"></i> Tiempos</h4>
+<ul class="text-[11px] space-y-4">
+<li><div class="flex justify-between items-center mb-1"><span><code class="text-emerald-300 font-mono text-xs">EXTRACT(p FROM col)</code></span><button onclick="copyCode(this, 'EXTRACT(YEAR FROM fecha)')" title="Copiar"><i class="fa-solid fa-copy text-slate-500 hover:text-emerald-300 transition-colors"></i></button></div>
+<span class="text-slate-400 block">Dato exacto: YEAR, MONTH, DAY. Misión 3.</span>
+<details class="mt-2 bg-slate-900 rounded-lg p-2 border border-slate-700 cursor-pointer"><summary class="text-emerald-500 font-bold hover:text-emerald-400">Ver Ejemplo</summary><code class="text-emerald-300 mt-2 block font-mono text-xs">WHERE EXTRACT(YEAR FROM fecha_ini) = 2026</code></details></li>
+
+<li><div class="flex justify-between items-center mb-1"><span><code class="text-emerald-300 font-mono text-xs max-w-[120px] truncate block" title="MONTHS_BETWEEN(f2,f1)/12">MONTHS_BETWEEN(f2,f1)/12</code></span><button onclick="copyCode(this, 'MONTHS_BETWEEN(f2,f1)/12')" title="Copiar"><i class="fa-solid fa-copy text-slate-500 hover:text-emerald-300 transition-colors"></i></button></div>
+<span class="text-slate-400 block">Misión 2: Calcular AÑOS matemáticamente.</span></li>
+
+<li><div class="flex justify-between items-center mb-1"><span><code class="text-emerald-300 font-mono text-xs">LAST_DAY(fecha)</code></span><button onclick="copyCode(this, 'LAST_DAY(SYSDATE)')" title="Copiar"><i class="fa-solid fa-copy text-slate-500 hover:text-emerald-300 transition-colors"></i></button></div>
+<span class="text-slate-400 block">Último día del mes respectivo. Usado en Mis. 2 con SYSDATE.</span></li>
+</ul>
+</div>
+
+<!-- C. Lógica -->
+<div class="cheat-item bg-slate-800 p-5 rounded-xl border border-slate-700 hover:border-yellow-500/50 transition-colors">
+<h4 class="font-bold text-white mb-3 text-sm border-b border-slate-600 pb-2 text-yellow-300"><i class="fa-solid fa-code-branch fa-fw mr-1"></i> Decisiones & Queries</h4>
+<ul class="text-[11px] space-y-4">
+<li><div class="flex justify-between items-center mb-1"><span class="text-yellow-400 font-bold text-xs">CASE WHEN ... THEN</span><button onclick="copyCode(this, 'CASE columna\n  WHEN \'A\' THEN 1\n  ELSE 0\nEND')" title="Copiar"><i class="fa-solid fa-copy text-slate-500 hover:text-yellow-300 transition-colors"></i></button></div>
+<span class="text-slate-400 block">IF/ELSE en SQL (Mutación condicional, Misión 1).</span>
+<details class="mt-2 bg-slate-900 rounded-lg p-2 border border-slate-700 cursor-pointer"><summary class="text-yellow-500 font-bold hover:text-yellow-400">Ver Código Misión 1</summary>
+<pre class="mt-2 text-emerald-300 whitespace-pre-wrap font-mono text-xs"><code>CASE t.nombre_tipo_dron
+  WHEN 'Carga' THEN SUBSTR(e.apmat,1,1)
+  WHEN 'Carrera' THEN SUBSTR(...
+  ELSE ...
+END</code></pre></details></li>
+<li><div class="flex justify-between items-center mb-1"><span class="text-yellow-400 font-bold text-xs" title="Inline View (Subconsulta)">Inline Views (FROM)</span><button onclick="copyCode(this, 'FROM EMPLEADO e JOIN (\n  SELECT id, COUNT(*) as ttl FROM tabla GROUP BY id\n) sub ON e.id = sub.id')" title="Copiar"><i class="fa-solid fa-copy text-slate-500 hover:text-yellow-300 transition-colors"></i></button></div>
+<span class="text-slate-400 block">Sub-query dentro del FROM que actúa como tabla falsa (Alias `sub`). Misión 4.</span>
+</li>
+</ul>
+</div>
+
+<!-- D. Conversión y Agregado -->
+<div class="cheat-item bg-slate-800 p-5 rounded-xl border border-slate-700 hover:border-blue-500/50 transition-colors">
+<h4 class="font-bold text-white mb-3 text-sm border-b border-slate-600 pb-2 text-blue-300"><i class="fa-solid fa-calculator fa-fw mr-1"></i> Data & Ops</h4>
+<ul class="text-[11px] space-y-4">
+<li><div class="flex justify-between items-center mb-1"><span><code class="text-blue-300 font-mono text-xs">TO_CHAR(num)</code></span><button onclick="copyCode(this, 'TO_CHAR()')" title="Copiar"><i class="fa-solid fa-copy text-slate-500 hover:text-blue-300 transition-colors"></i></button></div>
+<span class="text-slate-400 block">Transforma NUMBER a Texto para aplicarle SUBSTR (Ej: `numrun_emp`).</span></li>
+
+<li><div class="flex justify-between items-center mb-1"><span><code class="text-blue-300 font-mono text-xs">COUNT(*) / SUM(col)</code></span><button onclick="copyCode(this, 'COUNT(*)')" title="Copiar"><i class="fa-solid fa-copy text-slate-500 hover:text-blue-300 transition-colors"></i></button></div>
+<span class="text-slate-400 block">Cuantificadores. No se usan libres en SELECT.</span>
+<div class="mt-2 bg-red-900/30 rounded-lg p-2 border border-red-500/40">
+<span class="text-red-300 font-bold block mb-1">Regla de Oro Group By:</span>
+<span class="text-slate-300 text-[10px]">TODA columna proyectada en un SELECT que no esté envuelta en un COUNT, SUM, etc... ESTÁ OBLIGADA a aparecer tal cual en tu GROUP BY. Sino: ERROR rojo.</span></div></li>
+</ul>
+</div>
+
+
+</div>
+</div>
+
+</div>
+
+<!-- METACOGNICION SQL -->
+<div class="mt-8 bg-slate-900 rounded-2xl p-6 md:p-8 border-2 border-slate-700 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-48 h-48 bg-indigo-600/10 rounded-bl-full blur-3xl pointer-events-none"></div>
+    <h3 class="text-2xl font-bold text-white mb-2 flex items-center"><i class="fa-solid fa-microchip text-indigo-400 mr-3"></i> Laboratorio de Metacognición</h3>
+    <p class="text-slate-400 text-sm mb-6 max-w-4xl leading-relaxed">Copia y pega estas consultas completas en tu Oracle SQL Developer. <strong>No intentes memorizarlas</strong>; analízalas línea por línea para entender cómo las piezas individuales del <em>Cheatsheet</em> encajan entre sí formando un ecosistema relacional real para CyberDrone.</p>
+
+    <div class="grid lg:grid-cols-3 gap-6 relative z-10">
+        <!-- Consulta 1 -->
+        <div class="cheat-item bg-slate-800 rounded-xl border border-slate-600 shadow-xl overflow-hidden flex flex-col transition-transform hover:-translate-y-1 min-w-0">
+            <div class="bg-indigo-900/50 p-4 border-b border-indigo-500/30">
+                <h4 class="text-indigo-300 font-bold text-sm truncate"><i class="fa-solid fa-list-check mr-2"></i> Reporte Operativo Básico</h4>
+                <p class="text-[11px] text-indigo-200/60 mt-1 line-clamp-2">INNER JOIN + Manipulación de string.</p>
+            </div>
+            <div class="p-5 relative group grow bg-[#0f172a] overflow-x-auto">
+                <button onclick="copyCode(this, `SELECT d.placa, \n       UPPER(d.modelo) AS modelo_dron, \n       e.pnombre_emp || ' ' || e.appaterno_emp AS encargado\nFROM DRON d\nJOIN EMPLEADO e ON d.numrun_emp = e.numrun_emp\nORDER BY d.valor_arriendo_dia DESC;`)" class="absolute top-3 right-3 text-slate-500 hover:text-white transition-colors" title="Copiar Query"><i class="fa-solid fa-copy text-lg"></i></button>
+                <code class="text-xs font-mono text-emerald-400 whitespace-pre-wrap leading-relaxed">SELECT d.placa, 
+       UPPER(d.modelo) AS modelo_dron, 
+       e.pnombre_emp || ' ' || e.appaterno_emp AS encargado
+FROM DRON d
+JOIN EMPLEADO e ON d.numrun_emp = e.numrun_emp
+ORDER BY d.valor_arriendo_dia DESC;</code>
+            </div>
+        </div>
+        
+        <!-- Consulta 2 -->
+        <div class="cheat-item bg-slate-800 rounded-xl border border-slate-600 shadow-xl overflow-hidden flex flex-col transition-transform hover:-translate-y-1 min-w-0">
+            <div class="bg-blue-900/40 p-4 border-b border-blue-500/30">
+                <h4 class="text-blue-300 font-bold text-sm truncate"><i class="fa-solid fa-chart-pie mr-2"></i> Análisis Estadístico</h4>
+                <p class="text-[11px] text-blue-200/60 mt-1 line-clamp-2">Funciones de Fecha + Agregación + Filtro Grupal.</p>
+            </div>
+            <div class="p-5 relative group grow bg-[#0f172a] overflow-x-auto">
+                <button onclick="copyCode(this, `SELECT EXTRACT(YEAR FROM a.fecha_ini_arriendo) AS anio_arriendo,\n       d.id_tipo_dron,\n       COUNT(a.id_arriendo) AS total_viajes,\n       SUM(a.dias_solicitados) AS total_dias_rentados\nFROM ARRIENDO_DRON a\nJOIN DRON d ON a.placa = d.placa\nGROUP BY EXTRACT(YEAR FROM a.fecha_ini_arriendo), d.id_tipo_dron\nHAVING COUNT(a.id_arriendo) > 1\nORDER BY anio_arriendo DESC;`)" class="absolute top-3 right-3 text-slate-500 hover:text-white transition-colors" title="Copiar Query"><i class="fa-solid fa-copy text-lg"></i></button>
+                <code class="text-[11px] font-mono text-blue-400 whitespace-pre-wrap leading-relaxed">SELECT EXTRACT(YEAR FROM a.fecha_ini_arriendo) AS anio,
+       d.id_tipo_dron,
+       COUNT(a.id_arriendo) AS total_viajes,
+       SUM(a.dias_solicitados) AS total_dias
+FROM ARRIENDO_DRON a
+JOIN DRON d ON a.placa = d.placa
+GROUP BY EXTRACT(YEAR FROM a.fecha_ini_arriendo), 
+         d.id_tipo_dron
+HAVING COUNT(a.id_arriendo) > 1;</code>
+            </div>
+        </div>
+
+        <!-- Consulta 3 -->
+        <div class="cheat-item bg-slate-800 rounded-xl border border-slate-600 shadow-xl overflow-hidden flex flex-col transition-transform hover:-translate-y-1 min-w-0">
+            <div class="bg-yellow-900/30 p-4 border-b border-yellow-500/30">
+                <h4 class="text-yellow-400 font-bold text-sm truncate"><i class="fa-solid fa-layer-group mr-2"></i> Subconsultas + Tramos</h4>
+                <p class="text-[11px] text-yellow-200/60 mt-1 line-clamp-2">Non-Equi JOIN en rangos + Subquery Escalar.</p>
+            </div>
+            <div class="p-5 relative group grow bg-[#0f172a] overflow-x-auto">
+                <button onclick="copyCode(this, `SELECT e.numrun_emp, \n       e.sueldo_base,\n       (e.sueldo_base * p.porcentaje / 100) as bono_asignado\nFROM EMPLEADO e\nJOIN PORC_BONIF_ANNOS p ON e.sueldo_base BETWEEN p.sueldo_desde AND p.sueldo_hasta\nWHERE e.sueldo_base > (SELECT AVG(sueldo_base) FROM EMPLEADO);`)" class="absolute top-3 right-3 text-slate-500 hover:text-white transition-colors" title="Copiar Query"><i class="fa-solid fa-copy text-lg"></i></button>
+                <code class="text-xs font-mono text-yellow-400 whitespace-pre-wrap leading-relaxed">SELECT e.numrun_emp, 
+       e.sueldo_base,
+       (e.sueldo_base * p.porcentaje / 100) as bono
+FROM EMPLEADO e
+JOIN PORC_BONIF_ANNOS p 
+  ON e.sueldo_base BETWEEN p.sueldo_desde 
+  AND p.sueldo_hasta
+WHERE e.sueldo_base > (
+  SELECT AVG(sueldo_base) FROM EMPLEADO
+);</code>
+            </div>
+        </div>
+    </div>
+</div>
+
+</section>
+<script>
+function filterCheatsheet(val) {
+   const items = document.querySelectorAll('#cheatsheet .cheat-item');
+   const text = val.toLowerCase().trim();
+   
+   if(!text) {
+       items.forEach(el => {
+         el.style.display = '';
+         setTimeout(() => {el.style.opacity = '1'; el.style.transform = 'scale(1)'}, 50);
+       });
+       return;
+   }
+   
+   items.forEach(el => {
+      if(el.textContent.toLowerCase().includes(text)) {
+         el.style.display = '';
+         setTimeout(() => {el.style.opacity = '1'; el.style.transform = 'scale(1)'}, 50);
+      } else {
+         el.style.opacity = '0';
+         el.style.transform = 'scale(0.95)';
+         setTimeout(() => el.style.display = 'none', 200);
+      }
+   });
+}
+function copyCode(btn, code) {
+   navigator.clipboard.writeText(code).then(() => {
+       const icon = btn.querySelector('i');
+       const oldClass = icon.className;
+       icon.className = 'fa-solid fa-check text-green-400';
+       btn.classList.add('scale-125');
+       setTimeout(() => { 
+           icon.className = oldClass; 
+           btn.classList.remove('scale-125');
+       }, 1500);
+   }).catch(err => {
+       console.error("Fallo al copiar: ", err);
+   });
+}
+</script>
 
 <!-- ══════ LA MATERIA ══════ -->
 <section class="bg-white rounded-[2.5rem] p-8 shadow-xl border-2 border-emerald-200">
