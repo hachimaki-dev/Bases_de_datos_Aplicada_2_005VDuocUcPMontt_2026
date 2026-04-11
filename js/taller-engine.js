@@ -6,6 +6,7 @@ const TallerApp = createApp({
     // State
     const duaMode = ref(false);
     const activeTab = ref('tab-strings');
+    const polyLevel = ref('n1');
     const progress = reactive(JSON.parse(localStorage.getItem('cyber_progress')||'{"quizzes":{},"hints":{}}'));
     const quizState = reactive({});
     const matchState = reactive({ selected: null, pairs: {}, completed: {} });
@@ -144,7 +145,7 @@ const TallerApp = createApp({
     });
 
     return {
-      duaMode, activeTab, progress, quizState, matchState, fillState, hintLevels,
+      duaMode, activeTab, polyLevel, progress, quizState, matchState, fillState, hintLevels,
       answerVF, answerMulti, answerFill, selectMatch, isMatchSelected, isMatchDone,
       isQuizDone, quizProgress, revealHint, openTab, toggleDUA, dua, toggleAcc, shuffled,
       TALLER

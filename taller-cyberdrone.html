@@ -353,7 +353,7 @@ function copyCode(btn, code) {
 <i class="fa-solid fa-book-open text-emerald-500 bg-emerald-100 p-3 rounded-xl mr-4"></i> La Materia</h2>
 <p class="text-gray-600 mb-6 bg-emerald-50 p-4 rounded-xl border border-emerald-100"><i class="fa-solid fa-route text-emerald-500 mr-2"></i> <strong>Flujo recomendado:</strong> Primero estudia los fundamentos teóricos de cada módulo y completa su quiz de comprensión. Luego baja a la <strong>Bandeja de Entrada Corporativa</strong> para aplicar lo aprendido resolviendo las misiones SQL. Cada misión combina funciones de varios módulos.</p>
 <div class="flex flex-wrap gap-2 mb-6">
-<button v-for="(label,key) in {strings:'1. Texto',dates:'2. Fechas',agrupacion:'3. Agrupación',subconsultas:'4. Subconsultas'}" :key="key"
+<button v-for="(label,key) in {strings:'1. Texto',dates:'2. Fechas',agrupacion:'3. Agrupación',subconsultas:'4. Subconsultas',logica:'5. Lógica (CASE)'}" :key="key"
 @click="openTab('tab-'+key)" class="px-5 py-2 rounded-full font-bold transition-colors text-sm"
 :class="activeTab==='tab-'+key?'bg-emerald-600 text-white shadow':'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'">
 {{label}} <span v-if="isQuizDone(key)" class="ml-1">✅</span></button></div>
@@ -379,6 +379,36 @@ function copyCode(btn, code) {
        SUBSTR(appaterno, 1, 2) || '@empresa.cl' AS correo
 FROM EMPLEADO;</code></pre>
 </div></div>
+
+<!-- FUNCIONES DE FILA (NUEVAS) -->
+<div class="grid md:grid-cols-2 gap-6">
+<div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-200">
+<h3 class="text-lg font-bold text-indigo-700 mb-2">Formato (UPPER, LOWER, LENGTH) <span class="dua-badge bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full ml-2">🔤 Máyusculas</span></h3>
+<p class="text-sm mb-2">Manipulan una celda completa:</p>
+<ul class="list-disc ml-6 space-y-1 text-sm text-indigo-900">
+<li><code class="bg-white px-1 rounded">UPPER('dron')</code> → 'DRON'</li>
+<li><code class="bg-white px-1 rounded">INITCAP('neo tokyo')</code> → 'Neo Tokyo'</li>
+<li><code class="bg-white px-1 rounded">LENGTH('cyber')</code> → 5 <em>(largo del texto)</em></li>
+</ul>
+</div>
+<div class="bg-teal-50 p-5 rounded-2xl border border-teal-200">
+<h3 class="text-lg font-bold text-teal-700 mb-2">Tipos y Nulos (TO_CHAR / NVL) <span class="dua-badge bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full ml-2">🔄 Transformistas</span></h3>
+<p class="text-sm mb-2">Un número (como Rut) no se corta con SUBSTR si no es texto:</p>
+<ul class="list-disc ml-6 space-y-1 text-[13px] text-teal-900">
+<li><code class="bg-white px-1 rounded">TO_CHAR(105)</code> → '105' (ahora es texto)</li>
+<li><code class="bg-white px-1 rounded">TO_DATE('15/05/2026', 'DD/MM/YYYY')</code> → Crea fecha</li>
+<li><code class="bg-white px-1 rounded font-bold text-pink-600">NVL(bono, 0)</code> → ¡Útil en misiones con LEFT JOIN! Reemplaza un nulo por 0.</li>
+</ul>
+</div>
+</div>
+<!-- También números -->
+<div class="bg-slate-800 p-5 rounded-2xl text-slate-200 border-l-4 border-emerald-400">
+<h3 class="text-lg font-bold text-emerald-400 mb-2">Matemáticas de Fila (ROUND y TRUNC) <span class="dua-badge bg-slate-700 text-emerald-300 text-xs px-2 py-1 rounded-full ml-2">🧮 Redondeos</span></h3>
+<ul class="list-disc ml-6 space-y-1 text-sm">
+<li><code class="bg-slate-700 px-1 rounded text-emerald-200">ROUND(15.6)</code> → 16 (Acerca al más próximo) / <code class="bg-slate-700 px-1 rounded text-emerald-200">ROUND(3.1415, 2)</code> → 3.14</li>
+<li><code class="bg-slate-700 px-1 rounded text-emerald-200">TRUNC(15.6)</code> → 15 (Corta la cola, ignora cuán cerca esté del siguiente número).</li>
+</ul>
+</div>
 <!-- Wiki: Ir más allá -->
 <details class="bg-slate-50 rounded-xl border border-slate-200">
 <summary class="cursor-pointer p-4 font-bold text-slate-700 hover:text-pink-600"><i class="fa-solid fa-microscope mr-2"></i> Ir Más Allá 🔬 (Wiki)</summary>
@@ -482,7 +512,34 @@ class="match-btn p-3 rounded-lg border-2 text-sm cursor-pointer transition-all"
 <li><code class="bg-slate-100 font-bold">HAVING</code> filtra grupos <strong>después</strong> del cálculo.</li></ul></div>
 <div class="bg-slate-800 p-4 rounded-xl text-white">
 <h4 class="font-bold text-yellow-400 mb-2">INSERT INTO...SELECT <span class="dua-badge bg-yellow-900 text-yellow-300 text-xs px-2 py-0.5 rounded-full">📥 Copiar masivo</span></h4>
-<code class="text-xs text-green-300 block">INSERT INTO HIST_ARRIENDO_ANUAL_DRON<br>(placa, modelo, ano_proceso, cant_arriendos, total_dias)<br>SELECT d.placa, d.modelo, EXTRACT(YEAR FROM SYSDATE),<br>COUNT(*), SUM(a.dias_solicitados)<br>FROM ARRIENDO_DRON a JOIN DRON d ON a.placa=d.placa<br>GROUP BY d.placa, d.modelo;</code></div></div>
+<code class="text-[11px] text-green-300 block">INSERT INTO HIST_ARRIENDO_ANUAL_DRON<br>(placa, modelo, ano, total_dias)<br>SELECT d.placa, d.modelo, EXTRACT(YEAR FROM SYSDATE),<br>SUM(a.dias_solicitados)<br>FROM ARRIENDO_DRON a JOIN DRON d ON a.placa=d.placa<br>GROUP BY d.placa, d.modelo;</code></div></div>
+
+<!-- FUNCIONES DE GRUPO EXPLÍCITAS -->
+<div class="mt-8">
+<h4 class="text-xl font-bold text-orange-600 mb-4 flex items-center"><i class="fa-solid fa-users text-orange-300 mr-2"></i> Estrellas de la Agrupación (Calculan Vertical)</h4>
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+<div class="bg-white p-4 rounded-xl border-t-4 border-blue-500 shadow-sm hover:-translate-y-1 transition-transform">
+ <strong class="text-blue-700 block text-md mb-1"><i class="fa-solid fa-hashtag mb-1 opacity-50 block"></i> COUNT</strong>
+ <span class="text-xs text-slate-500"><code>(*)</code> cuenta nulos (ej: total empleados). <code>(col)</code> solo los que tienen dato (IGNORA NULOS).</span>
+</div>
+<div class="bg-white p-4 rounded-xl border-t-4 border-green-500 shadow-sm hover:-translate-y-1 transition-transform">
+ <strong class="text-green-700 block text-md mb-1"><i class="fa-solid fa-plus mb-1 opacity-50 block"></i> SUM(col)</strong>
+ <span class="text-xs text-slate-500">Suma aritmética. ¡Solo aplica a columnas NUMBER!</span>
+</div>
+<div class="bg-white p-4 rounded-xl border-t-4 border-purple-500 shadow-sm hover:-translate-y-1 transition-transform">
+ <strong class="text-purple-700 block text-md mb-1"><i class="fa-solid fa-divide mb-1 opacity-50 block"></i> AVG(col)</strong>
+ <span class="text-xs text-slate-500">Promedio (Average). Ej: La media salarial de una unidad. Ignora valores nulos en el cálculo.</span>
+</div>
+<div class="bg-white p-4 rounded-xl border-t-4 border-pink-500 shadow-sm hover:-translate-y-1 transition-transform">
+ <strong class="text-pink-700 block text-md mb-1"><i class="fa-solid fa-caret-up mb-1 opacity-50 block"></i> MAX(col)</strong>
+ <span class="text-xs text-slate-500">Extrae el valor máximo: sueldo más alto, última fecha registrada, o letra más lejana alfabética.</span>
+</div>
+<div class="bg-white p-4 rounded-xl border-t-4 border-yellow-500 shadow-sm hover:-translate-y-1 transition-transform">
+ <strong class="text-yellow-700 block text-md mb-1"><i class="fa-solid fa-caret-down mb-1 opacity-50 block"></i> MIN(col)</strong>
+ <span class="text-xs text-slate-500">Extrae el valor menor: producto más barato, primer cliente, etc.</span>
+</div>
+</div>
+</div>
 <details class="bg-slate-50 rounded-xl border border-slate-200"><summary class="cursor-pointer p-4 font-bold text-slate-700"><i class="fa-solid fa-microscope mr-2"></i> Ir Más Allá 🔬</summary>
 <div class="p-4 pt-0 text-sm space-y-2"><p><strong>Funciones de grupo Oracle:</strong> COUNT(*), COUNT(col), SUM(col), AVG(col), MIN(col), MAX(col), STDDEV(col), VARIANCE(col).</p>
 <p><strong>ROLLUP y CUBE:</strong> Variantes avanzadas de GROUP BY que generan subtotales automáticos (contenido avanzado, fuera de evaluación).</p></div></details>
@@ -553,14 +610,698 @@ FROM EMPLEADO e JOIN (
 :class="item.answered&&oi===item.answer?'border-emerald-500 bg-emerald-50':item.answered&&oi===item.userAnswer&&!item.correct?'border-red-400 bg-red-50':'border-gray-200 hover:border-purple-300'">{{opt}}</button></div>
 <p v-if="item.showExplain" class="mt-2 text-xs p-2 rounded-lg" :class="item.correct?'bg-emerald-50 text-emerald-800':'bg-red-50 text-red-800'">{{item.explain}}</p></div>
 </template></div></div>
+<!-- TAB: LOGICA -->
+<div v-show="activeTab==='tab-logica'" class="space-y-6">
+<h3 class="text-2xl font-bold text-orange-600 mb-3">Lógica Condicional: CASE WHEN</h3>
+<div class="bg-orange-50 p-6 rounded-2xl border border-orange-200">
+<h4 class="font-bold text-orange-800 flex items-center mb-3">
+<i class="fa-solid fa-traffic-light mr-3 text-2xl"></i> El Semáforo del SQL</h4>
+<p class="mb-4 text-sm leading-relaxed text-orange-900">
+El <code>CASE</code> funciona exactamente como un <strong>"Si ocurre esto... entonces haz aquello"</strong>. Es la forma de crear columnas inteligentes que cambian su valor dependiendo de las condiciones.
+</p>
+<div class="grid md:grid-cols-2 gap-6">
+<div class="bg-white p-4 rounded-xl border border-orange-100">
+<p class="font-bold text-xs text-orange-700 mb-2 uppercase tracking-wider">Sintaxis Estándar</p>
+<pre class="bg-slate-900 text-emerald-400 p-4 rounded-lg text-xs leading-relaxed"><code>CASE
+  WHEN condicion1 THEN resultado1
+  WHEN condicion2 THEN resultado2
+  ELSE resultado_por_defecto
+END</code></pre>
 </div>
+<div class="bg-white p-4 rounded-xl border border-orange-100">
+<p class="font-bold text-xs text-orange-700 mb-2 uppercase tracking-wider">Ejemplo en CyberDrone</p>
+<pre class="bg-slate-900 text-emerald-400 p-4 rounded-lg text-xs leading-relaxed"><code>CASE
+  WHEN td.nombre_tipo_dron = 'Carga' THEN 'Dron Pesado'
+  WHEN td.nombre_tipo_dron = 'Carrera' THEN 'Dron Veloz'
+  ELSE 'Dron Estándar'
+END AS categoria_personalizada</code></pre>
+</div>
+</div>
+</div>
+<div v-if="duaMode" class="bg-yellow-50 p-4 rounded-xl border border-yellow-200 text-sm">
+🧒 <strong>Analogía:</strong> Imagina un guardia que separa a la gente en 3 filas. Le dices: "SI trae polera roja, va a la fila A. SI trae polera azul, va a la fila B. SI TRAE CUALQUIER OTRA COSA (ELSE), va a la fila C".
+</div>
+</div>
+
+</section>
+
+<!-- ══════ POLÍGONO DE ENTRENAMIENTO PROGRESIVO ══════ -->
+<section class="mt-16 mb-20" id="poligono">
+    <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-[3rem] p-8 md:p-10 shadow-2xl border-4 border-indigo-500/30 relative overflow-hidden">
+        <div class="absolute -top-20 -right-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+        
+        <div class="text-center mb-10 relative z-10">
+            <div class="inline-block bg-indigo-500/20 text-indigo-300 text-xs font-bold px-4 py-1.5 rounded-full mb-4 border border-indigo-500/30 uppercase tracking-widest">20 Ejercicios · 3 Niveles · Progresión Garantizada</div>
+            <h2 class="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight flex items-center justify-center gap-4">
+                <i class="fa-solid fa-dumbbell text-indigo-400 animate-bounce"></i> 
+                Polígono de Entrenamiento SQL
+            </h2>
+            <p class="text-slate-400 text-lg max-w-3xl mx-auto leading-relaxed">
+                No vayas a las misiones sin munición. Estos ejercicios están ordenados de <span class="text-emerald-400 font-bold">lo más simple</span> a <span class="text-pink-400 font-bold">lo más complejo</span>.
+                Cada uno introduce <strong class="text-white">una sola idea nueva</strong> para que construyas confianza paso a paso.
+            </p>
+            <div v-if="duaMode" class="mt-4 bg-yellow-500/20 text-yellow-300 px-6 py-3 rounded-xl text-sm max-w-2xl mx-auto border border-yellow-500/30">
+                🧒 <strong>Tip DUA:</strong> Piensa en estos ejercicios como un videojuego: primero pasas el tutorial, luego las misiones fáciles, y recién después llegas al boss final.
+            </div>
+        </div>
+
+        <!-- LEVEL TABS -->
+        <div class="flex flex-wrap justify-center gap-3 mb-10 relative z-10">
+            <button @click="polyLevel='n1'" class="px-6 py-3 rounded-2xl font-bold text-sm transition-all border-2" 
+                :class="polyLevel==='n1'?'bg-emerald-500 text-white border-emerald-400 shadow-lg shadow-emerald-500/30 scale-105':'bg-slate-700/50 text-slate-400 border-slate-600 hover:border-emerald-500/50 hover:text-emerald-300'">
+                <i class="fa-solid fa-seedling mr-2"></i> Nivel 1 — Despegue <span class="ml-1 bg-white/20 px-2 py-0.5 rounded-full text-xs">5 ej.</span>
+            </button>
+            <button @click="polyLevel='n2'" class="px-6 py-3 rounded-2xl font-bold text-sm transition-all border-2" 
+                :class="polyLevel==='n2'?'bg-yellow-500 text-white border-yellow-400 shadow-lg shadow-yellow-500/30 scale-105':'bg-slate-700/50 text-slate-400 border-slate-600 hover:border-yellow-500/50 hover:text-yellow-300'">
+                <i class="fa-solid fa-bolt mr-2"></i> Nivel 2 — Altitud <span class="ml-1 bg-white/20 px-2 py-0.5 rounded-full text-xs">5 ej.</span>
+            </button>
+            <button @click="polyLevel='n3'" class="px-6 py-3 rounded-2xl font-bold text-sm transition-all border-2" 
+                :class="polyLevel==='n3'?'bg-pink-500 text-white border-pink-400 shadow-lg shadow-pink-500/30 scale-105':'bg-slate-700/50 text-slate-400 border-slate-600 hover:border-pink-500/50 hover:text-pink-300'">
+                <i class="fa-solid fa-rocket mr-2"></i> Nivel 3 — Combate Real <span class="ml-1 bg-white/20 px-2 py-0.5 rounded-full text-xs">10 ej.</span>
+            </button>
+        </div>
+
+        <!-- ═══════════ NIVEL 1: DESPEGUE ═══════════ -->
+        <div v-show="polyLevel==='n1'" class="relative z-10 space-y-6">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                    <i class="fa-solid fa-seedling text-white text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-black text-emerald-400">Nivel 1 — Despegue</h3>
+                    <p class="text-slate-500 text-sm">SELECT básico · Filtros · Funciones de texto · COUNT y AVG sin GROUP BY</p>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
+                <!-- N1-E1 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-emerald-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center justify-center font-black text-sm border border-emerald-500/30">1</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Listado de Clientes</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">SELECT · ORDER BY</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Muestra <code class="text-emerald-300">numrun_cli</code>, <code class="text-emerald-300">pnombre_cli</code>, <code class="text-emerald-300">appaterno_cli</code> y <code class="text-emerald-300">renta</code> de la tabla <code class="text-emerald-300">CLIENTE</code>, ordenados por apellido paterno en forma ascendente.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-emerald-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT numrun_cli, pnombre_cli, 
+       appaterno_cli, renta
+FROM CLIENTE
+ORDER BY appaterno_cli ASC;</code></pre>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- N1-E2 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-emerald-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center justify-center font-black text-sm border border-emerald-500/30">2</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Filtro por Renta</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">WHERE · BETWEEN</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Muestra los clientes cuya <code class="text-emerald-300">renta</code> esté entre <strong class="text-white">400000</strong> y <strong class="text-white">800000</strong>.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-emerald-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT numrun_cli, pnombre_cli, 
+       appaterno_cli, renta
+FROM CLIENTE
+WHERE renta BETWEEN 400000 AND 800000;</code></pre>
+                            <p class="text-slate-500 text-[10px] mt-2"><i class="fa-solid fa-circle-info mr-1"></i> Nota: Con los datos actuales no hay clientes en este rango (las rentas son altas: 1.8M+). Prueba cambiando a <code class="text-emerald-300">BETWEEN 2000000 AND 3000000</code> si quieres ver resultados.</p>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- N1-E3 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-emerald-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center justify-center font-black text-sm border border-emerald-500/30">3</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Nombres en Mayúsculas</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">UPPER · funciones de texto</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Muestra el nombre del cliente en <strong class="text-white">mayúsculas</strong> junto con su apellido paterno, usando funciones de texto.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-emerald-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT UPPER(pnombre_cli) AS nombre_mayus, 
+       appaterno_cli
+FROM CLIENTE;</code></pre>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- N1-E4 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-emerald-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center justify-center font-black text-sm border border-emerald-500/30">4</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Contar Clientes</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">COUNT(*)</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Cuenta <strong class="text-white">cuántos clientes</strong> existen en la tabla <code class="text-emerald-300">CLIENTE</code>.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-emerald-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT COUNT(*) AS total_clientes
+FROM CLIENTE;</code></pre>
+                            <p class="text-slate-500 text-[10px] mt-2"><i class="fa-solid fa-circle-info mr-1"></i> Resultado esperado: <strong class="text-emerald-300">20</strong> clientes.</p>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- N1-E5 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-emerald-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center justify-center font-black text-sm border border-emerald-500/30">5</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Sueldo Promedio</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">AVG</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Obtén el <strong class="text-white">sueldo promedio</strong> de todos los empleados de la tabla <code class="text-emerald-300">EMPLEADO</code>.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-emerald-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT AVG(sueldo_base) AS sueldo_promedio
+FROM EMPLEADO;</code></pre>
+                            <p class="text-slate-500 text-[10px] mt-2"><i class="fa-solid fa-circle-info mr-1"></i> AVG calcula el promedio automáticamente. No necesitas GROUP BY si aplicas la función sobre TODA la tabla.</p>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <!-- Level completion hint -->
+            <div class="text-center mt-8">
+                <div class="inline-flex items-center bg-emerald-500/10 text-emerald-300 px-5 py-2.5 rounded-full border border-emerald-500/20 text-sm font-medium">
+                    <i class="fa-solid fa-arrow-right mr-2 animate-pulse"></i>
+                    ¿Todo bien? Sube al <strong class="ml-1">Nivel 2</strong> para agregar agrupaciones y cálculos.
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════ NIVEL 2: ALTITUD ═══════════ -->
+        <div v-show="polyLevel==='n2'" class="relative z-10 space-y-6">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-14 h-14 bg-yellow-500 rounded-2xl flex items-center justify-center shadow-lg shadow-yellow-500/30">
+                    <i class="fa-solid fa-bolt text-white text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-black text-yellow-400">Nivel 2 — Altitud</h3>
+                    <p class="text-slate-500 text-sm">GROUP BY · HAVING · MAX/MIN · ROUND · LEFT JOIN con NVL</p>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
+                <!-- N2-E1 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-yellow-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-yellow-500/20 text-yellow-400 rounded-xl flex items-center justify-center font-black text-sm border border-yellow-500/30">6</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Clientes por Región</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">GROUP BY · COUNT</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Muestra <strong class="text-white">cuántos clientes</strong> tiene cada región (usando <code class="text-yellow-300">id_region</code>).</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-yellow-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT id_region, 
+       COUNT(*) AS total_clientes
+FROM CLIENTE
+GROUP BY id_region;</code></pre>
+                            <p class="text-slate-500 text-[10px] mt-2"><i class="fa-solid fa-circle-info mr-1"></i> Concepto clave: Toda columna en el SELECT que NO sea función de grupo (COUNT, SUM, etc.) DEBE ir en el GROUP BY.</p>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- N2-E2 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-yellow-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-yellow-500/20 text-yellow-400 rounded-xl flex items-center justify-center font-black text-sm border border-yellow-500/30">7</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Regiones Populares</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">HAVING</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Muestra solo las regiones que tengan <strong class="text-white">3 o más clientes</strong>.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-yellow-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT id_region, 
+       COUNT(*) AS total_clientes
+FROM CLIENTE
+GROUP BY id_region
+HAVING COUNT(*) >= 3;</code></pre>
+                            <p class="text-slate-500 text-[10px] mt-2"><i class="fa-solid fa-lightbulb text-yellow-400 mr-1"></i> HAVING filtra <strong>después</strong> de agrupar. WHERE filtra <strong>antes</strong>. Esta diferencia es clave para la Misión 3.</p>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- N2-E3 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-yellow-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-yellow-500/20 text-yellow-400 rounded-xl flex items-center justify-center font-black text-sm border border-yellow-500/30">8</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Extremos Salariales</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">MAX · MIN</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Muestra el <strong class="text-white">sueldo máximo</strong> y el <strong class="text-white">sueldo mínimo</strong> de la tabla <code class="text-yellow-300">EMPLEADO</code>.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-yellow-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT MAX(sueldo_base) AS sueldo_mas_alto, 
+       MIN(sueldo_base) AS sueldo_mas_bajo
+FROM EMPLEADO;</code></pre>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- N2-E4 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-yellow-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-yellow-500/20 text-yellow-400 rounded-xl flex items-center justify-center font-black text-sm border border-yellow-500/30">9</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Sueldo Redondeado</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">ROUND</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Muestra el <code class="text-yellow-300">sueldo_base</code> de cada empleado y el mismo sueldo <strong class="text-white">redondeado a miles</strong> (usando <code class="text-yellow-300">ROUND</code> con el parámetro <code class="text-yellow-300">-3</code>).</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-yellow-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT pnombre_emp, sueldo_base,
+       ROUND(sueldo_base, -3) AS sueldo_en_miles
+FROM EMPLEADO;</code></pre>
+                            <p class="text-slate-500 text-[10px] mt-2"><i class="fa-solid fa-circle-info mr-1"></i> ROUND(950000, -3) = 950000 · ROUND(880000, -3) = 880000 · ROUND(1234567, -3) = 1235000</p>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- N2-E5 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-yellow-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-yellow-500/20 text-yellow-400 rounded-xl flex items-center justify-center font-black text-sm border border-yellow-500/30">10</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Drones con/sin Encargado</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">LEFT JOIN · NVL</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Muestra <strong class="text-white">todos los drones</strong> junto con el <code class="text-yellow-300">numrun_emp</code> de su encargado, mostrando <strong class="text-white">0</strong> cuando no tengan empleado asignado.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-yellow-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT d.placa, d.modelo,
+       NVL(d.numrun_emp, 0) AS encargado
+FROM DRON d;</code></pre>
+                            <p class="text-slate-500 text-[10px] mt-2"><i class="fa-solid fa-circle-info mr-1"></i> En estos datos todos los drones tienen encargado, pero NVL es clave en la Misión 2 para protegerte de nulos.</p>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <div class="text-center mt-8">
+                <div class="inline-flex items-center bg-yellow-500/10 text-yellow-300 px-5 py-2.5 rounded-full border border-yellow-500/20 text-sm font-medium">
+                    <i class="fa-solid fa-arrow-right mr-2 animate-pulse"></i>
+                    ¡Excelente! Ya dominas agrupaciones. Sube al <strong class="ml-1">Nivel 3</strong> para JOINs y fechas.
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════ NIVEL 3: COMBATE REAL ═══════════ -->
+        <div v-show="polyLevel==='n3'" class="relative z-10 space-y-6">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-14 h-14 bg-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-pink-500/30">
+                    <i class="fa-solid fa-rocket text-white text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-black text-pink-400">Nivel 3 — Combate Real</h3>
+                    <p class="text-slate-500 text-sm">JOIN múltiples · MONTHS_BETWEEN · LAST_DAY · Conteos agrupados con JOIN</p>
+                </div>
+            </div>
+
+            <div class="bg-pink-500/10 border border-pink-500/20 rounded-xl p-4 mb-6 text-sm text-pink-300 flex items-start gap-3">
+                <i class="fa-solid fa-fire text-pink-400 text-lg mt-0.5"></i>
+                <div>
+                    <strong>Estos ejercicios combinan las ideas de los niveles anteriores.</strong> Si alguno se siente difícil, vuelve al Nivel 1 o 2 para reforzar la pieza individual que no dominas. Cada ejercicio de aquí prepara directamente para una o más misiones.
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-5">
+                <!-- N3-E1 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-pink-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-pink-500/20 text-pink-400 rounded-xl flex items-center justify-center font-black text-sm border border-pink-500/30">11</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Drones por Tipo</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">GROUP BY sobre FK</span>
+                            <span class="text-[10px] bg-orange-500/20 text-orange-300 px-1.5 py-0.5 rounded ml-2 font-bold">→ Misión 3</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Muestra cuántos drones existen por cada <code class="text-pink-300">id_tipo_dron</code>.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-pink-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT id_tipo_dron, 
+       COUNT(*) AS total_drones
+FROM DRON
+GROUP BY id_tipo_dron;</code></pre>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- N3-E2 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-pink-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-pink-500/20 text-pink-400 rounded-xl flex items-center justify-center font-black text-sm border border-pink-500/30">12</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Sueldo Promedio por Región</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">AVG · GROUP BY</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Muestra el <strong class="text-white">promedio de sueldo base</strong> por región en la tabla <code class="text-pink-300">EMPLEADO</code>.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-pink-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT id_region, 
+       AVG(sueldo_base) AS sueldo_promedio
+FROM EMPLEADO
+GROUP BY id_region;</code></pre>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- N3-E3 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-pink-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-pink-500/20 text-pink-400 rounded-xl flex items-center justify-center font-black text-sm border border-pink-500/30">13</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Arriendos por Cliente</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">JOIN · COUNT · GROUP BY</span>
+                            <span class="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded ml-2 font-bold">→ Misión 4</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Muestra cuántos arriendos ha realizado cada cliente, uniendo <code class="text-pink-300">CLIENTE</code> con <code class="text-pink-300">ARRIENDO_DRON</code>.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-pink-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT c.numrun_cli, c.pnombre_cli, 
+       c.appaterno_cli,
+       COUNT(a.id_arriendo) AS total_arriendos
+FROM CLIENTE c
+JOIN ARRIENDO_DRON a ON c.numrun_cli = a.numrun_cli
+GROUP BY c.numrun_cli, c.pnombre_cli, 
+         c.appaterno_cli;</code></pre>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- N3-E4 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-pink-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-pink-500/20 text-pink-400 rounded-xl flex items-center justify-center font-black text-sm border border-pink-500/30">14</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Clientes Frecuentes</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">JOIN · HAVING</span>
+                            <span class="text-[10px] bg-orange-500/20 text-orange-300 px-1.5 py-0.5 rounded ml-2 font-bold">→ Misión 3</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Muestra los clientes que tienen <strong class="text-white">2 o más arriendos</strong>.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-pink-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT c.numrun_cli, c.pnombre_cli, 
+       c.appaterno_cli,
+       COUNT(a.id_arriendo) AS total_arriendos
+FROM CLIENTE c
+JOIN ARRIENDO_DRON a ON c.numrun_cli = a.numrun_cli
+GROUP BY c.numrun_cli, c.pnombre_cli, 
+         c.appaterno_cli
+HAVING COUNT(a.id_arriendo) >= 2;</code></pre>
+                            <p class="text-slate-500 text-[10px] mt-2"><i class="fa-solid fa-lightbulb text-yellow-400 mr-1"></i> Este patrón (JOIN + GROUP BY + HAVING >= N) es EXACTAMENTE lo que necesitas en la Misión 3.</p>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- N3-E5 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-pink-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-pink-500/20 text-pink-400 rounded-xl flex items-center justify-center font-black text-sm border border-pink-500/30">15</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Edad Aproximada</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">MONTHS_BETWEEN · SYSDATE</span>
+                            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded ml-2 font-bold">→ Misión 2</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Muestra el nombre del empleado y su <strong class="text-white">edad aproximada en años</strong> usando <code class="text-pink-300">MONTHS_BETWEEN(SYSDATE, fecha_nac) / 12</code>.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-pink-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT pnombre_emp, appaterno_emp,
+       TRUNC(MONTHS_BETWEEN(SYSDATE, fecha_nac) / 12) 
+           AS edad_aprox
+FROM EMPLEADO;</code></pre>
+                            <p class="text-slate-500 text-[10px] mt-2"><i class="fa-solid fa-circle-info mr-1"></i> TRUNC corta los decimales. Sin TRUNC verías algo como 43.28 años.</p>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- N3-E6 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-pink-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-pink-500/20 text-pink-400 rounded-xl flex items-center justify-center font-black text-sm border border-pink-500/30">16</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Antigüedad Laboral</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">MONTHS_BETWEEN · fecha_contrato</span>
+                            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded ml-2 font-bold">→ Misión 2</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Muestra la <strong class="text-white">antigüedad</strong> de cada empleado en años, calculada al día de hoy.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-pink-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT pnombre_emp, appaterno_emp,
+       fecha_contrato,
+       TRUNC(MONTHS_BETWEEN(SYSDATE, fecha_contrato) / 12) 
+           AS annos_servicio
+FROM EMPLEADO;</code></pre>
+                            <p class="text-slate-500 text-[10px] mt-2"><i class="fa-solid fa-lightbulb text-yellow-400 mr-1"></i> En la Misión 2 usarás esta misma fórmula, pero en vez de SYSDATE usarás LAST_DAY(SYSDATE).</p>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- N3-E7 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-pink-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-pink-500/20 text-pink-400 rounded-xl flex items-center justify-center font-black text-sm border border-pink-500/30">17</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Antigüedad al Fin de Mes</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">LAST_DAY · MONTHS_BETWEEN</span>
+                            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded ml-2 font-bold">→ Misión 2</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Lo mismo que el ejercicio anterior, pero calculando la antigüedad usando <code class="text-pink-300">LAST_DAY(SYSDATE)</code> en vez de SYSDATE.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-pink-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT pnombre_emp, appaterno_emp,
+       fecha_contrato,
+       MONTHS_BETWEEN(LAST_DAY(SYSDATE), fecha_contrato) / 12 
+           AS annos_al_fin_mes
+FROM EMPLEADO;</code></pre>
+                            <p class="text-slate-500 text-[10px] mt-2"><i class="fa-solid fa-fire text-pink-400 mr-1"></i> ¡Esta es la fórmula EXACTA de la Misión 2! Solo te falta agregar el WHERE < 25 y el JOIN con PORC_BONIF_ANNOS.</p>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- N3-E8 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-pink-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-pink-500/20 text-pink-400 rounded-xl flex items-center justify-center font-black text-sm border border-pink-500/30">18</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Dron + Marca</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">JOIN simple (2 tablas)</span>
+                            <span class="text-[10px] bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded ml-2 font-bold">→ Misión 1</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Muestra la <code class="text-pink-300">placa</code> del dron y el <strong class="text-white">nombre de su marca</strong>, uniendo <code class="text-pink-300">DRON</code> con <code class="text-pink-300">MARCA</code>.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-pink-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT d.placa, d.modelo,
+       m.nombre_marca
+FROM DRON d
+JOIN MARCA m ON d.id_marca = m.id_marca;</code></pre>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- N3-E9 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-pink-400/60 transition-all group">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-pink-500/20 text-pink-400 rounded-xl flex items-center justify-center font-black text-sm border border-pink-500/30">19</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Cliente + Estado Civil + Región</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">JOIN triple</span>
+                            <span class="text-[10px] bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded ml-2 font-bold">→ Misión 1</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Muestra el <strong class="text-white">nombre del cliente</strong>, su <strong class="text-white">estado civil</strong> y la <strong class="text-white">región</strong>, uniendo <code class="text-pink-300">CLIENTE</code>, <code class="text-pink-300">ESTADO_CIVIL</code> y <code class="text-pink-300">REGION</code>.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-pink-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT c.pnombre_cli, c.appaterno_cli,
+       ec.nombre_estado_civil,
+       r.nombre_region
+FROM CLIENTE c
+JOIN ESTADO_CIVIL ec 
+    ON c.id_estado_civil = ec.id_estado_civil
+JOIN REGION r 
+    ON c.id_region = r.id_region;</code></pre>
+                            <p class="text-slate-500 text-[10px] mt-2"><i class="fa-solid fa-lightbulb text-yellow-400 mr-1"></i> Si puedes hacer 2 JOINs, ¡hacer 3 JOINs (como en la Misión 1) es el mismo patrón!</p>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- N3-E10 -->
+                <div class="bg-slate-700/40 backdrop-blur-sm border border-slate-600 rounded-2xl p-5 hover:border-pink-400/60 transition-all group md:col-span-2">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-9 h-9 bg-pink-500/20 text-pink-400 rounded-xl flex items-center justify-center font-black text-sm border border-pink-500/30">20</span>
+                        <div>
+                            <h4 class="text-white font-bold text-sm">Reporte de Arriendos Completo</h4>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">JOIN triple · fechas</span>
+                            <span class="text-[10px] bg-orange-500/20 text-orange-300 px-1.5 py-0.5 rounded ml-2 font-bold">→ Misión 3</span>
+                            <span class="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded ml-1 font-bold">→ Misión 4</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-4 leading-relaxed">Muestra la <strong class="text-white">placa</strong> del dron, su <strong class="text-white">modelo</strong> y la <strong class="text-white">fecha de cada arriendo</strong>, uniendo <code class="text-pink-300">ARRIENDO_DRON</code> con <code class="text-pink-300">DRON</code> y mostrando también el <strong class="text-white">nombre del cliente</strong> que lo arrendó.</p>
+                    <details class="bg-slate-800/80 rounded-xl overflow-hidden border border-slate-600">
+                        <summary class="p-3 text-pink-400 font-bold text-xs cursor-pointer hover:bg-slate-700/50 transition-colors flex items-center justify-between">
+                            <span><i class="fa-solid fa-eye mr-1"></i> Ver Solución</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </summary>
+                        <div class="p-3 bg-slate-900/80">
+                            <pre class="text-emerald-400 text-[11px] font-mono leading-relaxed"><code>SELECT d.placa, d.modelo,
+       a.fecha_ini_arriendo,
+       c.pnombre_cli || ' ' || c.appaterno_cli AS cliente
+FROM ARRIENDO_DRON a
+JOIN DRON d ON a.placa = d.placa
+JOIN CLIENTE c ON a.numrun_cli = c.numrun_cli
+ORDER BY a.fecha_ini_arriendo DESC;</code></pre>
+                            <p class="text-slate-500 text-[10px] mt-2"><i class="fa-solid fa-fire text-pink-400 mr-1"></i> Este patrón (ARRIENDO_DRON → DRON → otra tabla) es la columna vertebral de las Misiones 3 y 4.</p>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <div class="text-center mt-8">
+                <div class="inline-flex items-center bg-pink-500/10 text-pink-300 px-5 py-2.5 rounded-full border border-pink-500/20 text-sm font-medium">
+                    <i class="fa-solid fa-trophy mr-2"></i>
+                    ¡Entrenamiento completo! Ahora tienes todas las piezas para resolver las 4 misiones.
+                </div>
+            </div>
+        </div>
+
+        <!-- FINAL CTA -->
+        <div class="mt-10 text-center relative z-10">
+            <div class="bg-gradient-to-r from-indigo-600/20 via-purple-600/20 to-pink-600/20 rounded-2xl p-6 border border-indigo-500/20 max-w-2xl mx-auto">
+                <p class="text-white font-bold text-lg mb-2"><i class="fa-solid fa-clipboard-check text-indigo-400 mr-2"></i> Mapa de Conexiones</p>
+                <div class="grid grid-cols-2 gap-3 text-xs text-left">
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-blue-500/20">
+                        <span class="text-blue-400 font-bold block mb-1">🎯 Misión 1 (Correos)</span>
+                        <span class="text-slate-400">Ej. 3 (UPPER) · 18 (JOIN 2 tablas) · 19 (JOIN 3 tablas)</span>
+                    </div>
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-emerald-500/20">
+                        <span class="text-emerald-400 font-bold block mb-1">🎯 Misión 2 (Bonos)</span>
+                        <span class="text-slate-400">Ej. 15 (MONTHS_BETWEEN) · 16-17 (antigüedad + LAST_DAY)</span>
+                    </div>
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-orange-500/20">
+                        <span class="text-orange-400 font-bold block mb-1">🎯 Misión 3 (Sobreexplotados)</span>
+                        <span class="text-slate-400">Ej. 6-7 (GROUP+HAVING) · 11 (drones por tipo) · 14 (>=2)</span>
+                    </div>
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-purple-500/20">
+                        <span class="text-purple-400 font-bold block mb-1">🎯 Misión 4 (Ranking)</span>
+                        <span class="text-slate-400">Ej. 13-14 (JOIN+COUNT+HAVING) · 20 (reporte completo)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
 
 <!-- ══════ MISIONES ══════ -->
 <section class="text-center mt-12">
-<h2 class="text-4xl font-extrabold text-slate-800 mb-3"><i class="fa-solid fa-inbox text-pink-500 mr-2"></i> Bandeja de Entrada Corporativa</h2>
-<p class="text-lg text-gray-600 max-w-3xl mx-auto mb-3">Hoy es tu primer día como DBA Junior en <strong>CyberDrone Rentals</strong>. Esta es tu bandeja de correos. Cada mensaje es un pedido real de la empresa que debes traducir a SQL.</p>
-<p class="text-sm text-gray-400 max-w-2xl mx-auto mb-8">Lee el contexto, entiende el problema de negocio, y luego escribe la query. Si te estancas, usa la Asistencia IA progresiva.</p></section>
+    <h2 class="text-4xl font-extrabold text-slate-800 mb-3"><i class="fa-solid fa-inbox text-pink-500 mr-2"></i> Bandeja de Entrada Corporativa</h2>
+    <p class="text-lg text-gray-600 max-w-3xl mx-auto mb-3">Hoy es tu primer día como DBA Junior en <strong>CyberDrone Rentals</strong>. Esta es tu bandeja de correos. Cada mensaje es un pedido real de la empresa que debes traducir a SQL.</p>
+    <p class="text-sm text-gray-400 max-w-2xl mx-auto mb-8">Lee el contexto, entiende el problema de negocio, y luego escribe la query. Si te estancas, usa la Asistencia IA progresiva.</p></section>
+
 <section class="bg-white rounded-3xl shadow-xl border-2 border-blue-200 overflow-hidden relative">
 <div class="absolute top-0 right-0 bg-blue-100 text-blue-800 font-bold px-6 py-2 rounded-bl-3xl text-sm">25 pts</div>
 <!-- HEADER -->
@@ -595,7 +1336,7 @@ Ordéname el catálogo primero por tipo de dron (A-Z) y luego por valor de arrie
 <div class="bg-blue-50 rounded-2xl p-5 border border-blue-200 mb-6">
 <h4 class="font-bold text-blue-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-screwdriver-wrench"></i> Tu Rol como DBA — Traducción Técnica</h4>
 <div class="text-sm text-gray-700 space-y-2"><p>Necesitas <strong>cruzar 3 tablas</strong>: <code>DRON</code> → <code>TIPO_DRON</code> → <code>EMPLEADO</code>.</p>
-<div class="bg-blue-100 border border-blue-200 rounded-lg p-3 text-xs"><i class="fa-solid fa-lightbulb text-blue-500 mr-1"></i> <strong>Dato clave:</strong> <code>numrun_emp</code> es <code>NUMBER</code> en la BD. Para usar SUBSTR sobre él necesitas convertirlo a texto con <code>TO_CHAR(e.numrun_emp)</code>.</div>
+<div class="bg-blue-100 border border-blue-200 rounded-lg p-3 text-xs"><i class="fa-solid fa-lightbulb text-blue-500 mr-1"></i> <strong>Pista de Oro:</strong> Esta consulta parece imposible, pero no lo es. Si lograste terminar los 3 retos del <strong>Polígono de Entrenamiento</strong> de arriba, solo tienes que unirlos: el Reto 1 te da el corte del texto, el Reto 2 te da la lógica del CASE, y el Reto 3 te enseña a cruzar estas tablas. ¡Tú puedes! <br><br><b>Nota técnica:</b> <code>numrun_emp</code> es <code>NUMBER</code> en la BD. Para usar SUBSTR sobre él necesitas convertirlo a texto con <code>TO_CHAR(e.numrun_emp)</code>.</div>
 <details class="mt-3 bg-white rounded-xl border border-blue-100" open>
 <summary class="p-3 font-bold text-blue-700 text-xs cursor-pointer">📋 Mini-muestra de datos reales (clic para ver)</summary>
 <div class="p-3 pt-0 overflow-x-auto">
