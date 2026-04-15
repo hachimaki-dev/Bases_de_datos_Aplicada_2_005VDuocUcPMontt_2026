@@ -2,7 +2,6 @@
 #  Oracle Interactive Toolbox v5.0
 #  Autor: https://github.com/hachimaki-dev
 #  Duoc UC - Puerto Montt | Base de Datos Aplicada II
-#  Estilo: Academic Hacker Edition
 # ============================================================================
 
 # --- Encoding y ventana ---
@@ -23,12 +22,12 @@ $script:serviceName   = ""
 # --- Paleta de colores ---
 $c = @{
     Neon    = "Cyan"
-    Accent  = "Magenta"
+    Accent  = "Cyan"
     Success = "Green"
     Warn    = "Yellow"
     Error   = "Red"
-    Dim     = "DarkGray"
-    Info    = "Gray"
+    Dim     = "Gray"
+    Info    = "White"
     Title   = "White"
 }
 
@@ -36,144 +35,63 @@ $c = @{
 #  FUNCIONES DE INTERFAZ
 # ============================================================================
 
-function Write-Slow {
-    param(
-        [string]$Text,
-        [string]$Color = "Cyan",
-        [int]$Delay = 8
-    )
-    foreach ($char in $Text.ToCharArray()) {
-        Write-Host $char -NoNewline -ForegroundColor $Color
-        Start-Sleep -Milliseconds $Delay
-    }
-    Write-Host ""
-}
-
-function Write-Glitch {
-    param([string]$Text, [string]$Color = "Cyan")
-    $glitchChars = @('_', '/', '\', '|', '-', '*', '#')
-    $chars = $Text.ToCharArray()
-    for ($pass = 0; $pass -lt 2; $pass++) {
-        $line = ""
-        foreach ($ch in $chars) {
-            if ($ch -ne ' ' -and (Get-Random -Minimum 0 -Maximum 3) -eq 0) {
-                $line += $glitchChars[(Get-Random -Minimum 0 -Maximum $glitchChars.Length)]
-            } else {
-                $line += $ch
-            }
-        }
-        Write-Host "`r$line" -NoNewline -ForegroundColor DarkCyan
-        Start-Sleep -Milliseconds 60
-    }
-    Write-Host "`r$Text" -ForegroundColor $Color
-}
-
 function Show-Banner {
     Clear-Host
-$bannerLines = @(
-    ""
-    "  +==========================================================================+"
-    "  |                                                                          |"
-    "  |    H A C H I M A K I   D E V  -  O R A C L E   T O O L B O X             |"
-    "  |                                                                          |"
-    "  |                    DUOC UC - PUERTO MONTT                                |"
-    "  |                                                                          |"
-    "  +==========================================================================+"
-)
-    foreach ($line in $bannerLines) {
-        Write-Host $line -ForegroundColor Cyan
-    }
-
-    Write-Host ""
-    $subLines = @(
-        "  +--------------------------------------------------------------+"
-        "  |  ORACLE INTERACTIVE TOOLBOX $($script:version)                          |"
-        "  |  DUOC UC  *  PUERTO MONTT  *  BASE DE DATOS APLICADA II      |"
-        "  +--------------------------------------------------------------+"
-    )
-    foreach ($line in $subLines) {
-        Write-Host $line -ForegroundColor DarkCyan
-    }
-
-    # Status bar animado
-    Write-Host ""
-    $statusItems = @(
-        @{ Text = "  > SYSTEM ONLINE";               Color = "Green" }
-        @{ Text = "  > SQL*PLUS INTERFACE READY";     Color = "Green" }
-        @{ Text = "  > ACCESS LEVEL: LAB ADMIN";      Color = "Green" }
-        @{ Text = "  > SESSION: $(Get-Date -Format 'yyyy-MM-dd HH:mm')"; Color = "DarkCyan" }
-    )
-    foreach ($item in $statusItems) {
-        Write-Slow $item.Text $item.Color 5
-    }
+    Write-Host "================================================================================" -ForegroundColor DarkGray
+    Write-Host "  H A C H I M A K I   D E V  -  O R A C L E   T O O L B O X" -ForegroundColor Cyan
+    Write-Host "  DUOC UC - PUERTO MONTT" -ForegroundColor DarkGray
+    Write-Host "================================================================================" -ForegroundColor DarkGray
     Write-Host ""
 }
 
 function Show-PanelTitle {
     param([string]$Title)
     Write-Host ""
-    $padded = $Title.PadRight(60)
-    Write-Host "  +--------------------------------------------------------------+" -ForegroundColor $c.Accent
-    Write-Host "  | $padded |" -ForegroundColor $c.Title
-    Write-Host "  +--------------------------------------------------------------+" -ForegroundColor $c.Accent
+    Write-Host " ▶ $Title " -ForegroundColor Cyan
+    Write-Host "--------------------------------------------------------------------------------" -ForegroundColor DarkGray
 }
 
 function Show-SubPanel {
     param([string]$Title)
     Write-Host ""
-    $padded = $Title.PadRight(56)
-    Write-Host "      +----------------------------------------------------------+" -ForegroundColor DarkCyan
-    Write-Host "      | $padded |" -ForegroundColor Gray
-    Write-Host "      +----------------------------------------------------------+" -ForegroundColor DarkCyan
+    Write-Host "   ℹ $Title" -ForegroundColor Cyan
 }
 
 function Show-Info {
     param([string]$Message)
-    Write-Host "  [i] $Message" -ForegroundColor $c.Info
+    Write-Host "   ℹ $Message" -ForegroundColor Blue
 }
 
 function Show-Success {
     param([string]$Message)
-    Write-Host "  [+] $Message" -ForegroundColor $c.Success
+    Write-Host "   ✔ $Message" -ForegroundColor Green
 }
 
 function Show-Warn {
     param([string]$Message)
-    Write-Host "  [!] $Message" -ForegroundColor $c.Warn
+    Write-Host "   ⚠ $Message" -ForegroundColor Yellow
 }
 
 function Show-Error {
     param([string]$Message)
-    Write-Host "  [X] $Message" -ForegroundColor $c.Error
+    Write-Host "   ✖ $Message" -ForegroundColor Red
 }
 
 function Show-Spinner {
     param(
-        [string]$Message = "Procesando",
-        [int]$DurationMs = 800
+        [string]$Message,
+        [int]$DurationMs = 0 # Eliminamos el sleep artificial, el parámetro no se usa operativamente.
     )
-    $spinChars = @('|', '/', '-', '\')
-    $end = (Get-Date).AddMilliseconds($DurationMs)
-    $i = 0
-    while ((Get-Date) -lt $end) {
-        Write-Host "`r  [$($spinChars[$i % 4])] $Message..." -NoNewline -ForegroundColor DarkCyan
-        Start-Sleep -Milliseconds 80
-        $i++
-    }
-    Write-Host "`r  [+] $Message... Listo.          " -ForegroundColor Green
+    Write-Host "   ⠋ $Message..." -ForegroundColor Cyan
 }
 
 function Show-Timer {
-    $elapsed = (Get-Date) - $script:sessionStart
-    $formatted = "{0:D2}h {1:D2}m {2:D2}s" -f [int]$elapsed.TotalHours, $elapsed.Minutes, $elapsed.Seconds
-    Write-Host "  [T] Tiempo de sesion: $formatted" -ForegroundColor DarkCyan
+    # Solo dejamos esto vacío si se usaba en otros lados y no queremos fallos de sintaxis
 }
 
 function Pause-Lab {
     Write-Host ""
-    Write-Host "  Presiona " -NoNewline -ForegroundColor $c.Dim
-    Write-Host "ENTER" -NoNewline -ForegroundColor $c.Neon
-    Write-Host " para continuar..." -ForegroundColor $c.Dim
+    Write-Host "   (Presiona ENTER para continuar)" -ForegroundColor DarkGray
     Read-Host | Out-Null
 }
 
@@ -185,15 +103,12 @@ function Log-Session {
 
 function Show-SecurityWarning {
     Write-Host ""
-    Write-Host "  [!] RECORDATORIO IMPORTANTE DE SEGURIDAD" -ForegroundColor Yellow
-    Write-Host "  --------------------------------------------------------------" -ForegroundColor Yellow
-    Write-Host "  El script usa la contrasena '" -NoNewline -ForegroundColor Gray
+    Show-Warn "RECORDATORIO IMPORTANTE DE SEGURIDAD"
+    Write-Host "   El script usa la contraseña '" -NoNewline -ForegroundColor Gray
     Write-Host $script:dbPass -NoNewline -ForegroundColor White
     Write-Host "' por defecto." -ForegroundColor Gray
-    Write-Host "  Si tu contenedor Docker o base de datos tiene una diferente," -ForegroundColor Gray
-    Write-Host "  la conexion FALLARA. " -NoNewline -ForegroundColor Gray
-    Write-Host "Edita el script para cambiarla." -ForegroundColor Yellow
-    Write-Host "  --------------------------------------------------------------" -ForegroundColor Yellow
+    Write-Host "   Si tu entorno tiene una diferente, la conexión fallará." -ForegroundColor Gray
+    Write-Host "   Edita este script para cambiarla si es necesario." -ForegroundColor Gray
     Write-Host ""
 }
 
@@ -792,7 +707,7 @@ function AccesoRapido-Prueba {
 
     Show-PanelTitle "ACCESO RAPIDO A LA PRUEBA"
     Write-Host ""
-    Write-Glitch "  >> MOTO RENT CHILE LTDA. - Evaluacion Parcial N.1" "Cyan"
+    Write-Host " ▶ MOTO RENT CHILE LTDA. - Evaluación Parcial N.1" -ForegroundColor Cyan
     Write-Host ""
 
     # --- Verificar que el archivo .sql existe ---
@@ -1069,7 +984,6 @@ switch ($opcion) {
 
 Show-SecurityWarning
 Log-Session "Entorno seleccionado: $(if ($script:isDocker) { 'Docker' } else { 'Nativo' })"
-Start-Sleep -Milliseconds 1500
 
 # ============================================================================
 #  LOOP PRINCIPAL
@@ -1079,15 +993,12 @@ do {
     Clear-Host
     Show-Banner
 
-    # Barra de estado
-    Write-Host "  +--------------------------------------------------------------+" -ForegroundColor DarkGray
-    $envLabel = if ($script:isDocker) { "Docker | $($script:containerName)" } else { "Nativo | DUOC" }
+    $envLabel = if ($script:isDocker) { "Docker ($($script:containerName))" } else { "Nativo (DUOC)" }
     $elapsed = (Get-Date) - $script:sessionStart
     $timerStr = "{0:D2}:{1:D2}:{2:D2}" -f [int]$elapsed.TotalHours, $elapsed.Minutes, $elapsed.Seconds
-    $statusLine = "  | SVC: $($script:serviceName)  |  ENV: $envLabel  |  T: $timerStr"
-    $statusPadded = $statusLine.PadRight(65) + "|"
-    Write-Host $statusPadded -ForegroundColor DarkCyan
-    Write-Host "  +--------------------------------------------------------------+" -ForegroundColor DarkGray
+    Write-Host " --------------------------------------------------------------------------------" -ForegroundColor DarkGray
+    Write-Host "   SVC: $($script:serviceName)  |  ENV: $envLabel  |  T: $timerStr" -ForegroundColor Cyan
+    Write-Host " --------------------------------------------------------------------------------" -ForegroundColor DarkGray
 
     Show-Menu
     $accion = Read-Host "  >> Elige una opcion"
@@ -1113,10 +1024,9 @@ do {
         "0" {
             Show-PanelTitle "FIN DE SESION"
             Write-Host ""
-            Show-Timer
             Show-Info "Acciones realizadas: $($script:sessionLog.Count)"
             Write-Host ""
-            Write-Glitch "  >> Sesion cerrada. Hasta la proxima, hacker." "Green"
+            Show-Success "Sesión cerrada. Hasta la próxima."
         }
         default {
             Show-Error "Opcion invalida."
@@ -1128,9 +1038,8 @@ do {
 
 # --- Firma final ---
 Write-Host ""
-Write-Host "  +==============================================================+" -ForegroundColor Cyan
-Write-Host "  |  Oracle Interactive Toolbox $($script:version)               |" -ForegroundColor Cyan
-Write-Host "  |  Autor: hachimaki-dev | Duoc UC Puerto Montt                 |" -ForegroundColor DarkCyan
-Write-Host "  |  Base de Datos Aplicada II | :L                             |" -ForegroundColor DarkCyan
-Write-Host "  +==============================================================+" -ForegroundColor Cyan
+Write-Host "================================================================================" -ForegroundColor DarkGray
+Write-Host "  Oracle Interactive Toolbox $($script:version)" -ForegroundColor Cyan
+Write-Host "  Autor: hachimaki-dev | Duoc UC Puerto Montt" -ForegroundColor DarkGray
+Write-Host "================================================================================" -ForegroundColor DarkGray
 Write-Host ""
