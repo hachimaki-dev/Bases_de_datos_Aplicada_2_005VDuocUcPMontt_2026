@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheatsheet SQL — BDY1102</title>
+
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-body: #f4f4f5;
+            --bg-paper: #ffffff;
+            --text-main: #111827;
+            --text-muted: #4b5563;
+            --border-color: #d1d5db;
+            --accent-color: #1e3a8a;
+            --accent-green: #047857;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Lora', serif;
+            line-height: 1.7;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            border-bottom: 2px solid var(--text-main);
+            padding-bottom: 0.5rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.25rem;
+        }
+
+        h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-top: 1.25rem;
+            color: var(--accent-green);
+        }
+
+        p {
+            margin-bottom: 0.85rem;
+            text-align: justify;
+            font-size: 0.95rem;
+        }
+
+        ul,
+        ol {
+            margin-bottom: 0.85rem;
+            padding-left: 2rem;
+            font-size: 0.95rem;
+        }
+
+        li {
+            margin-bottom: 0.35rem;
+        }
+
+        strong {
+            font-weight: 600;
+            color: #000;
+        }
+
+        code {
+            font-family: 'Consolas', 'Courier New', monospace;
+            background-color: #f0fdf4;
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.85em;
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        pre {
+            background-color: #f9fafb;
+            padding: 1.25rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: var(--text-main);
+            border-radius: 0;
+            font-size: 0.82rem;
+            font-weight: 400;
+        }
+
+        #app {
+            background-color: var(--bg-paper);
+            width: 100%;
+            max-width: 900px;
+            padding: 3rem 4rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, .1), 0 4px 6px -2px rgba(0, 0, 0, .05);
+            border-radius: 2px;
+            min-height: 800px;
+        }
+
+        .meta-header {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.88rem;
+            background-color: #f9fafb;
+            padding: 1.25rem 1.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meta-label {
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.72rem;
+            letter-spacing: 0.04em;
+        }
+
+        .meta-value {
+            font-weight: 500;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.25rem;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 2rem;
+            font-family: 'Inter', sans-serif;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 0.7rem 0.9rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+            margin-bottom: -2px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+        }
+
+        .tab-btn.active {
+            color: var(--accent-green);
+            border-bottom-color: var(--accent-green);
+        }
+
+        /* Command box */
+        .cmd-box {
+            border-left: 3px solid var(--accent-green);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            background-color: #fafdfb;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .cmd-box h3 {
+            margin-top: 0;
+        }
+
+        .cmd-box pre {
+            border: none;
+            background-color: white;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            box-shadow: inset 0 0 0 1px var(--border-color);
+        }
+
+        .cmd-box p {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .cmd-box ul {
+            font-size: 0.9rem;
+        }
+
+        .note-tag {
+            display: inline-block;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0.1rem 0.45rem;
+            border-radius: 12px;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+
+        .note-tag.red {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .note-tag.blue {
+            background-color: #dbeafe;
+            color: #1e3a8a;
+        }
+
+        .note-tag.purple {
+            background-color: #ede9fe;
+            color: #5b21b6;
+        }
+
+        /* Mini result tables */
+        .mini-result {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .mini-result-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            margin-bottom: 0.75rem;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 0.6rem;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .mini-table {
+            border: 1px solid #d1fae5;
+            font-size: 0.76rem;
+        }
+
+        .mini-table th {
+            background-color: #ecfdf5;
+            color: var(--accent-green);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        .mini-table td {
+            color: #374151;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: var(--bg-paper);
+            border: 1px solid var(--border-color);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.7rem;
+            padding: 0.25rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            padding: 0.25rem 0.6rem;
+        }
+
+        .copy-btn:hover {
+            background-color: #f3f4f6;
+        }
+
+        .tip {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            background-color: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 4px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.25rem;
+            color: #92400e;
+        }
+
+        .tip strong {
+            color: #92400e;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            #app {
+                box-shadow: none;
+                max-width: 100%;
+                padding: 1.5cm;
+            }
+
+            .tabs {
+                display: none;
+            }
+
+            section {
+                display: block !important;
+            }
+        }
+
+        @media (max-width: 640px) {
+            #app {
+                padding: 1.5rem;
+            }
+
+            .meta-header {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .fade-enter-active,
+        .fade-leave-active {
+            transition: opacity 0.15s ease;
+        }
+
+        .fade-enter-from,
+        .fade-leave-to {
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <header>
+            <h1>Referencia Rápida: SQL Oracle</h1>
+            <div class="meta-header">
+                <div class="meta-item">
+                    <span class="meta-label">Módulo</span>
+                    <span class="meta-value">Base de Datos Aplicada II</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Propósito</span>
+                    <span class="meta-value">Guía de consulta autorizada durante la evaluación</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Motor</span>
+                    <span class="meta-value">Oracle SQL / PL/SQL</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Cobertura</span>
+                    <span class="meta-value">SELECT, funciones, joins, GROUP BY, DML</span>
+                </div>
+            </div>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn" :class="{active: t === 'select'}" @click="t = 'select'">Select & DML</button>
+            <button class="tab-btn" :class="{active: t === 'texto'}" @click="t = 'texto'">Funciones de Texto</button>
+            <button class="tab-btn" :class="{active: t === 'fecha'}" @click="t = 'fecha'">Fechas & Conversión</button>
+            <button class="tab-btn" :class="{active: t === 'grupo'}" @click="t = 'grupo'">Agrupación</button>
+            <button class="tab-btn" :class="{active: t === 'joins'}" @click="t = 'joins'">Joins</button>
+            <button class="tab-btn" :class="{active: t === 'extra'}" @click="t = 'extra'">Extra</button>
+        </nav>
+
+        <main>
+            <transition name="fade" mode="out-in">
+
+                <!-- ============ SELECT & DML ============ -->
+                <section v-if="t === 'select'" key="select">
+                    <h2>Consultas Básicas y Manipulación de Datos</h2>
+
+                    <div class="cmd-box">
+                        <h3>SELECT … FROM … WHERE … ORDER BY</h3>
+                        <p>Estructura fundamental de toda consulta. El <code>WHERE</code> filtra filas; el
+                            <code>ORDER BY</code> ordena el resultado final.</p>
+                        <pre><code>SELECT col1, col2, col3
+FROM nombre_tabla
+WHERE condicion
+ORDER BY col1 ASC, col2 DESC;</code></pre>
+                        <div class="mini-result">
+                            <div class="mini-result-label">Ejemplo de salida:</div>
+                            <table class="mini-table">
+                                <tr>
+                                    <th>COL1</th>
+                                    <th>COL2</th>
+                                    <th>COL3</th>
+                                </tr>
+                                <tr>
+                                    <td>A</td>
+                                    <td>300</td>
+                                    <td>Activo</td>
+                                </tr>
+                                <tr>
+                                    <td>A</td>
+                                    <td>120</td>
+                                    <td>Inactivo</td>
+                                </tr>
+                                <tr>
+                                    <td>B</td>
+                                    <td>500</td>
+                                    <td>Activo</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>Alias de Columnas (AS)</h3>
+                        <p>Renombra una columna en el resultado. No altera la tabla original.</p>
+                        <pre><code>SELECT nombre AS nombre_empleado,
+       sueldo * 1.1 AS sueldo_reajustado
+FROM empleado;</code></pre>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>Operadores de Comparación y Lógicos</h3>
+                        <ul>
+                            <li><code>=</code>, <code>!=</code> o <code>&lt;&gt;</code> — Igualdad / desigualdad.</li>
+                            <li><code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code> —
+                                Comparación numérica o de fechas.</li>
+                            <li><code>BETWEEN a AND b</code> — Rango inclusivo.</li>
+                            <li><code>IN (v1, v2, v3)</code> — Pertenencia a un conjunto.</li>
+                            <li><code>LIKE 'patrón%'</code> — Búsqueda parcial (<code>%</code> = cualquier cantidad de
+                                caracteres, <code>_</code> = uno solo).</li>
+                            <li><code>IS NULL</code> / <code>IS NOT NULL</code> — Verificación de nulos.</li>
+                            <li><code>AND</code>, <code>OR</code>, <code>NOT</code> — Combinación de condiciones.</li>
+                        </ul>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>INSERT INTO … SELECT <span class="note-tag red">Clave para Req. 4</span></h3>
+                        <p>Carga una tabla destino con los resultados de una consulta. No requiere PL/SQL. Ideal para
+                            poblar tablas históricas.</p>
+                        <pre><code>INSERT INTO tabla_destino (col1, col2, col3)
+SELECT c1, SUM(c2), c3
+FROM tabla_origen
+WHERE condicion
+GROUP BY c1, c3;</code></pre>
+                        <div class="tip"><strong>Atención:</strong> Las columnas del <code>SELECT</code> deben coincidir
+                            en cantidad, orden y tipo con las del <code>INSERT INTO</code>.</div>
+                    </div>
+                </section>
+
+                <!-- ============ FUNCIONES DE TEXTO ============ -->
+                <section v-else-if="t === 'texto'" key="texto">
+                    <h2>Funciones de Caracteres (Texto)</h2>
+                    <p>Operan sobre valores de tipo <code>VARCHAR2</code> / <code>CHAR</code> y devuelven texto o un
+                        número.</p>
+
+                    <div class="cmd-box">
+                        <h3>UPPER / LOWER / INITCAP</h3>
+                        <p>Transforman la capitalización de una cadena completa.</p>
+                        <pre><code>SELECT UPPER('hola mundo')   -- HOLA MUNDO
+     , LOWER('HOLA MUNDO')   -- hola mundo
+     , INITCAP('hola mundo') -- Hola Mundo
+FROM DUAL;</code></pre>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>SUBSTR(cadena, inicio, longitud) <span class="note-tag red">Clave para Req. 1</span></h3>
+                        <p>Extrae una porción de texto. En Oracle, las posiciones comienzan en <strong>1</strong> (no en
+                            0).</p>
+                        <pre><code>-- Extraer el 3er dígito de un RUN almacenado como número:
+SELECT SUBSTR(TO_CHAR(numrun_emp), 3, 1) FROM empleado;
+
+-- Primeras 2 letras del apellido materno en mayúscula:
+SELECT UPPER(SUBSTR(apmaterno_emp, 1, 2)) FROM empleado;</code></pre>
+                        <div class="mini-result">
+                            <div class="mini-result-label">Ejemplo con RUN = 15234567:</div>
+                            <table class="mini-table">
+                                <tr>
+                                    <th>Expresión</th>
+                                    <th>Resultado</th>
+                                </tr>
+                                <tr>
+                                    <td>TO_CHAR(15234567)</td>
+                                    <td>'15234567'</td>
+                                </tr>
+                                <tr>
+                                    <td>SUBSTR('15234567', 3, 1)</td>
+                                    <td>'2'</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>Concatenación ( || )</h3>
+                        <p>Une cadenas de texto. Es el operador estándar de Oracle para concatenar.</p>
+                        <pre><code>-- Construir correo para Req. 1:
+SELECT SUBSTR(TO_CHAR(e.numrun_emp), 3, 1)
+    || UPPER(SUBSTR(e.apmaterno_emp, 1, 2))
+    || '@motorent.cl' AS correo
+FROM empleado e;</code></pre>
+                        <div class="mini-result">
+                            <div class="mini-result-label">Resultado para RUN 15234567, apellido materno "González":
+                            </div>
+                            <table class="mini-table">
+                                <tr>
+                                    <th>CORREO</th>
+                                </tr>
+                                <tr>
+                                    <td>2GO@motorent.cl</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>TRIM / LENGTH / REPLACE</h3>
+                        <ul>
+                            <li><code>TRIM(cadena)</code> — Elimina espacios al inicio y final.</li>
+                            <li><code>LENGTH(cadena)</code> — Devuelve la cantidad de caracteres.</li>
+                            <li><code>REPLACE(cadena, 'buscar', 'reemplazo')</code> — Sustituye todas las ocurrencias.
+                            </li>
+                        </ul>
+                        <pre><code>SELECT TRIM('  Hola  ')             -- 'Hola'
+     , LENGTH('Oracle')              -- 6
+     , REPLACE('2026-03-31', '-', '/') -- '2026/03/31'
+FROM DUAL;</code></pre>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>NVL(expr, valor_si_nulo) <span class="note-tag blue">Muy Útil</span></h3>
+                        <p>Devuelve un valor alternativo cuando la expresión es <code>NULL</code>. Evita espacios vacíos
+                            o errores de concatenación.</p>
+                        <pre><code>-- Si el segundo nombre es NULL, usar cadena vacía:
+SELECT pnombre || ' ' || NVL(snombre, '') || ' ' || appaterno
+FROM empleado;</code></pre>
+                    </div>
+                </section>
+
+                <!-- ============ FECHAS & CONVERSIÓN ============ -->
+                <section v-else-if="t === 'fecha'" key="fecha">
+                    <h2>Funciones de Fecha y Conversión</h2>
+
+                    <div class="cmd-box">
+                        <h3>SYSDATE y Literales de Fecha</h3>
+                        <p><code>SYSDATE</code> retorna la fecha y hora actual del servidor. Para usar una fecha fija,
+                            utilice el formato literal ANSI.</p>
+                        <pre><code>SELECT SYSDATE FROM DUAL;                -- Fecha actual
+SELECT DATE '2026-03-31' FROM DUAL;      -- Literal ANSI (recomendado)
+SELECT TO_DATE('31/03/2026', 'DD/MM/YYYY') FROM DUAL; -- Conversión explícita</code></pre>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>EXTRACT(componente FROM fecha) <span class="note-tag red">Clave para Req. 4</span></h3>
+                        <p>Extrae una parte numérica de una fecha: <code>YEAR</code>, <code>MONTH</code> o
+                            <code>DAY</code>.</p>
+                        <pre><code>-- Filtrar arriendos del año 2026:
+SELECT * FROM arriendo_moto
+WHERE EXTRACT(YEAR FROM fecha_ini_arriendo) = 2026;</code></pre>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>ADD_MONTHS(fecha, n) <span class="note-tag red">Clave para Req. 2</span></h3>
+                        <p>Suma (o resta) <code>n</code> meses a una fecha. Útil para calcular antigüedad sin depender
+                            de <code>MONTHS_BETWEEN</code>.</p>
+                        <pre><code>-- Empleados contratados DESPUÉS del 31/03/2006 ==> menos de 20 años al 31/03/2026
+SELECT * FROM empleado
+WHERE fecha_contrato > ADD_MONTHS(DATE '2026-03-31', -240);</code></pre>
+                        <div class="mini-result">
+                            <div class="mini-result-label">¿Por qué -240?</div>
+                            <table class="mini-table">
+                                <tr>
+                                    <th>Cálculo</th>
+                                    <th>Resultado</th>
+                                </tr>
+                                <tr>
+                                    <td>20 años × 12 meses</td>
+                                    <td>240 meses</td>
+                                </tr>
+                                <tr>
+                                    <td>ADD_MONTHS('2026-03-31', -240)</td>
+                                    <td>31/03/2006</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>MONTHS_BETWEEN(fecha1, fecha2)</h3>
+                        <p>Calcula la diferencia en meses entre dos fechas. Devuelve un número decimal.</p>
+                        <pre><code>-- Alternativa: calcular años de servicio directamente
+SELECT nombre,
+       TRUNC(MONTHS_BETWEEN(DATE '2026-03-31', fecha_contrato) / 12) AS anios_servicio
+FROM empleado;</code></pre>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>TO_CHAR / TO_DATE / TO_NUMBER</h3>
+                        <p>Funciones de conversión explícita entre tipos de datos.</p>
+                        <ul>
+                            <li><code>TO_CHAR(fecha, 'formato')</code> — Fecha → Texto.</li>
+                            <li><code>TO_CHAR(numero)</code> — Número → Texto (necesario antes de usar
+                                <code>SUBSTR</code> sobre un número).</li>
+                            <li><code>TO_DATE('texto', 'formato')</code> — Texto → Fecha.</li>
+                            <li><code>TO_NUMBER('texto')</code> — Texto → Número.</li>
+                        </ul>
+                        <pre><code>SELECT TO_CHAR(SYSDATE, 'DD "de" MONTH "de" YYYY') FROM DUAL;
+-- Resultado: 14 de ABRIL   de 2026
+
+SELECT TO_CHAR(numrun_emp) FROM empleado;
+-- Convierte el RUN numérico a texto para poder usar SUBSTR</code></pre>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>ROUND / TRUNC (Numéricos)</h3>
+                        <ul>
+                            <li><code>ROUND(numero, decimales)</code> — Redondea al decimal indicado.</li>
+                            <li><code>TRUNC(numero, decimales)</code> — Trunca sin redondear.</li>
+                        </ul>
+                        <pre><code>SELECT ROUND(45678.567, 0)   -- 45679
+     , TRUNC(45678.567, 0)   -- 45678
+     , ROUND(45678.567, 2)   -- 45678.57
+FROM DUAL;</code></pre>
+                    </div>
+                </section>
+
+                <!-- ============ AGRUPACIÓN ============ -->
+                <section v-else-if="t === 'grupo'" key="grupo">
+                    <h2>Funciones de Grupo (Agrupación)</h2>
+                    <p>Procesan múltiples filas y devuelven un solo valor por grupo. Se usan con <code>GROUP BY</code>.
+                    </p>
+
+                    <div class="cmd-box">
+                        <h3>Funciones de Agregado <span class="note-tag red">Clave para Req. 3</span></h3>
+                        <ul>
+                            <li><code>COUNT(*)</code> — Cuenta filas del grupo (incluyendo nulos).</li>
+                            <li><code>COUNT(col)</code> — Cuenta filas donde la columna no es NULL.</li>
+                            <li><code>SUM(col)</code> — Suma los valores numéricos.</li>
+                            <li><code>AVG(col)</code> — Promedio aritmético.</li>
+                            <li><code>MIN(col)</code> / <code>MAX(col)</code> — Valor extremo.</li>
+                        </ul>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>GROUP BY — Regla de Oro</h3>
+                        <p>Toda columna en el <code>SELECT</code> que <strong>no</strong> esté dentro de una función de
+                            agregado <strong>debe</strong> aparecer en el <code>GROUP BY</code>. Violar esta regla
+                            produce un error <code>ORA-00937</code>.</p>
+                        <pre><code>-- Correcto:
+SELECT tipo_moto, COUNT(*) AS cantidad, AVG(valor_arriendo_dia) AS promedio
+FROM motocicleta m
+JOIN tipo_moto tm ON tm.id_tipo_moto = m.id_tipo_moto
+GROUP BY tipo_moto
+ORDER BY cantidad DESC;</code></pre>
+                        <div class="mini-result">
+                            <div class="mini-result-label">Resultado esperado:</div>
+                            <table class="mini-table">
+                                <tr>
+                                    <th>TIPO_MOTO</th>
+                                    <th>CANTIDAD</th>
+                                    <th>PROMEDIO</th>
+                                </tr>
+                                <tr>
+                                    <td>Deportiva</td>
+                                    <td>5</td>
+                                    <td>48600</td>
+                                </tr>
+                                <tr>
+                                    <td>Touring</td>
+                                    <td>4</td>
+                                    <td>42250</td>
+                                </tr>
+                                <tr>
+                                    <td>Scooter</td>
+                                    <td>3</td>
+                                    <td>22333</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>HAVING — Filtrar Grupos</h3>
+                        <p><code>WHERE</code> filtra filas <strong>antes</strong> de agrupar. <code>HAVING</code> filtra
+                            grupos <strong>después</strong> de agrupar.</p>
+                        <pre><code>-- Solo grupos con más de 2 registros:
+SELECT depto_id, COUNT(*) AS total
+FROM empleado
+GROUP BY depto_id
+HAVING COUNT(*) > 2;</code></pre>
+                        <div class="tip"><strong>Error frecuente:</strong> Usar <code>WHERE COUNT(*) > 2</code> genera
+                            <code>ORA-00934</code>. Las funciones de grupo solo se filtran con <code>HAVING</code>.
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============ JOINS ============ -->
+                <section v-else-if="t === 'joins'" key="joins">
+                    <h2>Joins — Combinación de Tablas</h2>
+                    <p>Permiten relacionar dos o más tablas mediante sus claves primarias (PK) y foráneas (FK).</p>
+
+                    <div class="cmd-box">
+                        <h3>INNER JOIN (JOIN) <span class="note-tag red">Obligatorio para Req. 1, 2, 3, 4</span></h3>
+                        <p>Devuelve solo las filas donde hay coincidencia en <strong>ambas</strong> tablas. Es el join
+                            por defecto y el más utilizado.</p>
+                        <pre><code>SELECT m.placa, m.modelo, tm.nombre_tipo_moto
+FROM motocicleta m
+JOIN tipo_moto tm
+    ON tm.id_tipo_moto = m.id_tipo_moto;</code></pre>
+                        <div class="mini-result">
+                            <div class="mini-result-label">Visualización conceptual:</div>
+                            <table class="mini-table">
+                                <tr>
+                                    <th>Tabla A (motocicleta)</th>
+                                    <th></th>
+                                    <th>Tabla B (tipo_moto)</th>
+                                </tr>
+                                <tr>
+                                    <td>id_tipo_moto = 1</td>
+                                    <td>⟷</td>
+                                    <td>id_tipo_moto = 1, "Deportiva"</td>
+                                </tr>
+                                <tr>
+                                    <td>id_tipo_moto = 2</td>
+                                    <td>⟷</td>
+                                    <td>id_tipo_moto = 2, "Scooter"</td>
+                                </tr>
+                                <tr>
+                                    <td>id_tipo_moto = 9</td>
+                                    <td style="color:#dc2626;">✗</td>
+                                    <td style="color:#6b7280; font-style:italic;">(no existe → se descarta)</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>LEFT JOIN (LEFT OUTER JOIN)</h3>
+                        <p>Devuelve <strong>todas</strong> las filas de la tabla izquierda. Si no hay coincidencia en la
+                            derecha, las columnas de esta última aparecen como <code>NULL</code>.</p>
+                        <pre><code>SELECT m.placa, a.fecha_ini_arriendo
+FROM motocicleta m
+LEFT JOIN arriendo_moto a
+    ON a.placa = m.placa;</code></pre>
+                        <p>Útil para detectar motos sin arriendos (las que aparecen con <code>NULL</code> en la columna
+                            de arriendo).</p>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>Join Múltiple (3+ tablas)</h3>
+                        <p>Se encadenan varios <code>JOIN</code> consecutivamente. Cada <code>ON</code> establece una
+                            relación distinta.</p>
+                        <pre><code>-- Req. 1 usa 3 tablas: motocicleta + tipo_moto + empleado
+SELECT tm.nombre_tipo_moto, m.placa, m.modelo, e.appaterno_emp
+FROM motocicleta m
+JOIN tipo_moto tm  ON tm.id_tipo_moto = m.id_tipo_moto
+JOIN empleado e    ON e.numrun_emp    = m.numrun_emp;</code></pre>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>Errores Comunes con Joins</h3>
+                        <ul>
+                            <li><strong>ORA-00918: column ambiguously defined</strong> — Falta el alias de tabla
+                                (<code>m.placa</code> en vez de solo <code>placa</code>) cuando la columna existe en más
+                                de una tabla.</li>
+                            <li><strong>Producto cartesiano accidental</strong> — Olvidar el <code>ON</code> genera un
+                                cruce de TODAS las filas con TODAS las filas. </li>
+                            <li><strong>Orden de los joins</strong> — El motor optimiza internamente, pero la
+                                legibilidad mejora si empieza por la tabla principal.</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- ============ EXTRA ============ -->
+                <section v-else-if="t === 'extra'" key="extra">
+                    <h2>Conocimientos Adicionales</h2>
+                    <p>Comandos y patrones avanzados que amplían las capacidades expresivas de SQL. No son estrictamente
+                        necesarios para la evaluación, pero fortalecen la formación profesional.</p>
+
+                    <div class="cmd-box">
+                        <h3>CASE WHEN — Lógica Condicional <span class="note-tag purple">Bonus</span></h3>
+                        <p>Crea una columna calculada basada en condiciones lógicas, equivalente a un
+                            <code>IF/ELSE</code> en programación.</p>
+                        <pre><code>SELECT nombre, sueldo,
+    CASE
+        WHEN sueldo &lt; 500000  THEN 'Tramo 1'
+        WHEN sueldo &lt; 1000000 THEN 'Tramo 2'
+        ELSE 'Tramo 3'
+    END AS tramo_sueldo
+FROM empleado;</code></pre>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>Subconsultas en WHERE <span class="note-tag purple">Bonus</span></h3>
+                        <p>Una consulta dentro de otra. La subconsulta se ejecuta primero y su resultado alimenta la
+                            consulta externa.</p>
+                        <pre><code>-- Empleados con sueldo mayor al promedio:
+SELECT nombre, sueldo
+FROM empleado
+WHERE sueldo > (SELECT AVG(sueldo) FROM empleado);</code></pre>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>Funciones Analíticas (Window Functions) <span class="note-tag purple">Bonus</span></h3>
+                        <p>Calculan agregados <strong>sin colapsar</strong> las filas. Cada fila conserva su detalle
+                            individual y obtiene además un valor global o por partición.</p>
+                        <pre><code>SELECT nombre, sueldo, depto_id,
+       AVG(sueldo) OVER (PARTITION BY depto_id) AS prom_depto,
+       RANK()      OVER (ORDER BY sueldo DESC)  AS ranking
+FROM empleado;</code></pre>
+                        <div class="mini-result">
+                            <div class="mini-result-label">Resultado conceptual:</div>
+                            <table class="mini-table">
+                                <tr>
+                                    <th>NOMBRE</th>
+                                    <th>SUELDO</th>
+                                    <th>DEPTO_ID</th>
+                                    <th>PROM_DEPTO</th>
+                                    <th>RANKING</th>
+                                </tr>
+                                <tr>
+                                    <td>Ana</td>
+                                    <td>1200000</td>
+                                    <td>10</td>
+                                    <td>950000</td>
+                                    <td>1</td>
+                                </tr>
+                                <tr>
+                                    <td>Pedro</td>
+                                    <td>700000</td>
+                                    <td>10</td>
+                                    <td>950000</td>
+                                    <td>2</td>
+                                </tr>
+                                <tr>
+                                    <td>Luis</td>
+                                    <td>650000</td>
+                                    <td>20</td>
+                                    <td>625000</td>
+                                    <td>3</td>
+                                </tr>
+                                <tr>
+                                    <td>Sofía</td>
+                                    <td>600000</td>
+                                    <td>20</td>
+                                    <td>625000</td>
+                                    <td>4</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <p>Observe que <code>PROM_DEPTO</code> se repite para cada empleado del mismo departamento sin
+                            necesidad de <code>GROUP BY</code>.</p>
+                    </div>
+
+                    <div class="cmd-box">
+                        <h3>DUAL — Tabla de Prueba de Oracle</h3>
+                        <p><code>DUAL</code> es una tabla especial de Oracle con una sola fila y una sola columna. Se
+                            usa para evaluar expresiones sin necesitar una tabla real.</p>
+                        <pre><code>SELECT SYSDATE FROM DUAL;
+SELECT 2 + 2 FROM DUAL;
+SELECT SUBSTR('123456', 3, 1) FROM DUAL;  -- Resultado: '3'</code></pre>
+                    </div>
+                </section>
+
+            </transition>
+        </main>
+    </div>
+
+    <script>
+        const { createApp, ref } = Vue;
+
+        createApp({
+            setup() {
+                const t = ref('select');
+                return { t };
+            }
+        }).mount('#app');
+    </script>
+</body>
+
+</html>
