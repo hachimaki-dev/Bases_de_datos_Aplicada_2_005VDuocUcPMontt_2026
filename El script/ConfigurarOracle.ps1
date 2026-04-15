@@ -1,14 +1,14 @@
 # ============================================================================
-#  Oracle Interactive Toolbox v5.0
+#  ELESKRIP 0.1
 #  Autor: https://github.com/hachimaki-dev
 #  Duoc UC - Puerto Montt | Base de Datos Aplicada II
 # ============================================================================
 
 # --- Encoding y ventana ---
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$Host.UI.RawUI.WindowTitle = "Oracle Interactive Toolbox v5.0 | Duoc UC Puerto Montt"
+$Host.UI.RawUI.WindowTitle = "ELESKRIP 0.1| Duoc UC Puerto Montt"
 
-# --- Configuración global ---
+# --- Configuracion global ---
 $script:dbPass        = "123456"
 $script:containerName = "oracle23c"
 $script:version       = "v5.0"
@@ -47,46 +47,46 @@ function Show-Banner {
 function Show-PanelTitle {
     param([string]$Title)
     Write-Host ""
-    Write-Host " ▶ $Title " -ForegroundColor Cyan
+    Write-Host " > $Title " -ForegroundColor Cyan
     Write-Host "--------------------------------------------------------------------------------" -ForegroundColor DarkGray
 }
 
 function Show-SubPanel {
     param([string]$Title)
     Write-Host ""
-    Write-Host "   ℹ $Title" -ForegroundColor Cyan
+    Write-Host "   [i] $Title" -ForegroundColor Cyan
 }
 
 function Show-Info {
     param([string]$Message)
-    Write-Host "   ℹ $Message" -ForegroundColor Blue
+    Write-Host "   [i] $Message" -ForegroundColor Blue
 }
 
 function Show-Success {
     param([string]$Message)
-    Write-Host "   ✔ $Message" -ForegroundColor Green
+    Write-Host "   [OK] $Message" -ForegroundColor Green
 }
 
 function Show-Warn {
     param([string]$Message)
-    Write-Host "   ⚠ $Message" -ForegroundColor Yellow
+    Write-Host "   [!] $Message" -ForegroundColor Yellow
 }
 
 function Show-Error {
     param([string]$Message)
-    Write-Host "   ✖ $Message" -ForegroundColor Red
+    Write-Host "   [X] $Message" -ForegroundColor Red
 }
 
 function Show-Spinner {
     param(
         [string]$Message,
-        [int]$DurationMs = 0 # Eliminamos el sleep artificial, el parámetro no se usa operativamente.
+        [int]$DurationMs = 0 # Eliminamos el sleep artificial, el parametro no se usa operativamente.
     )
-    Write-Host "   ⠋ $Message..." -ForegroundColor Cyan
+    Write-Host "   [*] $Message..." -ForegroundColor Cyan
 }
 
 function Show-Timer {
-    # Solo dejamos esto vacío si se usaba en otros lados y no queremos fallos de sintaxis
+    # Solo dejamos esto vacio si se usaba en otros lados y no queremos fallos de sintaxis
 }
 
 function Pause-Lab {
@@ -104,10 +104,10 @@ function Log-Session {
 function Show-SecurityWarning {
     Write-Host ""
     Show-Warn "RECORDATORIO IMPORTANTE DE SEGURIDAD"
-    Write-Host "   El script usa la contraseña '" -NoNewline -ForegroundColor Gray
+    Write-Host "   El script usa la contrasena '" -NoNewline -ForegroundColor Gray
     Write-Host $script:dbPass -NoNewline -ForegroundColor White
     Write-Host "' por defecto." -ForegroundColor Gray
-    Write-Host "   Si tu entorno tiene una diferente, la conexión fallará." -ForegroundColor Gray
+    Write-Host "   Si tu entorno tiene una diferente, la conexion fallara." -ForegroundColor Gray
     Write-Host "   Edita este script para cambiarla si es necesario." -ForegroundColor Gray
     Write-Host ""
 }
@@ -707,7 +707,7 @@ function AccesoRapido-Prueba {
 
     Show-PanelTitle "ACCESO RAPIDO A LA PRUEBA"
     Write-Host ""
-    Write-Host " ▶ MOTO RENT CHILE LTDA. - Evaluación Parcial N.1" -ForegroundColor Cyan
+    Write-Host " > MOTO RENT CHILE LTDA. - Evaluacion Parcial N.1" -ForegroundColor Cyan
     Write-Host ""
 
     # --- Verificar que el archivo .sql existe ---
@@ -1026,7 +1026,7 @@ do {
             Write-Host ""
             Show-Info "Acciones realizadas: $($script:sessionLog.Count)"
             Write-Host ""
-            Show-Success "Sesión cerrada. Hasta la próxima."
+            Show-Success "Sesion cerrada. Hasta la proxima."
         }
         default {
             Show-Error "Opcion invalida."
