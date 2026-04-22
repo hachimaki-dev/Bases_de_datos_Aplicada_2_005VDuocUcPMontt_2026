@@ -20,99 +20,124 @@
             <p class="text-2xl text-gray-700 font-semibold tracking-wide">Apuntes, talleres y aventuras en SQL</p>
         </header>
 
-        <main class="grid grid-cols-1 md:grid-cols-2 gap-10">
-            <!-- V-FOR EN LAS ENTRADAS DE DATA.JS -->
-            <template v-for="entry in entries" :key="entry.id">
-                
-                <!-- Tarjeta Standard -->
-                <a v-if="entry.type === 'standard'" :href="entry.href" :class="['block group', entry.colSpan === 2 ? 'md:col-span-2' : 'md:col-span-1']">
-                    <article :class="['bg-white rounded-[2rem] p-8 shadow-lg border-2 h-full flex flex-col relative overflow-hidden card-hover', entry.theme.border]">
-                        <div :class="['absolute -right-10 -top-10 w-32 h-32 rounded-full z-0 transition-transform group-hover:scale-150 duration-500', entry.theme.circle]"></div>
-                        <div class="relative z-10 flex flex-col h-full">
-                            <div :class="['rounded-2xl p-4 mb-6 flex justify-between items-center border shadow-sm', entry.theme.tagBox]">
-                                <span class="font-bold text-lg"><i :class="['fa-solid mr-2', entry.tagIcon]"></i> {{ entry.tag }}</span>
-                                <span :class="['text-sm bg-white px-4 py-1.5 rounded-full font-bold shadow-sm border', entry.theme.badgeTheme]">{{ entry.badge }}</span>
-                            </div>
-                            <div class="text-slate-400 font-bold mb-2 text-sm uppercase tracking-wider"><i class="fa-regular fa-calendar-days mr-1"></i> {{ entry.dateText }}</div>
-                            <h2 :class="['text-3xl font-bold mb-4 leading-tight', entry.theme.title]">{{ entry.title }}</h2>
-                            <p class="text-gray-700 font-medium mb-8 leading-relaxed text-lg flex-grow" v-html="entry.description"></p>
-                            <div :class="['inline-flex items-center text-white font-bold transition-colors px-6 py-3 rounded-full shadow-md text-lg w-max', entry.theme.btn]">
-                                {{ entry.btnText }} <i :class="['fa-solid ml-3 mt-0.5', entry.btnIcon]"></i>
-                            </div>
-                        </div>
-                    </article>
-                </a>
+        <main>
+            <!-- Unidad EA2 (Activa) -->
+            <section class="mb-16">
+                <h2 class="text-4xl font-extrabold text-orange-500 mb-8 drop-shadow-sm flex items-center">
+                    <i class="fa-solid fa-rocket mr-4 text-3xl bg-orange-100 p-3 rounded-2xl"></i> Unidad EA2: Modificación de Datos
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <entry-card v-for="entry in ea2Entries" :key="entry.id" :entry="entry"></entry-card>
+                </div>
+            </section>
 
-                <!-- Tarjeta Hero (Actividad Intermedia) -->
-                <a v-else-if="entry.type === 'hero'" :href="entry.href" :class="['block group', entry.colSpan === 2 ? 'md:col-span-2' : 'md:col-span-1']">
-                    <article :class="['rounded-[2rem] p-8 shadow-xl border-4 card-hover relative overflow-hidden', entry.theme.bg, entry.theme.border, entry.theme.title]">
-                        <div :class="['absolute -right-10 -top-10 w-48 h-48 rounded-full z-0 transition-transform group-hover:scale-150 duration-500', entry.theme.circle1]"></div>
-                        <div :class="['absolute -left-10 -bottom-10 w-32 h-32 rounded-full z-0 transition-transform group-hover:scale-150 duration-500', entry.theme.circle2]"></div>
-                        
-                        <div class="relative z-10 flex flex-col md:flex-row items-center gap-8">
-                            <div :class="['p-6 rounded-full flex-shrink-0 backdrop-blur-sm border', entry.iconContainer || 'bg-white/20 border-white/30']">
-                                <i :class="['fa-solid text-6xl', entry.icon, entry.iconColor, entry.theme.iconShadow]"></i>
-                            </div>
-                            <div class="flex-grow text-center md:text-left">
-                                <div :class="['inline-block rounded-full px-4 py-1.5 mb-4 text-sm font-bold tracking-wider uppercase border backdrop-blur-sm', entry.theme.tagBox, entry.theme.tagText]">
-                                    <i :class="['fa-solid mr-2', entry.tagIcon]"></i> {{ entry.tag }}
-                                </div>
-                                <div class="text-indigo-200 font-bold mb-2 text-sm uppercase tracking-wider"><i class="fa-regular fa-calendar-days mr-1"></i> {{ entry.dateText }}</div>
-                                <h2 :class="['text-3xl md:text-4xl font-extrabold mb-3 drop-shadow-md', entry.theme.title]" v-html="entry.title"></h2>
-                                <p :class="['font-medium text-lg mb-6 max-w-2xl', entry.theme.desc]" v-html="entry.description"></p>
-                                <div :class="['inline-flex items-center font-bold transition-colors px-8 py-3 rounded-full shadow-lg text-lg', entry.theme.btn]">
-                                    {{ entry.btnText }} <i :class="['fa-solid ml-3', entry.btnIcon]"></i>
-                                </div>
-                            </div>
+            <!-- Unidad EA1 (Acordeón de Clases Anteriores) -->
+            <section class="mt-20">
+                <details class="group bg-white rounded-3xl shadow-md border-2 border-slate-200 overflow-hidden [&_summary::-webkit-details-marker]:hidden">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-8 text-2xl text-slate-700 hover:bg-slate-50 transition-colors">
+                        <span class="flex items-center"><i class="fa-solid fa-box-archive mr-4 text-slate-400 bg-slate-100 p-3 rounded-2xl"></i> Unidad EA1: Consultas de Selección y JOIN</span>
+                        <span class="transition group-open:rotate-180 bg-slate-100 p-3 rounded-full flex items-center justify-center w-12 h-12">
+                            <i class="fa-solid fa-chevron-down text-slate-500"></i>
+                        </span>
+                    </summary>
+                    <div class="p-8 md:p-10 bg-slate-50/50 border-t-2 border-slate-100">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                            <entry-card v-for="entry in ea1Entries" :key="entry.id" :entry="entry"></entry-card>
                         </div>
-                    </article>
-                </a>
-
-                <!-- Tarjeta Special (Laboratorio) -->
-                <a v-else-if="entry.type === 'special'" :href="entry.href" :class="['block group border-4 border-dashed rounded-[2.5rem] p-2 hover:border-solid transition-all shadow-xl hover:-translate-y-2', entry.colSpan === 2 ? 'md:col-span-2' : 'md:col-span-1', entry.theme.outerBorder, entry.theme.outerBg]">
-                    <article :class="['rounded-[2rem] p-8 h-full flex flex-col relative overflow-hidden', entry.theme.innerBg]">
-                        <div :class="['absolute right-0 top-0 w-24 h-24 rounded-bl-full z-0 transition-transform group-hover:scale-125 duration-300', entry.theme.circle]"></div>
-                        <div class="relative z-10 flex flex-col h-full">
-                            <div :class="['rounded-2xl p-4 mb-6 flex justify-between items-center border shadow-sm', entry.theme.tagBox]">
-                                <span class="font-bold text-lg"><i :class="['fa-solid mr-2', entry.tagIcon]"></i> {{ entry.tag }}</span>
-                                <span :class="['px-4 py-1.5 rounded-full font-bold border', entry.theme.badgeTheme]">{{ entry.badge }}</span>
-                            </div>
-                            <div class="text-slate-400 font-bold mb-2 text-sm uppercase tracking-wider"><i class="fa-regular fa-calendar-days mr-1"></i> {{ entry.dateText }}</div>
-                            <h2 :class="['text-3xl font-extrabold mb-4 leading-tight', entry.theme.title]" v-html="entry.title"></h2>
-                            <p class="text-gray-700 font-medium mb-8 leading-relaxed text-lg flex-grow" v-html="entry.description"></p>
-                            <div :class="['inline-flex items-center text-white font-bold transition-colors px-6 py-3 rounded-full shadow-md text-lg', entry.theme.btn]">
-                                {{ entry.btnText }} <i :class="['fa-solid ml-3 mt-0.5', entry.btnIcon]"></i>
-                            </div>
-                        </div>
-                    </article>
-                </a>
-
-                <!-- Tarjeta Horizontal (Git Basics) -->
-                <a v-else-if="entry.type === 'horizontal'" :href="entry.href" :class="['block group card-hover text-white', entry.colSpan === 2 ? 'md:col-span-2' : 'md:col-span-1']">
-                    <article :class="['rounded-[2rem] p-8 shadow-lg border-2 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden', entry.theme.mainBg, entry.theme.border]">
-                        <div :class="['absolute -right-10 -top-10 w-48 h-48 rounded-full z-0 transition-transform group-hover:scale-150 duration-500', entry.theme.circle]"></div>
-                        <div :class="['relative z-10 p-4 rounded-2xl border flex-shrink-0', entry.theme.iconBox]">
-                            <i :class="['fa-brands text-6xl', entry.icon, entry.iconColor]"></i>
-                        </div>
-                        <div class="relative z-10 flex-grow text-center md:text-left">
-                            <div class="mb-2 flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                                <span :class="['text-sm px-3 py-1 rounded-md font-bold border uppercase tracking-wider w-max', entry.tagTheme]">{{ entry.tag }}</span>
-                                <span class="text-slate-400 font-bold text-sm uppercase tracking-wider"><i class="fa-regular fa-calendar-days mr-1"></i> {{ entry.dateText }}</span>
-                            </div>
-                            <h2 :class="['text-3xl font-bold mb-3 leading-tight', entry.theme.title]" v-html="entry.title"></h2>
-                            <p :class="['font-medium mb-6 leading-relaxed text-lg lg:pr-20', entry.theme.desc]" v-html="entry.description"></p>
-                        </div>
-                        <div class="relative z-10 flex-shrink-0 w-full md:w-auto text-center">
-                            <div :class="['inline-flex items-center font-bold px-8 py-3 rounded-full shadow-md text-lg transition-colors', entry.theme.btn]">
-                                {{ entry.btnText }} <i :class="['fa-solid ml-3 mt-0.5', entry.btnIcon]"></i>
-                            </div>
-                        </div>
-                    </article>
-                </a>
-
-            </template>
+                    </div>
+                </details>
+            </section>
         </main>
     </div>
+
+    <!-- Template para la Tarjeta de Entrada -->
+    <template id="entry-card-template">
+        <!-- Tarjeta Standard -->
+        <a v-if="entry.type === 'standard'" :href="entry.href" :class="['block group', entry.colSpan === 2 ? 'md:col-span-2' : 'md:col-span-1']">
+            <article :class="['bg-white rounded-[2rem] p-8 shadow-lg border-2 h-full flex flex-col relative overflow-hidden card-hover', entry.theme.border]">
+                <div :class="['absolute -right-10 -top-10 w-32 h-32 rounded-full z-0 transition-transform group-hover:scale-150 duration-500', entry.theme.circle]"></div>
+                <div class="relative z-10 flex flex-col h-full">
+                    <div :class="['rounded-2xl p-4 mb-6 flex justify-between items-center border shadow-sm', entry.theme.tagBox]">
+                        <span class="font-bold text-lg"><i :class="['fa-solid mr-2', entry.tagIcon]"></i> {{ entry.tag }}</span>
+                        <span :class="['text-sm bg-white px-4 py-1.5 rounded-full font-bold shadow-sm border', entry.theme.badgeTheme]">{{ entry.badge }}</span>
+                    </div>
+                    <div class="text-slate-400 font-bold mb-2 text-sm uppercase tracking-wider"><i class="fa-regular fa-calendar-days mr-1"></i> {{ entry.dateText }}</div>
+                    <h2 :class="['text-3xl font-bold mb-4 leading-tight', entry.theme.title]">{{ entry.title }}</h2>
+                    <p class="text-gray-700 font-medium mb-8 leading-relaxed text-lg flex-grow" v-html="entry.description"></p>
+                    <div :class="['inline-flex items-center text-white font-bold transition-colors px-6 py-3 rounded-full shadow-md text-lg w-max', entry.theme.btn]">
+                        {{ entry.btnText }} <i :class="['fa-solid ml-3 mt-0.5', entry.btnIcon]"></i>
+                    </div>
+                </div>
+            </article>
+        </a>
+
+        <!-- Tarjeta Hero (Actividad Intermedia) -->
+        <a v-else-if="entry.type === 'hero'" :href="entry.href" :class="['block group', entry.colSpan === 2 ? 'md:col-span-2' : 'md:col-span-1']">
+            <article :class="['rounded-[2rem] p-8 shadow-xl border-4 card-hover relative overflow-hidden', entry.theme.bg, entry.theme.border, entry.theme.title]">
+                <div :class="['absolute -right-10 -top-10 w-48 h-48 rounded-full z-0 transition-transform group-hover:scale-150 duration-500', entry.theme.circle1]"></div>
+                <div :class="['absolute -left-10 -bottom-10 w-32 h-32 rounded-full z-0 transition-transform group-hover:scale-150 duration-500', entry.theme.circle2]"></div>
+                
+                <div class="relative z-10 flex flex-col md:flex-row items-center gap-8">
+                    <div :class="['p-6 rounded-full flex-shrink-0 backdrop-blur-sm border', entry.iconContainer || 'bg-white/20 border-white/30']">
+                        <i :class="['fa-solid text-6xl', entry.icon, entry.iconColor, entry.theme.iconShadow]"></i>
+                    </div>
+                    <div class="flex-grow text-center md:text-left">
+                        <div :class="['inline-block rounded-full px-4 py-1.5 mb-4 text-sm font-bold tracking-wider uppercase border backdrop-blur-sm', entry.theme.tagBox, entry.theme.tagText]">
+                            <i :class="['fa-solid mr-2', entry.tagIcon]"></i> {{ entry.tag }}
+                        </div>
+                        <div class="text-indigo-200 font-bold mb-2 text-sm uppercase tracking-wider"><i class="fa-regular fa-calendar-days mr-1"></i> {{ entry.dateText }}</div>
+                        <h2 :class="['text-3xl md:text-4xl font-extrabold mb-3 drop-shadow-md', entry.theme.title]" v-html="entry.title"></h2>
+                        <p :class="['font-medium text-lg mb-6 max-w-2xl', entry.theme.desc]" v-html="entry.description"></p>
+                        <div :class="['inline-flex items-center font-bold transition-colors px-8 py-3 rounded-full shadow-lg text-lg', entry.theme.btn]">
+                            {{ entry.btnText }} <i :class="['fa-solid ml-3', entry.btnIcon]"></i>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </a>
+
+        <!-- Tarjeta Special (Laboratorio) -->
+        <a v-else-if="entry.type === 'special'" :href="entry.href" :class="['block group border-4 border-dashed rounded-[2.5rem] p-2 hover:border-solid transition-all shadow-xl hover:-translate-y-2', entry.colSpan === 2 ? 'md:col-span-2' : 'md:col-span-1', entry.theme.outerBorder, entry.theme.outerBg]">
+            <article :class="['rounded-[2rem] p-8 h-full flex flex-col relative overflow-hidden', entry.theme.innerBg]">
+                <div :class="['absolute right-0 top-0 w-24 h-24 rounded-bl-full z-0 transition-transform group-hover:scale-125 duration-300', entry.theme.circle]"></div>
+                <div class="relative z-10 flex flex-col h-full">
+                    <div :class="['rounded-2xl p-4 mb-6 flex justify-between items-center border shadow-sm', entry.theme.tagBox]">
+                        <span class="font-bold text-lg"><i :class="['fa-solid mr-2', entry.tagIcon]"></i> {{ entry.tag }}</span>
+                        <span :class="['px-4 py-1.5 rounded-full font-bold border', entry.theme.badgeTheme]">{{ entry.badge }}</span>
+                    </div>
+                    <div class="text-slate-400 font-bold mb-2 text-sm uppercase tracking-wider"><i class="fa-regular fa-calendar-days mr-1"></i> {{ entry.dateText }}</div>
+                    <h2 :class="['text-3xl font-extrabold mb-4 leading-tight', entry.theme.title]" v-html="entry.title"></h2>
+                    <p class="text-gray-700 font-medium mb-8 leading-relaxed text-lg flex-grow" v-html="entry.description"></p>
+                    <div :class="['inline-flex items-center text-white font-bold transition-colors px-6 py-3 rounded-full shadow-md text-lg', entry.theme.btn]">
+                        {{ entry.btnText }} <i :class="['fa-solid ml-3 mt-0.5', entry.btnIcon]"></i>
+                    </div>
+                </div>
+            </article>
+        </a>
+
+        <!-- Tarjeta Horizontal (Git Basics) -->
+        <a v-else-if="entry.type === 'horizontal'" :href="entry.href" :class="['block group card-hover text-white', entry.colSpan === 2 ? 'md:col-span-2' : 'md:col-span-1']">
+            <article :class="['rounded-[2rem] p-8 shadow-lg border-2 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden', entry.theme.mainBg, entry.theme.border]">
+                <div :class="['absolute -right-10 -top-10 w-48 h-48 rounded-full z-0 transition-transform group-hover:scale-150 duration-500', entry.theme.circle]"></div>
+                <div :class="['relative z-10 p-4 rounded-2xl border flex-shrink-0', entry.theme.iconBox]">
+                    <i :class="['fa-brands text-6xl', entry.icon, entry.iconColor]"></i>
+                </div>
+                <div class="relative z-10 flex-grow text-center md:text-left">
+                    <div class="mb-2 flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                        <span :class="['text-sm px-3 py-1 rounded-md font-bold border uppercase tracking-wider w-max', entry.tagTheme]">{{ entry.tag }}</span>
+                        <span class="text-slate-400 font-bold text-sm uppercase tracking-wider"><i class="fa-regular fa-calendar-days mr-1"></i> {{ entry.dateText }}</span>
+                    </div>
+                    <h2 :class="['text-3xl font-bold mb-3 leading-tight', entry.theme.title]" v-html="entry.title"></h2>
+                    <p :class="['font-medium mb-6 leading-relaxed text-lg lg:pr-20', entry.theme.desc]" v-html="entry.description"></p>
+                </div>
+                <div class="relative z-10 flex-shrink-0 w-full md:w-auto text-center">
+                    <div :class="['inline-flex items-center font-bold px-8 py-3 rounded-full shadow-md text-lg transition-colors', entry.theme.btn]">
+                        {{ entry.btnText }} <i :class="['fa-solid ml-3 mt-0.5', entry.btnIcon]"></i>
+                    </div>
+                </div>
+            </article>
+        </a>
+    </template>
 
     <!-- Componente Pie de página Centralizado -->
     <app-footer></app-footer>
@@ -121,16 +146,27 @@
     <script src="js/components.js"></script>
     <script>
         const { createApp } = Vue;
+
+        const EntryCard = {
+            props: ['entry'],
+            template: '#entry-card-template'
+        };
+
         createApp({
+            components: {
+                'entry-card': EntryCard
+            },
             data() {
                 return {
                     rawEntries: appData.entries
                 }
             },
             computed: {
-                entries() {
-                    // Crea una copia del arreglo y lo ordena por fecha de más reciente a más antigua
-                    return this.rawEntries.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+                ea1Entries() {
+                    return this.rawEntries.filter(e => e.unit !== 'EA2').sort((a, b) => new Date(b.date) - new Date(a.date));
+                },
+                ea2Entries() {
+                    return this.rawEntries.filter(e => e.unit === 'EA2').sort((a, b) => new Date(b.date) - new Date(a.date));
                 }
             }
         }).mount('#app');

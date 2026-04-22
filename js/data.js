@@ -235,6 +235,28 @@ const appData = {
                 iconShadow: 'drop-shadow-[0_0_15px_rgba(168,85,247,0.6)]'
             },
             icon: 'fa-user-astronaut', iconContainer: 'bg-purple-900/40 border-purple-500/30', iconColor: 'text-purple-400'
+        },
+        {
+            id: 'clase-ea2-1',
+            unit: 'EA2',
+            type: 'hero',
+            href: 'clase-ea2-1.html',
+            colSpan: 2,
+            date: '2026-04-22',
+            dateText: '22 Abr 2026',
+            tag: 'NUEVA UNIDAD', tagIcon: 'fa-rocket text-orange-300',
+            badge: 'Clase 1',
+            title: 'Introducción al RA2:<br>Manipulación Básica de Datos',
+            description: 'Comprende cómo modificar la información de una base de datos sin romperla. Aprende sobre INSERT, UPDATE, DELETE, transacciones y los errores más comunes de integridad.',
+            btnText: 'Iniciar Unidad 2', btnIcon: 'fa-play',
+            theme: {
+                outerBorder: 'border-orange-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-orange-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-orange-500/20', circle2: 'bg-red-500/20',
+                tagBox: 'bg-orange-900/50 text-orange-200 border-orange-700 backdrop-blur-sm', tagText: 'text-orange-200', badgeTheme: 'bg-orange-600 text-white border-orange-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-orange-100', btn: 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 w-full justify-center text-white shadow-lg border border-orange-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(249,115,22,0.6)]'
+            },
+            icon: 'fa-database', iconContainer: 'bg-orange-900/40 border-orange-500/30', iconColor: 'text-orange-400'
         }
     ]
 };

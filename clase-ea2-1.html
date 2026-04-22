@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 1 - Diario de Clases EA2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <style>
+        .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .feedback-box { transition: all 0.3s ease; overflow: hidden; max-height: 0; opacity: 0; }
+        .feedback-box.show { max-height: 300px; opacity: 1; margin-top: 1rem; padding: 1rem; }
+        .paired-btn.selected { border-color: #3b82f6; background-color: #eff6ff; transform: scale(1.02); }
+        .paired-btn.matched { border-color: #22c55e; background-color: #f0fdf4; opacity: 0.8; pointer-events: none; }
+        .paired-btn.wrong { animation: shake 0.4s; border-color: #ef4444; background-color: #fef2f2; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        
+        /* Tooltips personalizados */
+        .tooltip-trigger { position: relative; cursor: help; border-bottom: 2px dotted #94a3b8; transition: all 0.2s; }
+        .tooltip-trigger:hover { color: #f97316; border-color: #f97316; }
+        .tooltip-trigger .tooltip-content {
+            visibility: hidden; background-color: #1e293b; color: #f8fafc; text-align: center;
+            border-radius: 8px; padding: 0.75rem 1rem; position: absolute; z-index: 50;
+            bottom: 130%; left: 50%; transform: translateX(-50%) translateY(10px); opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: max-content; max-width: 280px; 
+            font-size: 0.875rem; font-weight: 500; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); line-height: 1.5; pointer-events: none;
+        }
+        .tooltip-trigger .tooltip-content::after {
+            content: ""; position: absolute; top: 100%; left: 50%;
+            margin-left: -6px; border-width: 6px; border-style: solid;
+            border-color: #1e293b transparent transparent transparent;
+        }
+        .tooltip-trigger:hover .tooltip-content { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen bg-gray-50 text-gray-800 pb-20">
+    <app-nav></app-nav>
+
+    <header class="max-w-5xl mx-auto px-6 text-center mb-10 pt-10">
+        <div class="inline-block bg-orange-100 px-6 py-2.5 rounded-full text-orange-700 font-bold text-base mb-6 border-2 border-orange-200 shadow-sm">
+            Unidad EA2 - Clase 1
+        </div>
+        <h1 class="text-5xl md:text-6xl font-bold text-orange-600 mb-6 drop-shadow-sm leading-tight">Introducción al RA2:<br>Manipulación de Datos (DML)</h1>
+        <p class="text-xl md:text-2xl text-gray-700 bg-white inline-flex items-center gap-3 px-8 py-4 rounded-full shadow-md border-2 border-orange-100 mt-4 font-bold mx-auto justify-center">
+            Fundamentos de inserción, actualización y eliminación
+        </p>
+    </header>
+
+    <!-- Navegación de Pestañas (Tabs) -->
+    <nav class="max-w-6xl mx-auto px-4 mb-8">
+        <ul class="flex flex-wrap justify-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-200">
+            <li><button data-tab="lectura" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-orange-700 bg-orange-100 shadow-sm"><i class="fa-solid fa-book-open mr-2"></i>Lectura</button></li>
+            <li><button data-tab="seleccion" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-list-check mr-2"></i>Selección</button></li>
+            <li><button data-tab="vf" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-check-double mr-2"></i>V o F</button></li>
+            <li><button data-tab="pareados" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-people-arrows mr-2"></i>Pareados</button></li>
+            <li><button data-tab="completar" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-keyboard mr-2"></i>Completar</button></li>
+            <li><button data-tab="interpretar" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-magnifying-glass mr-2"></i>Interpretar</button></li>
+            <li><button data-tab="practico" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-laptop-code mr-2"></i>Caso Práctico</button></li>
+        </ul>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-6">
+        
+        <!-- ================= PESTAÑA 1: LECTURA PRINCIPAL ================= -->
+        <div id="tab-lectura" class="tab-content active">
+            <!-- Sección 1: Transacciones y DML -->
+            <section class="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm mb-10">
+                <h2 class="text-3xl font-bold text-slate-700 border-b-2 border-slate-200 pb-4 mb-6">
+                    <i class="fa-solid fa-server text-slate-500 bg-slate-100 p-3 rounded-2xl"></i> Transacciones y Arquitectura UNDO
+                </h2>
+                <div class="space-y-6">
+                    <p class="text-xl leading-relaxed font-medium text-gray-700">
+                        El <span class="tooltip-trigger font-bold text-slate-800">DML (Lenguaje de Manipulación de Datos)<span class="tooltip-content">Subconjunto de SQL orientado exclusivamente a interactuar con los datos contenidos dentro de las estructuras (tablas), no con las estructuras en sí.</span></span> agrupa los comandos <code>INSERT</code>, <code>UPDATE</code> y <code>DELETE</code>. A diferencia de las sentencias <span class="tooltip-trigger font-bold text-slate-800">DDL<span class="tooltip-content">Data Definition Language (CREATE, DROP, ALTER, TRUNCATE). Estos comandos alteran la estructura física de la base de datos y no tienen vuelta atrás (Auto-Commit).</span></span> que se aplican con efecto inmediato e irreversible, las instrucciones DML en Oracle son <span class="tooltip-trigger font-bold text-slate-800">transaccionales<span class="tooltip-content">Significa que los cambios se agrupan temporalmente. Tienes la oportunidad de revisarlos y decidir si los guardas (COMMIT) o te arrepientes y deshaces todo (ROLLBACK).</span></span>.
+                    </p>
+                    <p class="text-lg leading-relaxed text-gray-700">
+                        El motor de base de datos Oracle es famoso por su manejo de concurrencia. Cuando ejecutas un comando DML, Oracle <strong>no sobrescribe los datos en el disco duro de inmediato</strong>. En su lugar, copia la "foto anterior" de esos datos a una zona de memoria maestra llamada <span class="tooltip-trigger font-bold text-slate-800">Segmento UNDO<span class="tooltip-content">Memoria circular especial de Oracle que guarda el estado "antes" de la modificación. Es el "Ctrl+Z" de la base de datos y la garantía para otros usuarios.</span></span>. Esto permite dos maravillas técnicas:
+                    </p>
+                    <ul class="list-disc pl-8 space-y-3 text-lg text-gray-700 font-medium bg-slate-50 p-6 rounded-xl border border-slate-200">
+                        <li><strong><span class="tooltip-trigger text-indigo-700">Consistencia de lectura:<span class="tooltip-content">Garantiza que un usuario jamás lea datos "a medias" o inconsistentes mientras otro usuario los está modificando.</span></span></strong> Mientras tú modificas salarios sin confirmar (COMMIT), el resto de las <span class="tooltip-trigger font-bold text-indigo-700">sesiones<span class="tooltip-content">Conexión individual de un cliente/usuario a la base de datos. Cada sesión trabaja en su propio "espacio de memoria transaccional".</span></span> seguirán viendo los salarios antiguos leyendo directamente desde tu Segmento UNDO. Nadie se bloquea y la integridad de la información es perfecta.</li>
+                        <li><strong>Reversibilidad:</strong> Si te equivocas actualizando datos, ejecutas <code>ROLLBACK</code> para que el motor deshaga todo. Si el trabajo es perfecto, ordenas un <code>COMMIT</code>, momento en el cual el cambio es oficial y visible para el mundo entero.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Sección 2: INSERT -->
+            <section class="bg-white p-8 rounded-3xl border border-emerald-100 shadow-sm mb-10">
+                <h2 class="text-3xl font-bold text-emerald-600 border-b-2 border-emerald-200 pb-4 mb-6">
+                    <i class="fa-solid fa-plus text-emerald-500 bg-emerald-100 p-3 rounded-2xl"></i> Inserción de Datos (INSERT)
+                </h2>
+                <div class="space-y-6">
+                    <p class="text-gray-700 font-medium text-lg leading-relaxed">
+                        Existen dos formas principales de insertar datos. La forma <strong>explícita</strong> (que es la <span class="tooltip-trigger text-emerald-700 font-bold">práctica profesional estándar<span class="tooltip-content">Todo código de producción serio usa INSERT explícito para evitar caídas del sistema si un Administrador añade una columna a la tabla en el futuro.</span></span>) declara exactamente qué columnas vas a poblar en los paréntesis, haciendo tu código a prueba de alteraciones. La forma <strong>implícita</strong> es más rápida de escribir pero sumamente frágil: asume que entregarás un valor para <em>cada una</em> de las columnas, obligatoriamente en el orden exacto en que fueron creadas originalmente en la tabla.
+                    </p>
+                    <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-inner">
+                        <pre><code class="language-sql">-- 1. Inserción explícita (Segura, clara y recomendada)
+-- Si el DBA añade mañana una columna "email", este código seguirá funcionando.
+INSERT INTO empleados (id_empleado, nombre, salario, fecha) 
+VALUES (1001, 'Carlos Silva', 850000, SYSDATE);
+
+-- 2. Inserción implícita (Peligrosa)
+-- Si la tabla cambia estructuralmente, este código se romperá instantáneamente con error.
+INSERT INTO empleados 
+VALUES (1002, 'Marta Gómez', 950000, SYSDATE);</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección 3: UPDATE -->
+            <section class="bg-white p-8 rounded-3xl border border-blue-100 shadow-sm mb-10">
+                <h2 class="text-3xl font-bold text-blue-600 border-b-2 border-blue-200 pb-4 mb-6">
+                    <i class="fa-solid fa-pen-to-square text-blue-500 bg-blue-100 p-3 rounded-2xl"></i> Actualización de Datos (UPDATE)
+                </h2>
+                <div class="space-y-6">
+                    <p class="text-gray-700 font-medium text-lg leading-relaxed">
+                        La sentencia <code>UPDATE</code> modifica datos en filas <em>que ya existen</em>. Puedes actualizar una o múltiples columnas separándolas por comas en la cláusula <code>SET</code>. Aquí entra la regla de oro: <strong class="text-red-600 bg-red-50 px-2 rounded">El mayor terror de un programador es olvidar la cláusula WHERE</strong>. Un <code>UPDATE</code> sin filtro no da error de sintaxis, simplemente actualiza <strong>toda la tabla completa</strong> en un instante.
+                    </p>
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl shadow-sm">
+                        <p class="text-sm text-blue-900 font-medium">
+                            <i class="fa-solid fa-lock mr-2 text-blue-600"></i> <strong>Detalle Técnico Avanzado (Locking):</strong> Cuando haces un UPDATE sobre una fila, Oracle aplica un <span class="tooltip-trigger font-bold text-blue-800">Bloqueo de Fila (Row Lock)<span class="tooltip-content">Mecanismo de protección. Nadie más podrá hacer UPDATE ni DELETE sobre esa fila exacta hasta que tú decidas hacer COMMIT o ROLLBACK. Las lecturas sí están permitidas (Segmento UNDO).</span></span>. Nadie más podrá modificar ese mismo registro hasta que tú termines tu transacción.
+                        </p>
+                    </div>
+                    <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-inner">
+                        <pre><code class="language-sql">-- Actualización múltiple con condición compuesta
+-- Si olvidáramos el WHERE, todos los empleados del país pasarían a Senior con sueldo millonario.
+UPDATE empleados 
+SET salario = 1200000, 
+    cargo = 'Senior'
+WHERE id_departamento = 20 AND meses_antiguedad > 36;</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección 4: DELETE vs TRUNCATE -->
+            <section class="bg-white p-8 rounded-3xl border border-purple-100 shadow-sm mb-10">
+                <h2 class="text-3xl font-bold text-purple-600 border-b-2 border-purple-200 pb-4 mb-6">
+                    <i class="fa-solid fa-trash-can text-purple-500 bg-purple-100 p-3 rounded-2xl"></i> Eliminación de Datos: DELETE vs TRUNCATE
+                </h2>
+                <p class="text-gray-700 font-medium text-lg leading-relaxed mb-6">
+                    Aunque ambos tienen el efecto de "borrar" registros, funcionan con lógicas de motor totalmente opuestas. Es crucial conocer cuándo usar cuál en un entorno profesional de Bases de Datos.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-purple-50 p-6 rounded-2xl border border-purple-100 shadow-sm relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-purple-200 text-purple-800 text-xs font-bold px-3 py-1 rounded-bl-lg">Quirúrgico y Controlado</div>
+                        <h3 class="font-bold text-purple-800 text-2xl mb-4"><i class="fa-solid fa-eraser mr-2"></i>DELETE (DML)</h3>
+                        <ul class="list-disc pl-5 space-y-3 text-purple-900 text-sm font-medium">
+                            <li>Ejecución <strong>fila por fila</strong>. Por cada fila borrada, Oracle escribe en el Segmento UNDO para permitir el <span class="tooltip-trigger font-bold text-purple-800">ROLLBACK<span class="tooltip-content">Como es DML transaccional, si borras 1 millón de registros y te arrepientes, puedes recuperar todo (aunque gastará muchos recursos de servidor al hacerlo).</span></span>.</li>
+                            <li>Permite el uso de cláusula <code>WHERE</code> para filtrado selectivo.</li>
+                            <li>Dispara <span class="tooltip-trigger font-bold text-purple-800">Triggers<span class="tooltip-content">Disparadores: Pequeños programas PL/SQL (ej: auditorías) que se ejecutan automáticamente en la BD cuando ocurre un evento como un DELETE o UPDATE.</span></span> de base de datos asociados a la tabla.</li>
+                            <li><strong>No libera</strong> el espacio físico (megabytes) del disco de forma inmediata, solo "marca" el espacio como reutilizable.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-orange-50 p-6 rounded-2xl border border-orange-100 shadow-sm relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-orange-200 text-orange-800 text-xs font-bold px-3 py-1 rounded-bl-lg">Masivo y Estructural</div>
+                        <h3 class="font-bold text-orange-800 text-2xl mb-4"><i class="fa-solid fa-bomb mr-2"></i>TRUNCATE (DDL)</h3>
+                        <ul class="list-disc pl-5 space-y-3 text-orange-900 text-sm font-medium">
+                            <li>Es una modificación estructural ultra veloz. Simplemente "corta" el contenido sin leer fila por fila. Tiene <strong>COMMIT automático</strong> e irreversible.</li>
+                            <li><strong>No evalúa filtros</strong> (vacía absolutamente toda la tabla, no admite la cláusula WHERE bajo ningún motivo).</li>
+                            <li><span class="tooltip-trigger font-bold text-orange-800">Libera el espacio<span class="tooltip-content">En el disco duro, la marca de agua superior (High Water Mark) de la tabla se resetea a 0. La tabla queda vacía y achicando inmediatamente su tamaño en megabytes.</span></span> físico instantáneamente en el disco duro.</li>
+                            <li>No dispara triggers (los ignora por completo).</li>
+                        </ul>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección 5: Script de Preparación -->
+            <section class="bg-slate-800 p-8 rounded-3xl shadow-md mb-10">
+                <h2 class="text-2xl font-bold text-white mb-4">
+                    <i class="fa-solid fa-code text-emerald-400 mr-2"></i> Entorno de Pruebas
+                </h2>
+                <p class="text-gray-300 mb-6 text-sm">
+                    Si deseas replicar los ejemplos mostrados en esta lectura en tu propio motor Oracle o en <a href="https://livesql.oracle.com" target="_blank" class="text-emerald-400 hover:underline">Live SQL</a>, primero ejecuta este script para crear las tablas necesarias:
+                </p>
+                <div class="bg-slate-900 rounded-2xl overflow-hidden border border-slate-700">
+                    <div class="bg-slate-950 px-4 py-2 flex justify-between items-center border-b border-slate-800">
+                        <span class="text-gray-400 text-xs font-mono">setup_ejemplos.sql</span>
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('scriptLectura').innerText); this.innerHTML='<i class=\'fa-solid fa-check mr-1\'></i> Copiado!'; this.classList.add('text-emerald-400'); setTimeout(() => { this.innerHTML='<i class=\'fa-regular fa-copy mr-1\'></i> Copiar'; this.classList.remove('text-emerald-400'); }, 2000);" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-2 py-1 rounded text-xs"><i class="fa-regular fa-copy mr-1"></i> Copiar</button>
+                    </div>
+                    <pre class="m-0 p-4"><code id="scriptLectura" class="language-sql text-sm">CREATE TABLE departamentos (
+    id_departamento NUMBER PRIMARY KEY,
+    nombre VARCHAR2(50) NOT NULL
+);
+
+CREATE TABLE empleados (
+    id_empleado NUMBER PRIMARY KEY,
+    nombre VARCHAR2(100) NOT NULL,
+    salario NUMBER(8,2),
+    cargo VARCHAR2(50),
+    fecha DATE,
+    meses_antiguedad NUMBER,
+    id_departamento NUMBER,
+    CONSTRAINT fk_emp_depto FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento)
+);
+
+INSERT INTO departamentos VALUES (10, 'Sistemas');
+INSERT INTO departamentos VALUES (20, 'Ventas');
+COMMIT;</code></pre>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= PESTAÑA 2: SELECCIÓN MÚLTIPLE ================= -->
+        <div id="tab-seleccion" class="tab-content">
+            <h2 class="text-3xl font-bold text-center mb-8 text-gray-800"><i class="fa-solid fa-list-check text-indigo-500 mr-2"></i> Selección Múltiple</h2>
+            <p class="text-center text-gray-600 mb-8 font-medium">Selecciona la respuesta correcta para cada caso. Recibirás feedback inmediato.</p>
+
+            <div class="space-y-8" id="mcq-container">
+                <!-- Generadas por JS para mantener el HTML limpio, pero las haré aquí para SEO y semántica -->
+                
+                <!-- Q1 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm question-block" data-q="1">
+                    <h3 class="font-bold text-xl mb-4">1. Constraint NOT NULL omitido</h3>
+                    <p class="mb-4">Si tienes una tabla <code>productos</code> con un <code>nombre VARCHAR2(100) NOT NULL</code>, y haces: <code class="bg-gray-100 px-2 py-1 rounded">INSERT INTO productos (id_producto) VALUES (50);</code> ¿Qué ocurre?</p>
+                    <div class="grid grid-cols-1 gap-3 options">
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="wrong" data-msg="Al no incluirse la columna en la instrucción, Oracle no ignora la regla; intenta poner NULL y falla.">A) Se inserta con el nombre en blanco.</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="correct" data-msg="¡Correcto! Al omitir la columna explícitamente, Oracle intenta asignar NULL. Como es NOT NULL, salta el error ORA-01400.">B) Ocurre un error porque la columna asume NULL y viola la restricción.</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="wrong" data-msg="Oracle no asume ningún string de texto predeterminado a menos que tenga un DEFAULT configurado explícitamente.">C) Se inserta asumiendo el string 'N/A'.</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm question-block" data-q="2">
+                    <h3 class="font-bold text-xl mb-4">2. Arquitectura UNDO</h3>
+                    <p class="mb-4">Ejecutas un <code>UPDATE</code> afectando a 1000 filas pero <strong>NO</strong> has hecho <code>COMMIT</code>. Un compañero consulta la misma tabla desde su computador. ¿Qué datos ve?</p>
+                    <div class="grid grid-cols-1 gap-3 options">
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="correct" data-msg="¡Excelente! Gracias al Segmento UNDO, hay consistencia de lectura. Los demás ven la versión original hasta que confirmes la transacción.">A) Ve los datos originales sin los cambios.</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="wrong" data-msg="Oracle bloquea las filas para edición, pero permite que otros LEAN los datos originales gracias al UNDO.">B) La tabla está bloqueada, recibe un error de espera.</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="wrong" data-msg="Los cambios en memoria solo son visibles para tu propia sesión hasta que hagas COMMIT.">C) Ve los datos actualizados porque están en caché.</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm question-block" data-q="3">
+                    <h3 class="font-bold text-xl mb-4">3. Eliminación e Integridad Referencial</h3>
+                    <p class="mb-4">Intentas usar <code>DELETE</code> sobre un registro Padre (ej. un Departamento) que tiene registros Hijos (ej. Empleados) asignados mediante Foreign Key.</p>
+                    <div class="grid grid-cols-1 gap-3 options">
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="wrong" data-msg="No lo hace por defecto para proteger la integridad. Solo lo haría si la FK se creó con ON DELETE CASCADE.">A) Oracle elimina automáticamente en cascada a los empleados.</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="wrong" data-msg="Oracle no altera datos hijos (como poner nulls) a menos que uses ON DELETE SET NULL explícitamente.">B) Se borra el departamento y los empleados quedan con departamento NULL.</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="correct" data-msg="¡Así es! Oracle arroja el error ORA-02292 (child record found) protegiendo la base de datos de registros huérfanos.">C) Se bloquea la eliminación arrojando error de integridad referencial.</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm question-block" data-q="4">
+                    <h3 class="font-bold text-xl mb-4">4. Rendimiento de borrado</h3>
+                    <p class="mb-4">Para vaciar completamente una tabla gigante para un proceso mensual, ¿Qué comando es estructuralmente más eficiente y rápido?</p>
+                    <div class="grid grid-cols-1 gap-3 options">
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="wrong" data-msg="DELETE lee fila por fila, copia a UNDO y dispara triggers. Es el más lento.">A) DELETE FROM tabla;</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="correct" data-msg="¡Perfecto! TRUNCATE es un comando DDL que simplemente mueve los punteros de disco, vaciando la tabla en milisegundos.">B) TRUNCATE TABLE tabla;</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="wrong" data-msg="DROP elimina la tabla completa (la estructura). No vacía los datos preservando la tabla, la destruye por completo.">C) DROP TABLE tabla;</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+
+                <!-- Q5 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm question-block" data-q="5">
+                    <h3 class="font-bold text-xl mb-4">5. Inserción Implícita</h3>
+                    <p class="mb-4">Haces un INSERT implícito asumiendo 3 columnas. Mañana el DBA agrega una 4ta columna a la tabla. ¿Qué pasará con tu viejo código INSERT?</p>
+                    <div class="grid grid-cols-1 gap-3 options">
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="correct" data-msg="¡Exacto! El INSERT implícito exige enviar un valor por CADA columna que exista físicamente en la tabla. Por esto siempre usa INSERT explícito.">A) Dará error de 'not enough values' (faltan valores) porque ahora la tabla exige 4 parámetros.</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="wrong" data-msg="No, Oracle no asume automáticamente que quieres ignorar las nuevas columnas en un INSERT implícito.">B) Funcionará normal y le pondrá NULL a la 4ta columna.</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="wrong" data-msg="Oracle evaluará los valores en el momento de la ejecución, no guarda memoria de cómo era la tabla en el pasado.">C) Funcionará porque Oracle recuerda cuántas columnas había cuando escribiste el código.</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 3: VERDADERO Y FALSO ================= -->
+        <div id="tab-vf" class="tab-content">
+            <h2 class="text-3xl font-bold text-center mb-8 text-gray-800"><i class="fa-solid fa-check-double text-teal-500 mr-2"></i> Verdadero o Falso</h2>
+            <p class="text-center text-gray-600 mb-8 font-medium">Analiza la afirmación y determina si es verdadera o falsa.</p>
+
+            <div class="space-y-6">
+                <!-- V/F 1 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm vf-block">
+                    <p class="text-lg font-medium mb-4">1. La instrucción <code>TRUNCATE</code> permite utilizar la cláusula <code>WHERE</code> para vaciar solo la mitad de los registros.</p>
+                    <div class="flex gap-4">
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="wrong" data-msg="Falso: TRUNCATE es estructural, no evalúa fila por fila. No admite filtrado con WHERE.">Verdadero</button>
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="correct" data-msg="¡Correcto! TRUNCATE no admite WHERE; si lo usas, da error de sintaxis. Borra todo o nada.">Falso</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+
+                <!-- V/F 2 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm vf-block">
+                    <p class="text-lg font-medium mb-4">2. Si ejecutas <code>UPDATE clientes SET deuda = 0;</code> sin la cláusula WHERE, todos los clientes de la tabla quedarán con deuda 0.</p>
+                    <div class="flex gap-4">
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="correct" data-msg="¡Correcto! Olvidar el WHERE en un UPDATE (o DELETE) afectará a la totalidad de la tabla. ¡Mucho cuidado!">Verdadero</button>
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="wrong" data-msg="Falso. Oracle ejecutará la orden literalmente sobre TODAS las filas si no hay un filtro que lo restrinja.">Falso</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+
+                <!-- V/F 3 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm vf-block">
+                    <p class="text-lg font-medium mb-4">3. Las instrucciones DML (INSERT, UPDATE, DELETE) requieren un <code>COMMIT</code> posterior para que los cambios sean permanentes.</p>
+                    <div class="flex gap-4">
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="correct" data-msg="¡Exactamente! Son transaccionales. Si cierras la sesión abruptamente sin COMMIT, todo se deshace (ROLLBACK automático).">Verdadero</button>
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="wrong" data-msg="Falso. A diferencia de las DDL, las DML sí requieren confirmación transaccional.">Falso</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+
+                <!-- V/F 4 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm vf-block">
+                    <p class="text-lg font-medium mb-4">4. Un <code>INSERT</code> no puede poblar más de una tabla al mismo tiempo con la sintaxis básica estándar (INSERT INTO tabla VALUES...).</p>
+                    <div class="flex gap-4">
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="correct" data-msg="¡Correcto! El INSERT básico afecta a 1 sola tabla. (Existen técnicas avanzadas como INSERT ALL, pero el estándar es 1x1).">Verdadero</button>
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="wrong" data-msg="Falso. La instrucción INSERT INTO va dirigida a un objeto único por ejecución.">Falso</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+
+                <!-- V/F 5 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm vf-block">
+                    <p class="text-lg font-medium mb-4">5. Si ejecuto <code>TRUNCATE</code> por accidente, puedo recuperarlo rápidamente usando el comando <code>ROLLBACK</code>.</p>
+                    <div class="flex gap-4">
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="wrong" data-msg="Peligro: TRUNCATE es un comando DDL que realiza COMMIT implícito. Los datos se evaporan sin vuelta atrás por ROLLBACK.">Verdadero</button>
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="correct" data-msg="¡Correcto! Una vez truncado, es irreversible transaccionalmente. No genera segmento UNDO.">Falso</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 4: TÉRMINOS PAREADOS ================= -->
+        <div id="tab-pareados" class="tab-content">
+            <h2 class="text-3xl font-bold text-center mb-8 text-gray-800"><i class="fa-solid fa-people-arrows text-rose-500 mr-2"></i> Términos Pareados</h2>
+            <p class="text-center text-gray-600 mb-8 font-medium">Selecciona un concepto de la izquierda y luego su definición a la derecha. Si son correctos, se enlazarán en verde.</p>
+            
+            <div class="flex flex-col md:flex-row gap-8 relative" id="pairing-container">
+                <!-- Columna Izquierda (Conceptos) -->
+                <div class="flex-1 space-y-4" id="col-terms">
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-bold paired-btn text-gray-700 hover:border-blue-300" data-type="term" data-pair="1">DML (Lenguaje Manipulación)</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-bold paired-btn text-gray-700 hover:border-blue-300" data-type="term" data-pair="2">COMMIT</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-bold paired-btn text-gray-700 hover:border-blue-300" data-type="term" data-pair="3">ROLLBACK</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-bold paired-btn text-gray-700 hover:border-blue-300" data-type="term" data-pair="4">TRUNCATE</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-bold paired-btn text-gray-700 hover:border-blue-300" data-type="term" data-pair="5">Segmento UNDO</button>
+                </div>
+
+                <!-- Columna Derecha (Definiciones, desordenadas) -->
+                <div class="flex-1 space-y-4" id="col-defs">
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-medium paired-btn text-gray-700 hover:border-blue-300" data-type="def" data-pair="4">Vacía todos los registros de una tabla al instante liberando espacio en disco. No admite filtros.</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-medium paired-btn text-gray-700 hover:border-blue-300" data-type="def" data-pair="1">Conjunto de comandos que agrupa a INSERT, UPDATE y DELETE.</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-medium paired-btn text-gray-700 hover:border-blue-300" data-type="def" data-pair="5">Área de memoria que guarda temporalmente una copia de los datos antes de ser modificados.</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-medium paired-btn text-gray-700 hover:border-blue-300" data-type="def" data-pair="3">Deshace todas las operaciones de la transacción actual devolviendo la BD a su estado anterior.</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-medium paired-btn text-gray-700 hover:border-blue-300" data-type="def" data-pair="2">Hace permanentes y definitivos los cambios en la BD, cerrando la transacción.</button>
+                </div>
+            </div>
+            <!-- Feedback general para pareados -->
+            <div id="pareados-feedback" class="text-center font-bold text-xl mt-8 text-emerald-600 hidden">
+                ¡Excelente! Has emparejado correctamente todos los conceptos de DML.
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 5: COMPLETAR CÓDIGO ================= -->
+        <div id="tab-completar" class="tab-content">
+            <h2 class="text-3xl font-bold text-center mb-8 text-gray-800"><i class="fa-solid fa-keyboard text-yellow-500 mr-2"></i> Completar el Código</h2>
+            <p class="text-center text-gray-600 mb-8 font-medium">Escribe la palabra clave o símbolo que falta en el recuadro para completar la instrucción.</p>
+
+            <div class="space-y-6">
+                <!-- Completar 1 -->
+                <div class="bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-700 relative comp-block">
+                    <p class="text-gray-300 text-sm mb-3">1. Actualizar a riesgo Alto si NO tienen teléfono registrado.</p>
+                    <div class="font-mono text-emerald-400 text-lg leading-loose">
+                        UPDATE empleados <br>
+                        SET nivel_riesgo = 'Alto' <br>
+                        WHERE telefono 
+                        <select class="text-center bg-gray-800 border border-gray-500 rounded px-2 text-white outline-none focus:border-yellow-400" data-ans="IS NULL">
+                            <option value="">--Seleccione--</option>
+                            <option value="= NULL">= NULL</option>
+                            <option value="IS NULL">IS NULL</option>
+                            <option value="== NULL">== NULL</option>
+                            <option value="IN NULL">IN NULL</option>
+                        </select> ;
+                    </div>
+                    <button class="absolute top-6 right-6 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-bold px-4 py-2 rounded shadow btn-validar">Validar</button>
+                    <div class="feedback-box mt-4 rounded-lg p-3 text-sm font-bold text-white"></div>
+                </div>
+
+                <!-- Completar 2 -->
+                <div class="bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-700 relative comp-block">
+                    <p class="text-gray-300 text-sm mb-3">2. Inserción Explícita de solo 2 parámetros en la tabla cargos.</p>
+                    <div class="font-mono text-emerald-400 text-lg leading-loose">
+                        INSERT INTO cargos (
+                        <select class="text-center bg-gray-800 border border-gray-500 rounded px-2 text-white outline-none focus:border-yellow-400" data-ans="id_cargo, nombre">
+                            <option value="">--Seleccione--</option>
+                            <option value="id_cargo, nombre">id_cargo, nombre</option>
+                            <option value="cargo_id, nom">cargo_id, nom</option>
+                            <option value="1, 'Gerente'">1, 'Gerente'</option>
+                            <option value="id_cargo AND nombre">id_cargo AND nombre</option>
+                        </select>) <br>
+                        VALUES (1, 'Gerente');
+                    </div>
+                    <button class="absolute top-6 right-6 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-bold px-4 py-2 rounded shadow btn-validar">Validar</button>
+                    <div class="feedback-box mt-4 rounded-lg p-3 text-sm font-bold text-white"></div>
+                </div>
+
+                <!-- Completar 3 -->
+                <div class="bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-700 relative comp-block">
+                    <p class="text-gray-300 text-sm mb-3">3. Borrar el empleado con ID 10. (Atento a la palabra reservada que falta antes de la tabla).</p>
+                    <div class="font-mono text-emerald-400 text-lg leading-loose">
+                        DELETE 
+                        <select class="text-center bg-gray-800 border border-gray-500 rounded px-2 text-white outline-none focus:border-yellow-400" data-ans="FROM">
+                            <option value="">--Seleccione--</option>
+                            <option value="IN">IN</option>
+                            <option value="TABLE">TABLE</option>
+                            <option value="FROM">FROM</option>
+                            <option value="*">*</option>
+                        </select> empleados <br>
+                        WHERE id = 10;
+                    </div>
+                    <button class="absolute top-6 right-6 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-bold px-4 py-2 rounded shadow btn-validar">Validar</button>
+                    <div class="feedback-box mt-4 rounded-lg p-3 text-sm font-bold text-white"></div>
+                </div>
+
+                <!-- Completar 4 -->
+                <div class="bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-700 relative comp-block">
+                    <p class="text-gray-300 text-sm mb-3">4. Si tu actualización es correcta, debes confirmar la transacción en la BD.</p>
+                    <div class="font-mono text-emerald-400 text-lg leading-loose">
+                        <select class="text-center bg-gray-800 border border-gray-500 rounded px-2 text-white outline-none focus:border-yellow-400" data-ans="COMMIT">
+                            <option value="">--Seleccione--</option>
+                            <option value="SAVE">SAVE</option>
+                            <option value="COMMIT">COMMIT</option>
+                            <option value="END">END</option>
+                            <option value="ROLLBACK">ROLLBACK</option>
+                        </select> ;
+                    </div>
+                    <button class="absolute top-6 right-6 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-bold px-4 py-2 rounded shadow btn-validar">Validar</button>
+                    <div class="feedback-box mt-4 rounded-lg p-3 text-sm font-bold text-white"></div>
+                </div>
+
+                <!-- Completar 5 -->
+                <div class="bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-700 relative comp-block">
+                    <p class="text-gray-300 text-sm mb-3">5. Update múltiple: Separador para modificar más de una columna a la vez.</p>
+                    <div class="font-mono text-emerald-400 text-lg leading-loose">
+                        UPDATE clientes <br>
+                        SET estado = 'A' 
+                        <select class="text-center bg-gray-800 border border-gray-500 rounded px-2 text-white outline-none focus:border-yellow-400" data-ans=",">
+                            <option value="">--Seleccione--</option>
+                            <option value="AND">AND</option>
+                            <option value=",">,</option>
+                            <option value="&&">&&</option>
+                            <option value=";">;</option>
+                        </select> saldo = 0 <br>
+                        WHERE meses_mora > 6;
+                    </div>
+                    <button class="absolute top-6 right-6 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-bold px-4 py-2 rounded shadow btn-validar">Validar</button>
+                    <div class="feedback-box mt-4 rounded-lg p-3 text-sm font-bold text-white"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 6: INTERPRETAR CONSULTAS ================= -->
+        <div id="tab-interpretar" class="tab-content">
+            <h2 class="text-3xl font-bold text-center mb-8 text-gray-800"><i class="fa-solid fa-magnifying-glass text-cyan-500 mr-2"></i> Interpretar Consultas</h2>
+            <p class="text-center text-gray-600 mb-8 font-medium">Lee el escenario inicial, observa el código SQL y determina qué sucederá lógicamente.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Interpret 1 -->
+                <div class="bg-white p-6 rounded-2xl border-2 border-gray-100 hover:border-cyan-200 transition-colors interpret-block">
+                    <div class="bg-slate-100 p-3 rounded text-sm text-slate-700 mb-3 font-mono">Tabla: Empleados (Todos en depto 10)</div>
+                    <code class="block bg-gray-800 text-emerald-300 p-3 rounded mb-4 text-sm font-mono">DELETE FROM empleados WHERE depto = 20;</code>
+                    <p class="font-bold mb-3">¿Cuántas filas se borran?</p>
+                    <div class="flex gap-2">
+                        <button class="flex-1 bg-gray-100 hover:bg-cyan-50 border border-gray-200 p-2 rounded text-sm font-bold inter-btn" data-ans="correct" data-msg="Correcto. La instrucción se ejecuta con éxito, pero al no cumplir el WHERE nadie, reporta '0 filas eliminadas'.">0</button>
+                        <button class="flex-1 bg-gray-100 hover:bg-cyan-50 border border-gray-200 p-2 rounded text-sm font-bold inter-btn" data-ans="wrong" data-msg="Falso. No hay nadie en el departamento 20.">Todas</button>
+                        <button class="flex-1 bg-gray-100 hover:bg-cyan-50 border border-gray-200 p-2 rounded text-sm font-bold inter-btn" data-ans="wrong" data-msg="No da error, es completamente válido pedir que se borren registros que no existen. Solo resulta en 0.">Da Error</button>
+                    </div>
+                    <div class="feedback-box rounded-lg mt-3 text-xs font-bold text-white"></div>
+                </div>
+
+                <!-- Interpret 2 -->
+                <div class="bg-white p-6 rounded-2xl border-2 border-gray-100 hover:border-cyan-200 transition-colors interpret-block">
+                    <div class="bg-slate-100 p-3 rounded text-sm text-slate-700 mb-3 font-mono">Producto 'Mesa' con precio = 100</div>
+                    <code class="block bg-gray-800 text-emerald-300 p-3 rounded mb-4 text-sm font-mono">UPDATE productos SET precio = precio + 10 WHERE nom = 'Mesa';</code>
+                    <p class="font-bold mb-3">¿Cuál será el precio final?</p>
+                    <div class="flex gap-2">
+                        <button class="flex-1 bg-gray-100 hover:bg-cyan-50 border border-gray-200 p-2 rounded text-sm font-bold inter-btn" data-ans="wrong" data-msg="Incorrecto. La orden suma el precio actual + 10.">10</button>
+                        <button class="flex-1 bg-gray-100 hover:bg-cyan-50 border border-gray-200 p-2 rounded text-sm font-bold inter-btn" data-ans="wrong" data-msg="Incorrecto. Eso sería si dijera precio = 10010 (concatenación).">10010</button>
+                        <button class="flex-1 bg-gray-100 hover:bg-cyan-50 border border-gray-200 p-2 rounded text-sm font-bold inter-btn" data-ans="correct" data-msg="¡Correcto! En SQL puedes auto-referenciar columnas numéricas para cálculos relativos.">110</button>
+                    </div>
+                    <div class="feedback-box rounded-lg mt-3 text-xs font-bold text-white"></div>
+                </div>
+
+                <!-- Interpret 3 -->
+                <div class="bg-white p-6 rounded-2xl border-2 border-gray-100 hover:border-cyan-200 transition-colors interpret-block">
+                    <div class="bg-slate-100 p-3 rounded text-sm text-slate-700 mb-3 font-mono">id_depto es PRIMARY KEY</div>
+                    <code class="block bg-gray-800 text-emerald-300 p-3 rounded mb-4 text-sm font-mono">INSERT INTO depto VALUES (10, 'TI');<br>INSERT INTO depto VALUES (10, 'RRHH');</code>
+                    <p class="font-bold mb-3">¿Qué sucede al ejecutar ambos?</p>
+                    <div class="flex flex-col gap-2">
+                        <button class="w-full text-left bg-gray-100 hover:bg-cyan-50 border border-gray-200 p-2 rounded text-sm font-bold inter-btn" data-ans="wrong" data-msg="Falso. Un UPDATE actualizaría, pero un INSERT crea nuevas filas.">El segundo actualiza TI por RRHH.</button>
+                        <button class="w-full text-left bg-gray-100 hover:bg-cyan-50 border border-gray-200 p-2 rounded text-sm font-bold inter-btn" data-ans="correct" data-msg="¡Excelente! El segundo INSERT rompe la unicidad y lanza 'ORA-00001: unique constraint violated'.">El segundo falla por violar la Llave Primaria.</button>
+                    </div>
+                    <div class="feedback-box rounded-lg mt-3 text-xs font-bold text-white"></div>
+                </div>
+
+                <!-- Interpret 4 -->
+                <div class="bg-white p-6 rounded-2xl border-2 border-gray-100 hover:border-cyan-200 transition-colors interpret-block">
+                    <div class="bg-slate-100 p-3 rounded text-sm text-slate-700 mb-3 font-mono">Tabla ventas tiene 500 registros</div>
+                    <code class="block bg-gray-800 text-emerald-300 p-3 rounded mb-4 text-sm font-mono">TRUNCATE TABLE ventas;<br>ROLLBACK;</code>
+                    <p class="font-bold mb-3">¿Cuántos registros quedan en ventas tras el ROLLBACK?</p>
+                    <div class="flex gap-2">
+                        <button class="flex-1 bg-gray-100 hover:bg-cyan-50 border border-gray-200 p-2 rounded text-sm font-bold inter-btn" data-ans="wrong" data-msg="Falso. El ROLLBACK no funciona contra comandos DDL.">500</button>
+                        <button class="flex-1 bg-gray-100 hover:bg-cyan-50 border border-gray-200 p-2 rounded text-sm font-bold inter-btn" data-ans="correct" data-msg="¡Correcto! TRUNCATE es un DDL que hace commit auto. El ROLLBACK posterior no hace absolutamente nada.">0</button>
+                    </div>
+                    <div class="feedback-box rounded-lg mt-3 text-xs font-bold text-white"></div>
+                </div>
+            </div>
+            
+            <!-- Interpret 5 (Ancho completo) -->
+            <div class="bg-white p-6 rounded-2xl border-2 border-gray-100 hover:border-cyan-200 transition-colors interpret-block mt-6">
+                <div class="bg-slate-100 p-3 rounded text-sm text-slate-700 mb-3 font-mono">El cliente con ID 999 NO existe en la BD.</div>
+                <code class="block bg-gray-800 text-emerald-300 p-3 rounded mb-4 text-sm font-mono">UPDATE clientes SET status = 'VIP' WHERE id = 999;</code>
+                <p class="font-bold mb-3">¿Qué mensaje entrega el motor Oracle al correr este script?</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <button class="bg-gray-100 hover:bg-cyan-50 border border-gray-200 p-3 rounded text-sm font-bold inter-btn" data-ans="wrong" data-msg="Incorrecto. Oracle no arroja error si el WHERE no encuentra nada.">Error: Table or view does not exist</button>
+                    <button class="bg-gray-100 hover:bg-cyan-50 border border-gray-200 p-3 rounded text-sm font-bold inter-btn" data-ans="correct" data-msg="¡Correcto! Es una ejecución exitosa de la orden, pero como no encontró la fila, su efecto es 0.">0 filas actualizadas</button>
+                    <button class="bg-gray-100 hover:bg-cyan-50 border border-gray-200 p-3 rounded text-sm font-bold inter-btn" data-ans="wrong" data-msg="No, Oracle no crea un registro mágicamente en un UPDATE, para eso sirve la instrucción MERGE.">Crea un nuevo registro VIP id 999</button>
+                </div>
+                <div class="feedback-box rounded-lg mt-3 text-sm font-bold text-white"></div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 7: CASO PRÁCTICO ================= -->
+        <div id="tab-practico" class="tab-content">
+            <h2 class="text-3xl font-bold text-slate-800 text-center mb-6"><i class="fa-solid fa-laptop-code text-slate-600 mr-2"></i> Taller Práctico Transversal</h2>
+            <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-6 mb-8 max-w-4xl mx-auto text-center">
+                <p class="text-gray-800 text-lg font-medium mb-3">
+                    Desarrolla el siguiente caso práctico en tu propio motor Oracle o en <a href="https://livesql.oracle.com" target="_blank" class="text-indigo-600 font-bold underline">Live SQL</a>.
+                </p>
+                <div class="inline-block bg-white border border-indigo-100 p-4 rounded-xl text-left shadow-sm mt-2">
+                    <p class="font-bold text-indigo-800 mb-2"><i class="fa-solid fa-upload mr-2"></i>Instrucciones de Entrega:</p>
+                    <ul class="list-disc pl-5 text-gray-700 text-sm space-y-1">
+                        <li>Guarda tu código en un archivo con formato <code>.sql</code>.</li>
+                        <li>El archivo debe contener como comentario inicial tu <strong>Nombre y Apellido</strong>.</li>
+                        <li>Sube el archivo final a la plataforma AVA en la sección: <br>
+                        <strong class="bg-indigo-100 text-indigo-800 px-2 py-1 rounded inline-block mt-2">EA2 / Entrega taller N1</strong></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Script Preparación -->
+            <div class="bg-slate-800 rounded-2xl overflow-hidden mb-8 shadow-md">
+                <div class="bg-slate-900 px-6 py-3 flex justify-between items-center border-b border-slate-700">
+                    <span class="text-gray-300 font-bold text-sm">1. Ejecuta este script para preparar tu BD:</span>
+                    <button id="btnCopy" class="text-slate-300 hover:text-white transition-colors bg-slate-700 px-3 py-1 rounded text-xs"><i class="fa-regular fa-copy mr-1"></i> Copiar Script</button>
+                </div>
+                <pre class="m-0 p-6"><code id="scriptDB" class="language-sql text-sm">-- Script Inicial de Preparación
+CREATE TABLE departamentos (
+    id_depto NUMBER PRIMARY KEY,
+    nombre_depto VARCHAR2(50) NOT NULL
+);
+
+CREATE TABLE empleados (
+    id_emp NUMBER PRIMARY KEY,
+    nombre VARCHAR2(100) NOT NULL,
+    salario NUMBER(8,2) DEFAULT 500000,
+    bono NUMBER(8,2),
+    id_depto NUMBER,
+    CONSTRAINT fk_emp_depto FOREIGN KEY (id_depto) REFERENCES departamentos(id_depto)
+);
+
+INSERT INTO departamentos VALUES (10, 'Sistemas');
+INSERT INTO departamentos VALUES (20, 'Ventas');
+COMMIT;</code></pre>
+            </div>
+
+            <!-- Tareas -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative pt-10">
+                    <span class="absolute top-0 left-0 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-br-lg rounded-tl-xl">PASO 1</span>
+                    <h4 class="font-bold text-lg mb-2 text-slate-800">Poblamiento DML</h4>
+                    <p class="text-sm text-gray-600">Realiza al menos 3 <code>INSERT</code> en la tabla empleados. Escribe una sentencia de forma <em>Explícita</em> y otra de forma <em>Implícita</em>.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative pt-10">
+                    <span class="absolute top-0 left-0 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-br-lg rounded-tl-xl">PASO 2</span>
+                    <h4 class="font-bold text-lg mb-2 text-slate-800">Actualización Compleja</h4>
+                    <p class="text-sm text-gray-600">Usa <code>UPDATE</code> para asignarle un bono de 50000 a los empleados del depto 10, e incrementarles su salario base en un 10% simultáneamente en la misma instrucción.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative pt-10">
+                    <span class="absolute top-0 left-0 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-br-lg rounded-tl-xl">PASO 3</span>
+                    <h4 class="font-bold text-lg mb-2 text-slate-800">Validación de Integridad</h4>
+                    <p class="text-sm text-gray-600">Intenta hacer <code>DELETE</code> del departamento 10. Documenta con un comentario (--) el código de error exacto de Oracle que bloquea la acción para proteger las FK.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <app-footer></app-footer>
+
+    <script src="js/components.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    
+    <!-- Lógica de Interactividad y Pestañas -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- 1. TABS SYSTEM ---
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Reset all
+                    tabBtns.forEach(b => {
+                        b.classList.remove('text-orange-700', 'bg-orange-100', 'shadow-sm');
+                        b.classList.add('text-gray-500', 'hover:bg-gray-100');
+                    });
+                    tabContents.forEach(c => c.classList.remove('active'));
+
+                    // Activate clicked
+                    btn.classList.remove('text-gray-500', 'hover:bg-gray-100');
+                    btn.classList.add('text-orange-700', 'bg-orange-100', 'shadow-sm');
+                    const targetTab = btn.getAttribute('data-tab');
+                    document.getElementById('tab-' + targetTab).classList.add('active');
+                });
+            });
+
+            // --- 2. HELPERS FOR VISUAL FEEDBACK ---
+            function showFeedback(boxElement, isCorrect, message) {
+                boxElement.className = 'feedback-box rounded-xl font-medium text-white show';
+                if(isCorrect) {
+                    boxElement.classList.add('bg-emerald-500');
+                    boxElement.innerHTML = `<i class="fa-solid fa-circle-check mr-2"></i> ${message}`;
+                } else {
+                    boxElement.classList.add('bg-red-500');
+                    boxElement.innerHTML = `<i class="fa-solid fa-circle-xmark mr-2"></i> ${message}`;
+                }
+            }
+
+            // --- 3. SELECCIÓN MÚLTIPLE & INTERPRETAR CONSULTAS ---
+            const optionsBtns = document.querySelectorAll('.options button, .inter-btn');
+            optionsBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const parentBox = this.closest('.question-block, .interpret-block');
+                    const isCorrect = this.getAttribute('data-ans') === 'correct';
+                    const msg = this.getAttribute('data-msg');
+                    const feedback = parentBox.querySelector('.feedback-box');
+                    
+                    // Reset sibling buttons
+                    const siblings = parentBox.querySelectorAll('button');
+                    siblings.forEach(sib => {
+                        sib.classList.remove('bg-red-50', 'border-red-400', 'bg-emerald-50', 'border-emerald-400', 'ring-2');
+                    });
+
+                    // Styling clicked button
+                    if(isCorrect) {
+                        this.classList.add('bg-emerald-50', 'border-emerald-400', 'ring-2', 'ring-emerald-200');
+                    } else {
+                        this.classList.add('bg-red-50', 'border-red-400');
+                        // Optional shake animation
+                        this.style.animation = "shake 0.4s";
+                        setTimeout(() => this.style.animation = "", 400);
+                    }
+
+                    showFeedback(feedback, isCorrect, msg);
+                });
+            });
+
+            // --- 4. VERDADERO Y FALSO ---
+            const vfBtns = document.querySelectorAll('.vf-btn');
+            vfBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const parentBox = this.closest('.vf-block');
+                    const isCorrect = this.getAttribute('data-ans') === 'correct';
+                    const msg = this.getAttribute('data-msg');
+                    const feedback = parentBox.querySelector('.feedback-box');
+                    
+                    const siblings = parentBox.querySelectorAll('.vf-btn');
+                    siblings.forEach(sib => {
+                        sib.classList.remove('bg-red-100', 'text-red-700', 'border-red-400', 'bg-emerald-100', 'text-emerald-700', 'border-emerald-400');
+                    });
+
+                    if(isCorrect) {
+                        this.classList.add('bg-emerald-100', 'text-emerald-700', 'border-emerald-400');
+                    } else {
+                        this.classList.add('bg-red-100', 'text-red-700', 'border-red-400');
+                    }
+
+                    showFeedback(feedback, isCorrect, msg);
+                });
+            });
+
+            // --- 5. COMPLETAR CÓDIGO ---
+            const compBtns = document.querySelectorAll('.btn-validar');
+            compBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const parentBox = this.closest('.comp-block');
+                    const input = parentBox.querySelector('select');
+                    const correctAns = input.getAttribute('data-ans').toUpperCase().replace(/\s+/g, '');
+                    const userAns = input.value.toUpperCase().replace(/\s+/g, ''); // ignore spaces and case
+                    const feedback = parentBox.querySelector('.feedback-box');
+
+                    if(userAns === correctAns) {
+                        input.classList.remove('border-red-500');
+                        input.classList.add('border-emerald-500', 'text-emerald-300');
+                        showFeedback(feedback, true, "¡Sintaxis Correcta!");
+                    } else {
+                        input.classList.remove('border-emerald-500', 'text-emerald-300');
+                        input.classList.add('border-red-500');
+                        showFeedback(feedback, false, "Sintaxis incorrecta, intenta de nuevo.");
+                    }
+                });
+            });
+
+            // --- 6. TÉRMINOS PAREADOS ---
+            let selectedTerm = null;
+            let matchedPairs = 0;
+            const pairedBtns = document.querySelectorAll('.paired-btn');
+            
+            pairedBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (this.classList.contains('matched')) return;
+
+                    const type = this.getAttribute('data-type');
+                    const pairId = this.getAttribute('data-pair');
+
+                    // If it's a TERM (Left column)
+                    if (type === 'term') {
+                        // Clear previous term selection
+                        document.querySelectorAll('[data-type="term"]').forEach(b => {
+                            if(!b.classList.contains('matched')) b.classList.remove('selected');
+                        });
+                        this.classList.add('selected');
+                        selectedTerm = { element: this, id: pairId };
+                    } 
+                    // If it's a DEF (Right column)
+                    else if (type === 'def') {
+                        if (!selectedTerm) return; // User must select a term first
+                        
+                        if (selectedTerm.id === pairId) {
+                            // Match!
+                            this.classList.add('matched');
+                            selectedTerm.element.classList.remove('selected');
+                            selectedTerm.element.classList.add('matched');
+                            
+                            // Visual cue icon inside button
+                            this.innerHTML += ' <i class="fa-solid fa-check text-emerald-600 float-right mt-1"></i>';
+                            selectedTerm.element.innerHTML += ' <i class="fa-solid fa-check text-emerald-600 float-right mt-1"></i>';
+                            
+                            selectedTerm = null;
+                            matchedPairs++;
+
+                            if (matchedPairs === 5) {
+                                document.getElementById('pareados-feedback').classList.remove('hidden');
+                            }
+                        } else {
+                            // Wrong match
+                            this.classList.add('wrong');
+                            setTimeout(() => {
+                                this.classList.remove('wrong');
+                            }, 400);
+                        }
+                    }
+                });
+            });
+
+            // --- 7. COPY SCRIPT TO CLIPBOARD ---
+            const btnCopy = document.getElementById('btnCopy');
+            if(btnCopy) {
+                btnCopy.addEventListener('click', () => {
+                    const code = document.getElementById('scriptDB').innerText;
+                    navigator.clipboard.writeText(code).then(() => {
+                        const originalHTML = btnCopy.innerHTML;
+                        btnCopy.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Copiado!';
+                        btnCopy.classList.add('text-emerald-400');
+                        setTimeout(() => {
+                            btnCopy.innerHTML = originalHTML;
+                            btnCopy.classList.remove('text-emerald-400');
+                        }, 2000);
+                    });
+                });
+            }
+
+        });
+    </script>
+</body>
+</html>
