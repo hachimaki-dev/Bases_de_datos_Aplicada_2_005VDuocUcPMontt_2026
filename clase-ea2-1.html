@@ -144,8 +144,8 @@ WHERE id_departamento = 20 AND meses_antiguedad > 36;</code></pre>
                     Aunque ambos tienen el efecto de "borrar" registros, funcionan con lógicas de motor totalmente opuestas. Es crucial conocer cuándo usar cuál en un entorno profesional de Bases de Datos.
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="bg-purple-50 p-6 rounded-2xl border border-purple-100 shadow-sm relative overflow-hidden">
-                        <div class="absolute top-0 right-0 bg-purple-200 text-purple-800 text-xs font-bold px-3 py-1 rounded-bl-lg">Quirúrgico y Controlado</div>
+                    <div class="bg-purple-50 p-6 rounded-2xl border border-purple-100 shadow-sm relative">
+                        <div class="absolute top-0 right-0 bg-purple-200 text-purple-800 text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-2xl">Quirúrgico y Controlado</div>
                         <h3 class="font-bold text-purple-800 text-2xl mb-4"><i class="fa-solid fa-eraser mr-2"></i>DELETE (DML)</h3>
                         <ul class="list-disc pl-5 space-y-3 text-purple-900 text-sm font-medium">
                             <li>Ejecución <strong>fila por fila</strong>. Por cada fila borrada, Oracle escribe en el Segmento UNDO para permitir el <span class="tooltip-trigger font-bold text-purple-800">ROLLBACK<span class="tooltip-content">Como es DML transaccional, si borras 1 millón de registros y te arrepientes, puedes recuperar todo (aunque gastará muchos recursos de servidor al hacerlo).</span></span>.</li>
@@ -154,15 +154,14 @@ WHERE id_departamento = 20 AND meses_antiguedad > 36;</code></pre>
                             <li><strong>No libera</strong> el espacio físico (megabytes) del disco de forma inmediata, solo "marca" el espacio como reutilizable.</li>
                         </ul>
                     </div>
-                    <div class="bg-orange-50 p-6 rounded-2xl border border-orange-100 shadow-sm relative overflow-hidden">
-                        <div class="absolute top-0 right-0 bg-orange-200 text-orange-800 text-xs font-bold px-3 py-1 rounded-bl-lg">Masivo y Estructural</div>
+                    <div class="bg-orange-50 p-6 rounded-2xl border border-orange-100 shadow-sm relative">
+                        <div class="absolute top-0 right-0 bg-orange-200 text-orange-800 text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-2xl">Masivo y Estructural</div>
                         <h3 class="font-bold text-orange-800 text-2xl mb-4"><i class="fa-solid fa-bomb mr-2"></i>TRUNCATE (DDL)</h3>
                         <ul class="list-disc pl-5 space-y-3 text-orange-900 text-sm font-medium">
                             <li>Es una modificación estructural ultra veloz. Simplemente "corta" el contenido sin leer fila por fila. Tiene <strong>COMMIT automático</strong> e irreversible.</li>
                             <li><strong>No evalúa filtros</strong> (vacía absolutamente toda la tabla, no admite la cláusula WHERE bajo ningún motivo).</li>
                             <li><span class="tooltip-trigger font-bold text-orange-800">Libera el espacio<span class="tooltip-content">En el disco duro, la marca de agua superior (High Water Mark) de la tabla se resetea a 0. La tabla queda vacía y achicando inmediatamente su tamaño en megabytes.</span></span> físico instantáneamente en el disco duro.</li>
                             <li>No dispara triggers (los ignora por completo).</li>
-                        </ul>
                         </ul>
                     </div>
                 </div>
