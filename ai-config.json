@@ -1,0 +1,36 @@
+{
+  "system": "Lab Virtual AI - Modificable",
+  "architecture": {
+    "framework": "Vue 3 via CDN",
+    "styling": "Tailwind CSS via CDN",
+    "build_steps": false
+  },
+  "modules": [
+    {
+      "name": "store",
+      "path": "js/core/store.js",
+      "description": "Estado global inmutable para LLMs. Para modificar estado, usar las actions provistas.",
+      "ai_instructions": "Al agregar una feature, añade el estado aquí de forma reactiva."
+    },
+    {
+      "name": "logger",
+      "path": "js/core/logger.js",
+      "description": "Registra acciones para que un agente AI o usuario depuren.",
+      "ai_instructions": "Usa logger.info(), logger.error(), logger.action() para emitir trazas JSON."
+    },
+    {
+      "name": "plugins",
+      "path": "js/core/plugins.js",
+      "description": "Carga componentes vue dinámicamente o lógica inyectada sin afectar el app central."
+    }
+  ],
+  "components": {
+    "DebugPanel": "js/components/DebugPanel.js",
+    "Workspace": "js/components/Workspace.js"
+  },
+  "how_to_add_feature": [
+    "1. Crear componente en js/components/",
+    "2. Registrar vía pluginManager en core/plugins.js o importar directamente en app.js",
+    "3. Añadir logs que expliquen las interacciones"
+  ]
+}
