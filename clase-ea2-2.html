@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 2 - Diario de Clases EA2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <style>
+        .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Tooltips personalizados */
+        .tooltip-trigger { position: relative; cursor: help; border-bottom: 2px dotted #94a3b8; transition: all 0.2s; }
+        .tooltip-trigger:hover { color: #3b82f6; border-color: #3b82f6; }
+        .tooltip-trigger .tooltip-content {
+            visibility: hidden; background-color: #1e293b; color: #f8fafc; text-align: center;
+            border-radius: 8px; padding: 0.75rem 1rem; position: absolute; z-index: 50;
+            bottom: 130%; left: 50%; transform: translateX(-50%) translateY(10px); opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: max-content; max-width: 280px; 
+            font-size: 0.875rem; font-weight: 500; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); line-height: 1.5; pointer-events: none;
+        }
+        .tooltip-trigger .tooltip-content::after {
+            content: ""; position: absolute; top: 100%; left: 50%;
+            margin-left: -6px; border-width: 6px; border-style: solid;
+            border-color: #1e293b transparent transparent transparent;
+        }
+        .tooltip-trigger:hover .tooltip-content { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* Kahoot Style Classes */
+        .kahoot-btn { transition: all 0.2s; }
+        .kahoot-btn:hover { transform: scale(1.02); filter: brightness(1.1); }
+        .kahoot-btn:active { transform: scale(0.95); }
+        .kahoot-red { background-color: #e21b3c; border-bottom: 4px solid #b0102b; color: white; }
+        .kahoot-blue { background-color: #1368ce; border-bottom: 4px solid #0c4d9a; color: white; }
+        .kahoot-yellow { background-color: #d89e00; border-bottom: 4px solid #a87b00; color: white; }
+        .kahoot-green { background-color: #26890c; border-bottom: 4px solid #1a6108; color: white; }
+        
+        .timer-bar-container { width: 100%; height: 20px; background-color: #e5e7eb; border-radius: 10px; overflow: hidden; }
+        .timer-bar { height: 100%; background-color: #8b5cf6; transition: width 1s linear, background-color 0.5s; width: 100%; }
+        .timer-bar.urgent { background-color: #ef4444; animation: pulse-fast 0.5s infinite alternate; }
+        
+        @keyframes pulse-fast { from { opacity: 1; } to { opacity: 0.7; } }
+        @keyframes shake-screen {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .shake-urgent { animation: shake-screen 0.5s; }
+        
+        .kahoot-screen { display: none; }
+        .kahoot-screen.active { display: flex; flex-direction: column; }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen bg-gray-50 text-gray-800 pb-20">
+    <app-nav></app-nav>
+
+    <header class="max-w-5xl mx-auto px-6 text-center mb-10 pt-10">
+        <div class="inline-block bg-blue-100 px-6 py-2.5 rounded-full text-blue-700 font-bold text-base mb-6 border-2 border-blue-200 shadow-sm">
+            Unidad EA2 - Clase 2
+        </div>
+        <h1 class="text-5xl md:text-6xl font-bold text-blue-600 mb-6 drop-shadow-sm leading-tight">Control Avanzado:<br>SAVEPOINT e Inserciones</h1>
+        <p class="text-xl md:text-2xl text-gray-700 bg-white inline-flex items-center gap-3 px-8 py-4 rounded-full shadow-md border-2 border-blue-100 mt-4 font-bold mx-auto justify-center">
+            Manejo del tiempo y poblamiento inteligente
+        </p>
+    </header>
+
+    <!-- Navegación de Pestañas (Tabs) -->
+    <nav class="max-w-6xl mx-auto px-4 mb-8 sticky top-4 z-40">
+        <ul class="flex flex-wrap justify-center gap-2 bg-white/90 backdrop-blur-md p-2 rounded-2xl shadow-md border border-gray-200">
+            <li><button data-tab="activacion" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-blue-700 bg-blue-100 shadow-sm"><i class="fa-solid fa-bolt mr-2"></i>Activación</button></li>
+            <li><button data-tab="ticket-entrada" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-ticket mr-2"></i>Ticket Entrada</button></li>
+            <li><button data-tab="contenido" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-book-open mr-2"></i>Desarrollo</button></li>
+            <li><button data-tab="envivo" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-code mr-2"></i>En Vivo</button></li>
+            <li><button data-tab="practica" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-laptop-code mr-2"></i>Práctica</button></li>
+            <li><button data-tab="cierre" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-flag-checkered mr-2"></i>Cierre</button></li>
+            <li><button data-tab="ticket-salida" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-trophy mr-2"></i>Ticket Salida</button></li>
+        </ul>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-6">
+        
+        <!-- ================= PESTAÑA 1: ACTIVACIÓN ================= -->
+        <div id="tab-activacion" class="tab-content active">
+            <section class="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm mb-10 text-center">
+                <h2 class="text-3xl font-bold text-slate-800 mb-6">Recordemos lo esencial 🧠</h2>
+                <p class="text-lg text-gray-600 mb-8">Antes de sumergirnos en el control avanzado, asegúrate de dominar las bases de la clase anterior. Pasa el cursor sobre cada tarjeta.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="group perspective">
+                        <div class="relative preserve-3d group-hover-rotate w-full h-40 duration-700 cursor-pointer">
+                            <!-- Frente -->
+                            <div class="absolute backface-hidden w-full h-full flex items-center justify-center bg-white border-2 border-indigo-200 rounded-2xl shadow-sm p-6">
+                                <h3 class="text-2xl font-bold text-indigo-700"><i class="fa-solid fa-server mr-2"></i>DML y Memoria</h3>
+                            </div>
+                            <!-- Dorso -->
+                            <div class="absolute my-rotate-y-180 backface-hidden w-full h-full flex flex-col items-center justify-center p-6 bg-indigo-50 rounded-2xl text-indigo-900 border-2 border-indigo-300 shadow-sm">
+                                <p class="font-medium text-sm text-center">Las operaciones INSERT, UPDATE y DELETE no son inmediatas en el disco. Se guardan en el <strong class="text-indigo-700">Segmento UNDO</strong> hasta que decidas qué hacer con ellas.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="group perspective">
+                        <div class="relative preserve-3d group-hover-rotate w-full h-40 duration-700 cursor-pointer">
+                            <div class="absolute backface-hidden w-full h-full flex items-center justify-center bg-white border-2 border-emerald-200 rounded-2xl shadow-sm p-6">
+                                <h3 class="text-2xl font-bold text-emerald-700"><i class="fa-solid fa-check-double mr-2"></i>COMMIT</h3>
+                            </div>
+                            <div class="absolute my-rotate-y-180 backface-hidden w-full h-full flex flex-col items-center justify-center p-6 bg-emerald-50 rounded-2xl text-emerald-900 border-2 border-emerald-300 shadow-sm">
+                                <p class="font-medium text-sm text-center">El "Guardar Partida". Hace que los cambios transaccionales pendientes sean permanentes y visibles para el resto de los usuarios.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="group perspective">
+                        <div class="relative preserve-3d group-hover-rotate w-full h-40 duration-700 cursor-pointer">
+                            <div class="absolute backface-hidden w-full h-full flex items-center justify-center bg-white border-2 border-rose-200 rounded-2xl shadow-sm p-6">
+                                <h3 class="text-2xl font-bold text-rose-700"><i class="fa-solid fa-rotate-left mr-2"></i>ROLLBACK</h3>
+                            </div>
+                            <div class="absolute my-rotate-y-180 backface-hidden w-full h-full flex flex-col items-center justify-center p-6 bg-rose-50 rounded-2xl text-rose-900 border-2 border-rose-300 shadow-sm">
+                                <p class="font-medium text-sm text-center">El botón de "Pánico". Deshace todas las operaciones de la transacción actual devolviendo la base de datos a su estado anterior.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="group perspective">
+                        <div class="relative preserve-3d group-hover-rotate w-full h-40 duration-700 cursor-pointer">
+                            <div class="absolute backface-hidden w-full h-full flex items-center justify-center bg-white border-2 border-amber-200 rounded-2xl shadow-sm p-6">
+                                <h3 class="text-2xl font-bold text-amber-700"><i class="fa-solid fa-bomb mr-2"></i>El Peligro del WHERE</h3>
+                            </div>
+                            <div class="absolute my-rotate-y-180 backface-hidden w-full h-full flex flex-col items-center justify-center p-6 bg-amber-50 rounded-2xl text-amber-900 border-2 border-amber-300 shadow-sm">
+                                <p class="font-medium text-sm text-center">Olvidar el <strong class="text-red-600">WHERE</strong> en un UPDATE o DELETE significa aplicar la operación sobre <strong>toda la tabla</strong>. ¡Destrucción asegurada!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Custom CSS for 3D flip card -->
+                <style>
+                    .perspective { perspective: 1000px; }
+                    .preserve-3d { transform-style: preserve-3d; }
+                    .backface-hidden { backface-visibility: hidden; }
+                    .my-rotate-y-180 { transform: rotateY(180deg); }
+                    .group:hover .group-hover-rotate { transform: rotateY(180deg); }
+                </style>
+            </section>
+        </div>
+
+        <!-- ================= PESTAÑA 2: TICKET ENTRADA (KAHOOT) ================= -->
+        <div id="tab-ticket-entrada" class="tab-content">
+            <div id="k1-container" class="bg-gray-100 rounded-3xl p-8 max-w-3xl mx-auto shadow-inner border-4 border-gray-200 text-center min-h-[500px] flex flex-col relative overflow-hidden">
+                
+                <!-- Pantalla Inicial -->
+                <div id="k1-start" class="kahoot-screen active h-full justify-center items-center flex-1">
+                    <i class="fa-solid fa-stopwatch text-6xl text-purple-600 mb-6 drop-shadow-md animate-bounce"></i>
+                    <h2 class="text-4xl font-black text-slate-800 mb-4">Ticket de Entrada</h2>
+                    <p class="text-xl font-bold text-gray-600 mb-8">2 preguntas. 15 segundos cada una. ¡Prepárate!</p>
+                    <button onclick="kahoot1.start()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold text-2xl py-4 px-12 rounded-xl shadow-[0_6px_0_#581c87] active:shadow-[0_0px_0_#581c87] active:translate-y-1.5 transition-all">¡Comenzar!</button>
+                </div>
+
+                <!-- Pantalla de Pregunta -->
+                <div id="k1-question" class="kahoot-screen flex-1">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="bg-white px-4 py-1 rounded-full font-bold text-gray-600 shadow-sm" id="k1-counter">Pregunta 1 de 2</span>
+                        <span class="bg-purple-100 text-purple-800 px-4 py-1 rounded-full font-black text-xl shadow-sm" id="k1-timer-text">15</span>
+                    </div>
+                    <div class="timer-bar-container mb-6 shadow-sm">
+                        <div id="k1-timer-bar" class="timer-bar"></div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-2xl shadow-sm mb-8 border border-gray-200">
+                        <h3 class="text-2xl md:text-3xl font-bold text-slate-800" id="k1-q-text">Pregunta...</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-auto" id="k1-options">
+                        <!-- Botones inyectados vía JS -->
+                    </div>
+                </div>
+
+                <!-- Pantalla de Feedback -->
+                <div id="k1-feedback" class="kahoot-screen justify-center items-center flex-1">
+                    <div id="k1-fb-icon" class="text-8xl mb-6"></div>
+                    <h2 id="k1-fb-title" class="text-5xl font-black mb-4"></h2>
+                    <p id="k1-fb-points" class="text-xl font-bold text-white bg-black/20 px-6 py-2 rounded-full mb-8"></p>
+                    <button onclick="kahoot1.next()" class="bg-white/20 hover:bg-white/30 text-white border-2 border-white font-bold text-xl py-3 px-10 rounded-xl transition-all">Siguiente</button>
+                </div>
+
+                <!-- Pantalla Final -->
+                <div id="k1-end" class="kahoot-screen justify-center items-center flex-1">
+                    <i class="fa-solid fa-trophy text-7xl text-yellow-500 mb-6 drop-shadow-md"></i>
+                    <h2 class="text-4xl font-black text-slate-800 mb-2">¡Completado!</h2>
+                    <p class="text-lg text-gray-600 mb-6 font-medium">Puntaje Total:</p>
+                    <div class="text-6xl font-black text-purple-600 mb-8" id="k1-final-score">0</div>
+                    <p class="text-gray-500 font-bold mb-4">Ya puedes pasar a la pestaña de Desarrollo.</p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 3: DESARROLLO (CONTENIDO) ================= -->
+        <div id="tab-contenido" class="tab-content">
+            
+            <!-- Sección 1: SAVEPOINT -->
+            <section class="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm mb-10">
+                <h2 class="text-3xl font-bold text-blue-700 border-b-2 border-blue-100 pb-4 mb-6">
+                    <i class="fa-solid fa-flag text-blue-500 bg-blue-50 p-3 rounded-2xl"></i> Viaje en el tiempo: SAVEPOINT
+                </h2>
+                <div class="space-y-6">
+                    <p class="text-lg leading-relaxed text-gray-700">
+                        Ya sabes que <code>ROLLBACK</code> deshace <strong>toda</strong> la transacción. Pero, ¿qué pasa si estás haciendo un trabajo gigante (ej. insertar 50 registros), te equivocas en el número 49, y no quieres perder el trabajo de los 48 anteriores?
+                    </p>
+                    <p class="text-xl font-bold text-slate-800 bg-blue-50 p-6 rounded-2xl border border-blue-200 shadow-inner">
+                        Aquí entra <code class="text-blue-600 bg-white px-2 py-1 rounded shadow-sm">SAVEPOINT nombre_punto;</code>. Funciona exactamente igual que los "Checkpoints" en un videojuego.
+                    </p>
+                    <p class="text-lg text-gray-700">
+                        Creas un punto de guardado temporal dentro de tu transacción. Si cometes un error más adelante, puedes retroceder <strong>solamente hasta ese punto</strong> usando <code>ROLLBACK TO nombre_punto;</code>, sin perder lo que hiciste antes de él.
+                    </p>
+                    <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-inner">
+                        <pre><code class="language-sql">INSERT INTO emp (id, nom) VALUES (1, 'Ana');
+INSERT INTO emp (id, nom) VALUES (2, 'Beto');
+
+-- Creamos el punto de guardado
+SAVEPOINT paso_seguro;
+
+-- Seguimos trabajando
+INSERT INTO emp (id, nom) VALUES (3, 'Carlos');
+UPDATE emp SET salario = 9999999; -- ¡Opps! Error catastrófico, actualicé a todos
+
+-- Retrocedemos en el tiempo solo hasta el punto seguro
+ROLLBACK TO paso_seguro;
+
+-- Estado final: Ana y Beto existen. Carlos no se insertó y el salario NO se actualizó.
+COMMIT;</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección 2: Subconsultas y Poblamiento Masivo -->
+            <section class="bg-white p-8 rounded-3xl border border-emerald-100 shadow-sm mb-10">
+                <h2 class="text-3xl font-bold text-emerald-600 border-b-2 border-emerald-200 pb-4 mb-6">
+                    <i class="fa-solid fa-copy text-emerald-500 bg-emerald-100 p-3 rounded-2xl"></i> Subconsultas en DML
+                </h2>
+                <div class="space-y-6">
+                    <p class="text-lg leading-relaxed text-gray-700 font-medium">
+                        Una <strong>Subconsulta</strong> es simplemente un <code>SELECT</code> metido dentro de otra instrucción (entre paréntesis). El motor primero resuelve el SELECT de adentro, y usa el resultado para completar la instrucción de afuera.
+                    </p>
+                    
+                    <h3 class="text-xl font-bold text-slate-800 mt-6"><i class="fa-solid fa-1 text-emerald-500 mr-2"></i>En cláusulas WHERE (Filtros dinámicos)</h3>
+                    <p class="text-gray-700">Imagina que quieres borrar a los empleados que ganan menos que el promedio. ¿Cómo sabes el promedio? ¡Con una subconsulta!</p>
+                    <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-inner">
+                        <pre><code class="language-sql">DELETE FROM empleados 
+WHERE salario < (SELECT AVG(salario) FROM empleados);</code></pre>
+                    </div>
+
+                    <h3 class="text-xl font-bold text-slate-800 mt-8"><i class="fa-solid fa-2 text-emerald-500 mr-2"></i>En INSERT (Poblamiento masivo sin VALUES)</h3>
+                    <p class="text-gray-700">A veces necesitas copiar miles de filas de una tabla a otra (ej. para un respaldo). En lugar de escribir miles de <code>VALUES</code>, puedes reemplazar la palabra <code>VALUES</code> entera por un gran <code>SELECT</code>.</p>
+                    <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl shadow-sm mb-4">
+                        <p class="text-sm text-emerald-900 font-bold">Regla de oro: Las columnas del SELECT deben coincidir en cantidad y tipo de dato con las columnas que estás insertando.</p>
+                    </div>
+                    <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-inner">
+                        <pre><code class="language-sql">-- Copiando todos los empleados del departamento 10 a la tabla de respaldo
+INSERT INTO emp_respaldo (id_emp, nombre, depto)
+SELECT id, nombre_completo, id_departamento 
+FROM empleados 
+WHERE id_departamento = 10;</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección 3: INSERT ALL -->
+            <section class="bg-white p-8 rounded-3xl border border-purple-100 shadow-sm mb-10">
+                <h2 class="text-3xl font-bold text-purple-600 border-b-2 border-purple-200 pb-4 mb-6">
+                    <i class="fa-solid fa-code-branch text-purple-500 bg-purple-100 p-3 rounded-2xl"></i> Inserciones Complejas: INSERT ALL
+                </h2>
+                <div class="space-y-6">
+                    <p class="text-lg leading-relaxed text-gray-700">
+                        El <code>INSERT</code> normal solo puede enviar datos a <strong>una</strong> sola tabla. ¿Qué pasa si quieres leer registros y enviarlos a múltiples tablas distintas dependiendo de alguna condición lógica? Para esto existe <code>INSERT ALL</code>.
+                    </p>
+                    
+                    <h3 class="text-xl font-bold text-slate-800 mt-6"><i class="fa-solid fa-sitemap text-purple-500 mr-2"></i>Inserción Condicional (Cláusula WHEN)</h3>
+                    <p class="text-gray-700">Como si fuera un <code>IF/ELSE</code>, puedes evaluar cada fila leída por el SELECT final, y decidir en qué tabla cae.</p>
+                    <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-inner">
+                        <pre><code class="language-sql">-- Leemos la tabla empleados (SELECT final)
+-- Si ganan más de un millón van a 'emp_vip', sino a 'emp_normales'.
+INSERT ALL
+    WHEN sueldo > 1000000 THEN
+        INTO emp_vip (id, nombre, sueldo) VALUES (emp_id, emp_nom, sueldo)
+    WHEN sueldo <= 1000000 THEN
+        INTO emp_normales (id, nombre, sueldo) VALUES (emp_id, emp_nom, sueldo)
+SELECT emp_id, emp_nom, sueldo FROM empleados;</code></pre>
+                    </div>
+
+                    <h3 class="text-xl font-bold text-slate-800 mt-8"><i class="fa-solid fa-table-columns text-purple-500 mr-2"></i>Pivoteo en la Misma Tabla</h3>
+                    <p class="text-gray-700">También sirve para insertar varias filas en la <strong>misma tabla</strong> de un solo golpe. Para lograr esto sin leer datos reales, se usa una tabla especial de Oracle llamada <span class="tooltip-trigger font-bold text-purple-700">DUAL<span class="tooltip-content">Tabla mágica interna de Oracle que tiene exactamente 1 columna y 1 fila. Se usa para operaciones que requieren la cláusula FROM sintácticamente pero no necesitan consultar datos reales (ej. cálculos matemáticos o funciones del sistema).</span></span>.</p>
+                    <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-inner">
+                        <pre><code class="language-sql">-- Insertamos 3 roles nuevos de una sola vez
+INSERT ALL
+    INTO roles (id_rol, desc) VALUES (1, 'Admin')
+    INTO roles (id_rol, desc) VALUES (2, 'Editor')
+    INTO roles (id_rol, desc) VALUES (3, 'Lector')
+SELECT 1 FROM DUAL; -- El motor ejecuta las inserciones 1 vez (porque DUAL tiene 1 fila)</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección 4: Script DDL de Preparación -->
+            <section class="bg-slate-800 p-8 rounded-3xl shadow-md mb-10 border border-slate-700">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center shadow-[0_0_15px_#3b82f6]">
+                        <i class="fa-solid fa-database text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Script DDL de Preparación</h2>
+                        <p class="text-slate-400 text-sm">Ejecuta este código para crear las tablas necesarias antes de probar los ejemplos de arriba.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-900 rounded-2xl overflow-hidden border border-slate-700">
+                    <div class="bg-slate-950 px-4 py-2 flex justify-between items-center border-b border-slate-800">
+                        <span class="text-gray-400 text-xs font-mono">preparacion_clase2.sql</span>
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('scriptDDL').innerText); this.innerHTML='<i class=\'fa-solid fa-check mr-1\'></i> Copiado!'; this.classList.add('text-emerald-400'); setTimeout(() => { this.innerHTML='<i class=\'fa-regular fa-copy mr-1\'></i> Copiar'; this.classList.remove('text-emerald-400'); }, 2000);" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm"><i class="fa-regular fa-copy mr-2"></i> Copiar Código</button>
+                    </div>
+                    <pre class="m-0 p-6"><code id="scriptDDL" class="language-sql text-sm">-- ==========================================
+-- SCRIPT DE PREPARACIÓN (DDL) - CLASE 2
+-- Ejecuta esto antes de probar los ejemplos
+-- ==========================================
+
+-- 1. Tabla para SAVEPOINT
+CREATE TABLE emp (
+    id NUMBER PRIMARY KEY,
+    nom VARCHAR2(50),
+    salario NUMBER
+);
+
+-- 2. Tablas para Subconsultas e INSERT ALL
+CREATE TABLE empleados (
+    id NUMBER PRIMARY KEY,
+    nombre_completo VARCHAR2(100),
+    id_departamento NUMBER,
+    salario NUMBER,
+    emp_id NUMBER,
+    emp_nom VARCHAR2(100),
+    sueldo NUMBER
+);
+
+CREATE TABLE emp_respaldo (
+    id_emp NUMBER PRIMARY KEY,
+    nombre VARCHAR2(100),
+    depto NUMBER
+);
+
+CREATE TABLE emp_vip (
+    id NUMBER PRIMARY KEY,
+    nombre VARCHAR2(100),
+    sueldo NUMBER
+);
+
+CREATE TABLE emp_normales (
+    id NUMBER PRIMARY KEY,
+    nombre VARCHAR2(100),
+    sueldo NUMBER
+);
+
+CREATE TABLE roles (
+    id_rol NUMBER PRIMARY KEY,
+    "desc" VARCHAR2(50) 
+);
+
+-- 3. Datos de prueba iniciales
+INSERT INTO empleados (id, nombre_completo, id_departamento, salario, emp_id, emp_nom, sueldo) 
+VALUES (1, 'Juan Perez', 10, 500000, 101, 'Juan Perez', 500000);
+INSERT INTO empleados (id, nombre_completo, id_departamento, salario, emp_id, emp_nom, sueldo) 
+VALUES (2, 'Maria Gomez', 10, 1500000, 102, 'Maria Gomez', 1500000);
+INSERT INTO empleados (id, nombre_completo, id_departamento, salario, emp_id, emp_nom, sueldo) 
+VALUES (3, 'Pedro Diaz', 20, 800000, 103, 'Pedro Diaz', 800000);
+COMMIT;</code></pre>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= PESTAÑA 4: EN VIVO ================= -->
+        <div id="tab-envivo" class="tab-content">
+            <section class="bg-slate-800 p-8 rounded-3xl shadow-md mb-10 border border-slate-700">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center animate-pulse shadow-[0_0_15px_#ef4444]">
+                        <div class="w-4 h-4 rounded-full bg-white"></div>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Demostración en Vivo</h2>
+                        <p class="text-slate-400 text-sm">Copia este script y ejecútalo paso a paso en tu motor.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-900 rounded-2xl overflow-hidden border border-slate-700">
+                    <div class="bg-slate-950 px-4 py-2 flex justify-between items-center border-b border-slate-800">
+                        <span class="text-gray-400 text-xs font-mono">script_demo_avanzado.sql</span>
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('scriptDemo').innerText); this.innerHTML='<i class=\'fa-solid fa-check mr-1\'></i> Copiado!'; this.classList.add('text-emerald-400'); setTimeout(() => { this.innerHTML='<i class=\'fa-regular fa-copy mr-1\'></i> Copiar'; this.classList.remove('text-emerald-400'); }, 2000);" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm"><i class="fa-regular fa-copy mr-2"></i> Copiar Código</button>
+                    </div>
+                    <pre class="m-0 p-6"><code id="scriptDemo" class="language-sql text-sm">-- 1. SETUP DE TABLAS
+CREATE TABLE temp_origen (id NUMBER, val VARCHAR2(20), sueldo NUMBER);
+CREATE TABLE temp_altos (id NUMBER, val VARCHAR2(20));
+CREATE TABLE temp_bajos (id NUMBER, val VARCHAR2(20));
+
+-- Poblando origen con INSERT ALL (Pivoteo)
+INSERT ALL
+    INTO temp_origen VALUES (1, 'Juan', 500)
+    INTO temp_origen VALUES (2, 'Ana', 1500)
+    INTO temp_origen VALUES (3, 'Beto', 800)
+SELECT 1 FROM DUAL;
+
+COMMIT;
+SELECT * FROM temp_origen; -- Verificamos que existen
+
+-- 2. DEMO SAVEPOINT
+UPDATE temp_origen SET sueldo = sueldo + 100 WHERE id = 1;
+SAVEPOINT despues_de_juan; -- Punto de control
+
+DELETE FROM temp_origen; -- Error terrible! Borramos todo sin querer
+SELECT * FROM temp_origen; -- Está vacía!! Pánico!
+
+ROLLBACK TO despues_de_juan; -- Retrocedemos al punto de control
+SELECT * FROM temp_origen; -- Fiuuu... están de vuelta y Juan tiene su aumento.
+COMMIT;
+
+-- 3. DEMO INSERT ALL CONDICIONAL
+-- Repartimos los datos a las tablas altos y bajos según el sueldo
+INSERT ALL
+    WHEN sueldo > 1000 THEN
+        INTO temp_altos (id, val) VALUES (id, val)
+    WHEN sueldo <= 1000 THEN
+        INTO temp_bajos (id, val) VALUES (id, val)
+SELECT id, val, sueldo FROM temp_origen;
+
+-- Verificamos
+SELECT * FROM temp_altos; -- Debería estar solo Ana
+SELECT * FROM temp_bajos; -- Juan y Beto
+
+-- 4. LIMPIEZA
+DROP TABLE temp_origen;
+DROP TABLE temp_altos;
+DROP TABLE temp_bajos;</code></pre>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= PESTAÑA 5: PRÁCTICA ================= -->
+        <div id="tab-practica" class="tab-content">
+            <h2 class="text-3xl font-bold text-slate-800 text-center mb-6"><i class="fa-solid fa-laptop-code text-slate-600 mr-2"></i> Taller Práctico: Distribución Masiva</h2>
+            <div class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 mb-8 max-w-4xl mx-auto text-center">
+                <p class="text-gray-800 text-lg font-medium mb-3">
+                    Aplica la lógica condicional aprendida para solucionar un requerimiento de negocio real.
+                </p>
+                <div class="inline-block bg-white border border-blue-100 p-4 rounded-xl text-left shadow-sm mt-2">
+                    <p class="font-bold text-blue-800 mb-2"><i class="fa-solid fa-upload mr-2"></i>Instrucciones de Entrega:</p>
+                    <ul class="list-disc pl-5 text-gray-700 text-sm space-y-1">
+                        <li>Guarda tu código en un archivo con formato <code>.sql</code>.</li>
+                        <li>El archivo debe contener como comentario inicial tu <strong>Nombre y Apellido</strong>.</li>
+                        <li>Sube el archivo final a la plataforma AVA en la sección correspondiente a este taller.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Script Preparación Práctica -->
+            <div class="bg-slate-800 rounded-2xl overflow-hidden mb-8 shadow-md">
+                <div class="bg-slate-900 px-6 py-3 flex justify-between items-center border-b border-slate-700">
+                    <span class="text-gray-300 font-bold text-sm">1. Script Inicial (Ejecuta esto primero):</span>
+                    <button id="btnCopyPractica" class="text-slate-300 hover:text-white transition-colors bg-slate-700 px-3 py-1 rounded text-xs"><i class="fa-regular fa-copy mr-1"></i> Copiar Script</button>
+                </div>
+                <pre class="m-0 p-6"><code id="scriptPractica" class="language-sql text-sm">CREATE TABLE ventas_historicas (
+    id_venta NUMBER PRIMARY KEY,
+    monto NUMBER,
+    zona VARCHAR2(10)
+);
+
+CREATE TABLE ventas_norte (id_venta NUMBER, monto NUMBER);
+CREATE TABLE ventas_sur (id_venta NUMBER, monto NUMBER);
+CREATE TABLE ventas_rechazadas (id_venta NUMBER, observacion VARCHAR2(50));
+
+-- Poblando históricos con un INSERT ALL
+INSERT ALL
+    INTO ventas_historicas VALUES (101, 50000, 'NORTE')
+    INTO ventas_historicas VALUES (102, 120000, 'SUR')
+    INTO ventas_historicas VALUES (103, 0, 'NORTE')
+    INTO ventas_historicas VALUES (104, 35000, 'SUR')
+    INTO ventas_historicas VALUES (105, -500, 'ESTE')
+SELECT 1 FROM DUAL;
+COMMIT;</code></pre>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative pt-10">
+                    <span class="absolute top-0 left-0 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-br-lg rounded-tl-xl">EL RETO</span>
+                    <h4 class="font-bold text-lg mb-2 text-slate-800">Distribución Condicional Inteligente</h4>
+                    <p class="text-sm text-gray-600 mb-4">
+                        La gerencia quiere separar las ventas históricas usando una sola instrucción <code>INSERT ALL</code>, leyendo desde <code>ventas_historicas</code>:
+                    </p>
+                    <ul class="list-disc pl-5 text-sm text-gray-700 space-y-2 font-medium bg-gray-50 p-4 rounded-lg border border-gray-100">
+                        <li>Si el monto es <strong>menor o igual a cero</strong>, envíalo a <code>ventas_rechazadas</code>. (En la observación pon 'MONTO INVALIDO').</li>
+                        <li>Si la zona es <strong>'NORTE'</strong> (y monto > 0), envíalo a <code>ventas_norte</code>.</li>
+                        <li>Si la zona es <strong>'SUR'</strong> (y monto > 0), envíalo a <code>ventas_sur</code>.</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative pt-10 flex flex-col justify-center">
+                    <span class="absolute top-0 left-0 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-br-lg rounded-tl-xl">VERIFICACIÓN</span>
+                    <h4 class="font-bold text-lg mb-2 text-slate-800">¿Lo hiciste bien?</h4>
+                    <p class="text-sm text-gray-600 mb-4">Al finalizar tu query, haz SELECT a las 3 tablas. Deberías obtener:</p>
+                    <div class="space-y-2 text-sm font-mono">
+                        <div class="bg-slate-100 p-2 rounded border border-slate-200"><span class="font-bold text-emerald-600">Norte:</span> 1 registro (ID 101)</div>
+                        <div class="bg-slate-100 p-2 rounded border border-slate-200"><span class="font-bold text-emerald-600">Sur:</span> 2 registros (ID 102, 104)</div>
+                        <div class="bg-slate-100 p-2 rounded border border-slate-200"><span class="font-bold text-red-600">Rechazadas:</span> 2 registros (ID 103, 105)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 6: CIERRE ================= -->
+        <div id="tab-cierre" class="tab-content">
+            <section class="bg-gradient-to-br from-indigo-900 to-slate-900 p-10 rounded-3xl shadow-xl mb-10 text-center relative overflow-hidden">
+                <!-- Decoración -->
+                <div class="absolute -top-20 -right-20 w-64 h-64 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+                <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+                
+                <h2 class="text-4xl font-black text-white mb-8 relative z-10">Resumen de la Clase 🏆</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+                    <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 text-left">
+                        <i class="fa-solid fa-flag text-4xl text-cyan-400 mb-4"></i>
+                        <h3 class="text-xl font-bold text-white mb-2">Checkpoints</h3>
+                        <p class="text-indigo-100 text-sm leading-relaxed">
+                            <code>SAVEPOINT</code> permite segmentar una transacción grande en etapas seguras, evitando usar ROLLBACK completo ante un error menor.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 text-left">
+                        <i class="fa-solid fa-copy text-4xl text-fuchsia-400 mb-4"></i>
+                        <h3 class="text-xl font-bold text-white mb-2">Subconsultas DML</h3>
+                        <p class="text-indigo-100 text-sm leading-relaxed">
+                            Permiten dinamismo. Desde crear filtros <code>WHERE</code> inteligentes hasta reemplazar la cláusula <code>VALUES</code> para poblar datos de forma masiva.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 text-left">
+                        <i class="fa-solid fa-code-branch text-4xl text-emerald-400 mb-4"></i>
+                        <h3 class="text-xl font-bold text-white mb-2">INSERT ALL</h3>
+                        <p class="text-indigo-100 text-sm leading-relaxed">
+                            Una instrucción que procesa una tabla base y distribuye la información hacia múltiples destinos basándose en lógicas condicionales (<code>WHEN</code>).
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= PESTAÑA 7: TICKET SALIDA (KAHOOT) ================= -->
+        <div id="tab-ticket-salida" class="tab-content">
+            <div id="k2-container" class="bg-gray-100 rounded-3xl p-8 max-w-3xl mx-auto shadow-inner border-4 border-gray-200 text-center min-h-[500px] flex flex-col relative overflow-hidden">
+                
+                <!-- Pantalla Inicial -->
+                <div id="k2-start" class="kahoot-screen active h-full justify-center items-center flex-1">
+                    <i class="fa-solid fa-graduation-cap text-6xl text-rose-600 mb-6 drop-shadow-md animate-bounce"></i>
+                    <h2 class="text-4xl font-black text-slate-800 mb-4">Ticket de Salida</h2>
+                    <p class="text-xl font-bold text-gray-600 mb-8">El desafío final. 2 preguntas decisivas.</p>
+                    <button onclick="kahoot2.start()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-2xl py-4 px-12 rounded-xl shadow-[0_6px_0_#9f1239] active:shadow-[0_0px_0_#9f1239] active:translate-y-1.5 transition-all">Desafíame</button>
+                </div>
+
+                <!-- Pantalla de Pregunta -->
+                <div id="k2-question" class="kahoot-screen flex-1">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="bg-white px-4 py-1 rounded-full font-bold text-gray-600 shadow-sm" id="k2-counter">Pregunta 1 de 2</span>
+                        <span class="bg-rose-100 text-rose-800 px-4 py-1 rounded-full font-black text-xl shadow-sm" id="k2-timer-text">20</span>
+                    </div>
+                    <div class="timer-bar-container mb-6 shadow-sm">
+                        <div id="k2-timer-bar" class="timer-bar" style="background-color: #f43f5e;"></div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-2xl shadow-sm mb-8 border border-gray-200 text-left">
+                        <h3 class="text-xl md:text-2xl font-bold text-slate-800" id="k2-q-text">Pregunta...</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-auto" id="k2-options">
+                        <!-- Botones inyectados vía JS -->
+                    </div>
+                </div>
+
+                <!-- Pantalla de Feedback -->
+                <div id="k2-feedback" class="kahoot-screen justify-center items-center flex-1">
+                    <div id="k2-fb-icon" class="text-8xl mb-6"></div>
+                    <h2 id="k2-fb-title" class="text-5xl font-black mb-4"></h2>
+                    <p id="k2-fb-points" class="text-xl font-bold text-white bg-black/20 px-6 py-2 rounded-full mb-8"></p>
+                    <button onclick="kahoot2.next()" class="bg-white/20 hover:bg-white/30 text-white border-2 border-white font-bold text-xl py-3 px-10 rounded-xl transition-all">Siguiente</button>
+                </div>
+
+                <!-- Pantalla Final -->
+                <div id="k2-end" class="kahoot-screen justify-center items-center flex-1">
+                    <i class="fa-solid fa-star text-7xl text-yellow-500 mb-6 drop-shadow-md"></i>
+                    <h2 class="text-4xl font-black text-slate-800 mb-2">¡Misión Cumplida!</h2>
+                    <p class="text-lg text-gray-600 mb-6 font-medium">Puntaje Final:</p>
+                    <div class="text-6xl font-black text-rose-600 mb-8" id="k2-final-score">0</div>
+                    <p class="text-gray-500 font-bold mb-4">¡Nos vemos en la próxima clase!</p>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <app-footer></app-footer>
+
+    <script src="js/components.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    
+    <!-- Lógica de Interactividad -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- 1. TABS SYSTEM ---
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Reset all
+                    tabBtns.forEach(b => {
+                        b.classList.remove('text-blue-700', 'bg-blue-100', 'shadow-sm');
+                        b.classList.add('text-gray-500', 'hover:bg-gray-100');
+                    });
+                    tabContents.forEach(c => c.classList.remove('active'));
+
+                    // Activate clicked
+                    btn.classList.remove('text-gray-500', 'hover:bg-gray-100');
+                    btn.classList.add('text-blue-700', 'bg-blue-100', 'shadow-sm');
+                    const targetTab = btn.getAttribute('data-tab');
+                    document.getElementById('tab-' + targetTab).classList.add('active');
+                });
+            });
+
+            // Script Copy handler para Práctica
+            const btnCopyPrac = document.getElementById('btnCopyPractica');
+            if(btnCopyPrac) {
+                btnCopyPrac.addEventListener('click', () => {
+                    const code = document.getElementById('scriptPractica').innerText;
+                    navigator.clipboard.writeText(code).then(() => {
+                        const originalHTML = btnCopyPrac.innerHTML;
+                        btnCopyPrac.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Copiado!';
+                        btnCopyPrac.classList.add('text-emerald-400');
+                        setTimeout(() => {
+                            btnCopyPrac.innerHTML = originalHTML;
+                            btnCopyPrac.classList.remove('text-emerald-400');
+                        }, 2000);
+                    });
+                });
+            }
+
+            // --- KAHOOT ENGINE ---
+            class KahootGame {
+                constructor(prefix, questions, timePerQuestion) {
+                    this.prefix = prefix;
+                    this.questions = questions;
+                    this.timeLimit = timePerQuestion;
+                    this.currentQ = 0;
+                    this.score = 0;
+                    this.timer = null;
+                    this.timeLeft = 0;
+                    
+                    // DOM Elements
+                    this.elStart = document.getElementById(`${prefix}-start`);
+                    this.elQuestion = document.getElementById(`${prefix}-question`);
+                    this.elFeedback = document.getElementById(`${prefix}-feedback`);
+                    this.elEnd = document.getElementById(`${prefix}-end`);
+                    
+                    this.elCounter = document.getElementById(`${prefix}-counter`);
+                    this.elTimerText = document.getElementById(`${prefix}-timer-text`);
+                    this.elTimerBar = document.getElementById(`${prefix}-timer-bar`);
+                    this.elQText = document.getElementById(`${prefix}-q-text`);
+                    this.elOptions = document.getElementById(`${prefix}-options`);
+                    this.elContainer = document.getElementById(`${prefix}-container`);
+                }
+
+                showScreen(screenEl) {
+                    [this.elStart, this.elQuestion, this.elFeedback, this.elEnd].forEach(el => el.classList.remove('active'));
+                    screenEl.classList.add('active');
+                }
+
+                start() {
+                    this.currentQ = 0;
+                    this.score = 0;
+                    this.loadQuestion();
+                }
+
+                loadQuestion() {
+                    if (this.currentQ >= this.questions.length) {
+                        this.endGame();
+                        return;
+                    }
+
+                    const q = this.questions[this.currentQ];
+                    this.elCounter.innerText = `Pregunta ${this.currentQ + 1} de ${this.questions.length}`;
+                    this.elQText.innerHTML = q.text;
+                    
+                    this.elOptions.innerHTML = '';
+                    const colors = ['kahoot-red', 'kahoot-blue', 'kahoot-yellow', 'kahoot-green'];
+                    const icons = ['fa-triangle', 'fa-square', 'fa-circle', 'fa-diamond'];
+
+                    q.options.forEach((opt, index) => {
+                        const btn = document.createElement('button');
+                        btn.className = `kahoot-btn ${colors[index]} p-6 rounded-xl flex items-center justify-start text-left gap-4 font-bold text-lg`;
+                        btn.innerHTML = `<div class="bg-black/20 w-10 h-10 rounded flex items-center justify-center shrink-0"><i class="fa-solid ${icons[index]}"></i></div><span>${opt.text}</span>`;
+                        btn.onclick = () => this.handleAnswer(index, opt.isCorrect);
+                        this.elOptions.appendChild(btn);
+                    });
+
+                    this.showScreen(this.elQuestion);
+                    this.startTimer();
+                }
+
+                startTimer() {
+                    this.timeLeft = this.timeLimit;
+                    this.elTimerText.innerText = this.timeLeft;
+                    this.elTimerBar.style.width = '100%';
+                    this.elTimerBar.classList.remove('urgent');
+                    this.elContainer.classList.remove('shake-urgent');
+
+                    clearInterval(this.timer);
+                    this.timer = setInterval(() => {
+                        this.timeLeft--;
+                        this.elTimerText.innerText = this.timeLeft;
+                        
+                        const pct = (this.timeLeft / this.timeLimit) * 100;
+                        this.elTimerBar.style.width = `${pct}%`;
+
+                        if(this.timeLeft <= 5 && this.timeLeft > 0) {
+                            this.elTimerBar.classList.add('urgent');
+                            if(this.timeLeft === 3) this.elContainer.classList.add('shake-urgent');
+                        }
+
+                        if (this.timeLeft <= 0) {
+                            clearInterval(this.timer);
+                            this.handleAnswer(-1, false); // Timeout
+                        }
+                    }, 1000);
+                }
+
+                handleAnswer(selectedIndex, isCorrect) {
+                    clearInterval(this.timer);
+                    this.elContainer.classList.remove('shake-urgent');
+
+                    let pointsGained = 0;
+                    if (isCorrect) {
+                        // Max 1000, min 500 depending on speed
+                        pointsGained = Math.floor(500 + (500 * (this.timeLeft / this.timeLimit)));
+                        this.score += pointsGained;
+                        
+                        document.getElementById(`${this.prefix}-feedback`).className = 'kahoot-screen active justify-center items-center flex-1 bg-green-500 text-white';
+                        document.getElementById(`${this.prefix}-fb-icon`).innerHTML = '<i class="fa-solid fa-check"></i>';
+                        document.getElementById(`${this.prefix}-fb-title`).innerText = '¡Correcto!';
+                        document.getElementById(`${this.prefix}-fb-points`).innerText = `+${pointsGained} puntos`;
+                    } else {
+                        document.getElementById(`${this.prefix}-feedback`).className = 'kahoot-screen active justify-center items-center flex-1 bg-red-500 text-white';
+                        document.getElementById(`${this.prefix}-fb-icon`).innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                        document.getElementById(`${this.prefix}-fb-title`).innerText = selectedIndex === -1 ? '¡Tiempo Agotado!' : '¡Incorrecto!';
+                        document.getElementById(`${this.prefix}-fb-points`).innerText = 'La racha se ha perdido.';
+                    }
+
+                    this.showScreen(this.elFeedback);
+                }
+
+                next() {
+                    this.currentQ++;
+                    this.loadQuestion();
+                }
+
+                endGame() {
+                    document.getElementById(`${this.prefix}-final-score`).innerText = this.score;
+                    this.showScreen(this.elEnd);
+                }
+            }
+
+            // Datos Kahoot 1 (Entrada)
+            const qK1 = [
+                {
+                    text: "¿Las instrucciones DML (INSERT, UPDATE) cambian el disco duro inmediatamente?",
+                    options: [
+                        { text: "Sí, es el efecto Auto-Commit.", isCorrect: false },
+                        { text: "No, se guardan en el Segmento UNDO hasta confirmar.", isCorrect: true },
+                        { text: "Solo si se ejecuta como sysdba.", isCorrect: false },
+                        { text: "Depende del sistema operativo.", isCorrect: false }
+                    ]
+                },
+                {
+                    text: "Si olvidas el WHERE en un DELETE FROM empleados...",
+                    options: [
+                        { text: "Da error de sintaxis y se cancela.", isCorrect: false },
+                        { text: "Se borra la última fila insertada.", isCorrect: false },
+                        { text: "Borras TODOS los registros de la tabla.", isCorrect: true },
+                        { text: "Oracle te pregunta si estás seguro.", isCorrect: false }
+                    ]
+                }
+            ];
+
+            // Datos Kahoot 2 (Salida)
+            const qK2 = [
+                {
+                    text: "¿Qué comando te permite retroceder a un punto específico de la transacción sin borrar todo?",
+                    options: [
+                        { text: "ROLLBACK PARTIAL", isCorrect: false },
+                        { text: "COMMIT TO", isCorrect: false },
+                        { text: "CTRL + Z", isCorrect: false },
+                        { text: "SAVEPOINT", isCorrect: true }
+                    ]
+                },
+                {
+                    text: "Para insertar filas en múltiples tablas dependiendo de una condición (ej. sueldo > 1000) uso:",
+                    options: [
+                        { text: "Varios comandos INSERT secuenciales con WHERE", isCorrect: false },
+                        { text: "INSERT MULTIPLE", isCorrect: false },
+                        { text: "INSERT ALL ... WHEN", isCorrect: true },
+                        { text: "MERGE INTO", isCorrect: false }
+                    ]
+                }
+            ];
+
+            // Instanciar
+            window.kahoot1 = new KahootGame('k1', qK1, 15);
+            window.kahoot2 = new KahootGame('k2', qK2, 20);
+
+        });
+    </script>
+</body>
+</html>

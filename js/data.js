@@ -257,6 +257,28 @@ const appData = {
                 iconShadow: 'drop-shadow-[0_0_15px_rgba(249,115,22,0.6)]'
             },
             icon: 'fa-database', iconContainer: 'bg-orange-900/40 border-orange-500/30', iconColor: 'text-orange-400'
+        },
+        {
+            id: 'clase-ea2-2',
+            unit: 'EA2',
+            type: 'hero',
+            href: 'clase-ea2-2.html',
+            colSpan: 2,
+            date: '2026-04-29',
+            dateText: '29 Abr 2026',
+            tag: 'AVANZADO', tagIcon: 'fa-bolt text-blue-300',
+            badge: 'Clase 2',
+            title: 'Control Avanzado:<br>SAVEPOINT e Inserciones Condicionales',
+            description: 'Domina el arte de retroceder en el tiempo dentro de una transacción con SAVEPOINT y aprende a insertar datos de forma masiva y condicional usando INSERT ALL y subconsultas.',
+            btnText: 'Iniciar Clase 2', btnIcon: 'fa-play',
+            theme: {
+                outerBorder: 'border-blue-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-blue-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-blue-500/20', circle2: 'bg-cyan-500/20',
+                tagBox: 'bg-blue-900/50 text-blue-200 border-blue-700 backdrop-blur-sm', tagText: 'text-blue-200', badgeTheme: 'bg-blue-600 text-white border-blue-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-blue-100', btn: 'bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 w-full justify-center text-white shadow-lg border border-blue-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(59,130,246,0.6)]'
+            },
+            icon: 'fa-code-branch', iconContainer: 'bg-blue-900/40 border-blue-500/30', iconColor: 'text-blue-400'
         }
     ]
 };
