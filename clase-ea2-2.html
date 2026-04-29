@@ -19,6 +19,22 @@
         .paired-btn.wrong { animation: shake 0.4s; border-color: #ef4444; background-color: #fef2f2; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
         
+        /* Animaciones para PPT */
+        @keyframes conveyor {
+            0% { transform: translateX(-20px) translateY(10px) rotate(-10deg); opacity: 0; }
+            20% { opacity: 1; transform: translateX(20px) translateY(0) rotate(0deg); }
+            80% { opacity: 1; transform: translateX(80px) translateY(0) rotate(5deg); }
+            100% { transform: translateX(120px) translateY(10px) rotate(10deg); opacity: 0; }
+        }
+        .animate-conveyor { animation: conveyor 3s infinite linear; }
+        .delay-1000 { animation-delay: 1s; }
+        .delay-2000 { animation-delay: 2s; }
+        
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); transform: scale(1); }
+            50% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); transform: scale(1.05); }
+        }
+        .animate-pulse-red { animation: pulse-red 2s infinite; }
         /* Tooltips personalizados */
         .tooltip-trigger { position: relative; cursor: help; border-bottom: 2px dotted #94a3b8; transition: all 0.2s; }
         .tooltip-trigger:hover { color: #3b82f6; border-color: #3b82f6; }
@@ -216,6 +232,17 @@
         <!-- ================= PESTAÑA 3: DESARROLLO (CONTENIDO) ================= -->
         <div id="tab-contenido" class="tab-content">
             
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 bg-slate-900 rounded-2xl p-6 shadow-lg border border-slate-700">
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-2"><i class="fa-solid fa-book-open text-blue-400 mr-2"></i> Lectura y Análisis</h2>
+                    <p class="text-slate-400 text-sm">Estudia el contenido técnico o utiliza el modo guiado en clase.</p>
+                </div>
+                <button onclick="document.getElementById('modal-ppt').classList.remove('hidden'); showSlide(0);" class="mt-4 md:mt-0 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-6 rounded-xl shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all transform hover:-translate-y-1 flex items-center gap-3">
+                    <i class="fa-solid fa-person-chalkboard text-2xl"></i> 
+                    <span class="text-left leading-tight">Activar Modo PPT<br><span class="text-xs text-blue-200 font-normal">Explicación Paso a Paso</span></span>
+                </button>
+            </div>
+
             <!-- Sección 1: SAVEPOINT -->
             <section class="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm mb-10">
                 <h2 class="text-3xl font-bold text-blue-700 border-b-2 border-blue-100 pb-4 mb-6">
@@ -781,6 +808,205 @@ SELECT 1 FROM DUAL;</code></pre>
             </div>
         </div>
 
+        <!-- Modal PPT (Modo Presentación) -->
+        <div id="modal-ppt" class="fixed inset-0 bg-slate-900 z-[100] hidden flex flex-col transition-opacity duration-300">
+            <!-- Header PPT -->
+            <div class="h-16 bg-slate-950 flex justify-between items-center px-6 shadow-md border-b border-slate-800">
+                <div class="text-white font-bold flex items-center gap-3">
+                    <div class="bg-blue-600 p-2 rounded-lg"><i class="fa-solid fa-person-chalkboard"></i></div>
+                    Modo Presentación
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="slide-counter" class="text-slate-400 font-mono text-sm bg-slate-800 px-3 py-1 rounded-full">1 / 6</span>
+                    <button onclick="closePPT()" class="text-gray-400 hover:text-white transition-colors bg-slate-800 hover:bg-red-600 w-8 h-8 rounded-full flex items-center justify-center">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Slides Container -->
+            <div class="flex-1 relative overflow-hidden bg-slate-900 flex items-center justify-center p-8">
+                
+                <!-- Slide 0 -->
+                <div class="ppt-slide absolute inset-0 flex flex-col items-center justify-center p-12 transition-all duration-500 transform translate-x-0 opacity-100">
+                    <div class="max-w-4xl w-full text-center">
+                        <div class="inline-block bg-blue-500/20 text-blue-400 border border-blue-500/30 px-6 py-2 rounded-full font-bold mb-8 text-sm tracking-widest uppercase">Clase 2 • EA2</div>
+                        <h2 class="text-5xl md:text-7xl font-black text-white mb-6 leading-tight">Control Avanzado <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">en DML</span></h2>
+                        <p class="text-2xl text-slate-300 font-medium">La vida en producción: Sobreviviendo a los errores y optimizando el tiempo.</p>
+                    </div>
+                </div>
+
+                <!-- Slide 1 -->
+                <div class="ppt-slide absolute inset-0 flex items-center justify-center p-12 transition-all duration-500 transform translate-x-full opacity-0 hidden">
+                    <div class="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                        <div>
+                            <div class="text-rose-500 text-6xl mb-6"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            <h2 class="text-4xl font-black text-white mb-6">El Terror del UPDATE sin WHERE</h2>
+                            <p class="text-xl text-slate-300 leading-relaxed mb-6">Un error clásico y devastador. Ocurre cuando la fatiga, el apuro o la falta de concentración ganan.</p>
+                            <div class="bg-rose-500/10 border-l-4 border-rose-500 p-6 rounded-r-xl">
+                                <p class="text-rose-300 italic text-lg">"El 80% de los desastres en bases de datos relacionales son causados por errores humanos al manipular datos directamente en producción."</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 shadow-2xl relative overflow-hidden transform md:rotate-2">
+                            <div class="absolute top-0 left-0 w-full h-2 bg-rose-500"></div>
+                            <span class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-2 block">Noticia de la Industria</span>
+                            <h3 class="text-2xl font-bold text-white mb-4">Ingeniero junior da saldo infinito a clientes</h3>
+                            <p class="text-slate-400 mb-6 text-sm leading-relaxed">En 2021, un banco europeo sufrió una caída de 4 horas cuando un script de actualización (UPDATE) se ejecutó sin la cláusula WHERE. Todos los clientes pasaron a tener el mismo saldo multimillonario, obligando a apagar los sistemas y hacer un restore desde cintas de respaldo.</p>
+                            <div class="bg-slate-900 p-4 rounded-xl font-mono text-rose-400 text-sm border border-slate-800">
+                                > UPDATE cuentas_bancarias<br>
+                                > SET saldo = 999999999;<br>
+                                > COMMIT;<br>
+                                <span class="text-slate-500 text-xs mt-2 block">-- 4.5 millones de filas afectadas</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 2 -->
+                <div class="ppt-slide absolute inset-0 flex items-center justify-center p-12 transition-all duration-500 transform translate-x-full opacity-0 hidden">
+                    <div class="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                        <div class="order-2 md:order-1 flex justify-center">
+                            <div class="relative w-full max-w-sm aspect-square bg-gradient-to-br from-indigo-900 to-slate-900 rounded-full flex items-center justify-center border-8 border-indigo-500/30 shadow-[0_0_50px_rgba(99,102,241,0.2)]">
+                                <i class="fa-solid fa-flag-checkered text-8xl text-indigo-400 absolute"></i>
+                                <div class="absolute inset-0 rounded-full border border-indigo-400/50 animate-ping opacity-20"></div>
+                            </div>
+                        </div>
+                        <div class="order-1 md:order-2">
+                            <div class="text-indigo-400 text-6xl mb-6"><i class="fa-solid fa-gamepad"></i></div>
+                            <h2 class="text-4xl font-black text-white mb-6">SAVEPOINT: <br>Checkpoints de la Vida Real</h2>
+                            <p class="text-xl text-slate-300 leading-relaxed mb-6">Imagina que juegas <em>Dark Souls</em> o <em>Elden Ring</em>. Antes del jefe final, tocas la "Hoguera" (guardas partida). Si mueres, no empiezas el juego desde cero, empiezas desde la puerta.</p>
+                            <p class="text-lg text-slate-400 leading-relaxed">En procesos bancarios nocturnos que procesan 2 millones de transferencias, si la 1.999.999 falla, no puedes darte el lujo de hacer <code>ROLLBACK</code> de los 2 millones enteros. Creas <code>SAVEPOINTs</code> periódicos para retroceder de forma segura y eficiente.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3 (OLTP vs Batch) -->
+                <div class="ppt-slide absolute inset-0 flex items-center justify-center p-12 transition-all duration-500 transform translate-x-full opacity-0 hidden">
+                    <div class="max-w-5xl w-full">
+                        <div class="text-center mb-8">
+                            <h2 class="text-4xl font-black text-white mb-4">¿Por qué agrupar transacciones? (OLTP vs Batch)</h2>
+                            <div class="inline-block bg-blue-900/40 border border-blue-500/30 p-4 rounded-xl text-left max-w-3xl">
+                                <p class="text-blue-200 font-medium"><i class="fa-solid fa-circle-info mr-2 text-blue-400"></i> <strong class="text-white">El Contexto Clave:</strong> Hacer <code>COMMIT</code> no es magia. Significa tomar los datos de la Memoria RAM (que es instantánea) y <strong>escribirlos físicamente en el Disco Duro</strong>. Escribir en disco (I/O) siempre es el cuello de botella más lento de un servidor.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- OLTP -->
+                            <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 shadow-lg relative">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <div class="w-14 h-14 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center text-2xl"><i class="fa-solid fa-mug-hot"></i></div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold text-white">Escenario 1: Compras un Café</h3>
+                                        <p class="text-blue-400 text-sm font-bold">Transacciones OLTP (Día a día)</p>
+                                    </div>
+                                </div>
+                                <ul class="text-slate-300 space-y-3 mb-6 text-sm">
+                                    <li><i class="fa-solid fa-play text-blue-400 text-xs mr-2"></i> Pagas con tu tarjeta en la caja.</li>
+                                    <li><i class="fa-solid fa-play text-blue-400 text-xs mr-2"></i> El banco actualiza tu saldo y el de la cafetería.</li>
+                                    <li><i class="fa-solid fa-play text-blue-400 text-xs mr-2"></i> <strong>¿COMMIT Inmediato? SÍ.</strong> Tú estás esperando. Escribir 1 fila en el disco demora apenas 1 milisegundo.</li>
+                                </ul>
+                                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex items-center gap-4 text-sm font-medium">
+                                    <i class="fa-solid fa-bolt text-yellow-400 text-xl"></i>
+                                    <span class="text-slate-300">1 Transacción = 1 Escritura en Disco.</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Batch -->
+                            <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 shadow-lg relative overflow-hidden">
+                                <div class="flex items-center gap-4 mb-4 relative z-10">
+                                    <div class="w-14 h-14 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center text-2xl"><i class="fa-solid fa-money-check-dollar"></i></div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold text-white">Escenario 2: Pago de Sueldos</h3>
+                                        <p class="text-emerald-400 text-sm font-bold">Procesos Batch (Nocturnos)</p>
+                                    </div>
+                                </div>
+                                <ul class="text-slate-300 space-y-3 mb-6 text-sm relative z-10">
+                                    <li><i class="fa-solid fa-play text-emerald-400 text-xs mr-2"></i> Es fin de mes. A las 3 AM el banco debe depositar sueldos a <strong>2.000.000 de clientes</strong>.</li>
+                                    <li><i class="fa-solid fa-play text-emerald-400 text-xs mr-2"></i> Si hicieran 1 COMMIT por cada cliente, el disco tendría que escribir 2 millones de veces individuales. <strong>Tardaría 14 horas</strong>.</li>
+                                </ul>
+                                <div class="bg-slate-900 p-4 rounded-xl border border-emerald-500/30 relative z-10">
+                                    <p class="text-emerald-400 text-sm mb-1 font-bold"><i class="fa-solid fa-lightbulb mr-1"></i> La Solución (Agrupación):</p>
+                                    <p class="text-slate-400 text-xs leading-relaxed">Procesan 10.000 sueldos en la memoria RAM ultra-rápida (creando un <code>SAVEPOINT</code> como respaldo). Luego, hacen <strong>1 solo COMMIT masivo</strong>. El disco guarda el bloque entero de un solo golpe. El proceso baja de 14 horas a <strong>15 minutos</strong>.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 4 -->
+                <div class="ppt-slide absolute inset-0 flex items-center justify-center p-12 transition-all duration-500 transform translate-x-full opacity-0 hidden">
+                    <div class="max-w-5xl w-full text-center">
+                        <div class="text-emerald-400 text-6xl mb-6"><i class="fa-solid fa-cart-shopping"></i></div>
+                        <h2 class="text-4xl font-black text-white mb-6">El Carrito de Supermercado (INSERT ALL)</h2>
+                        <p class="text-xl text-slate-300 leading-relaxed mb-12 max-w-3xl mx-auto">Piensa en tu base de datos como un supermercado. Tienes que comprar productos y separarlos en 3 bolsas distintas (las Tablas destino).</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 z-10 relative">
+                                <div class="w-16 h-16 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center text-2xl mx-auto mb-6 animate-pulse-red"><i class="fa-solid fa-person-running"></i></div>
+                                <h3 class="text-white font-bold mb-2">Novato (INSERT x3)</h3>
+                                <p class="text-slate-400 text-sm">Entras, sacas manzanas y vas a pagar. Vuelves a entrar desde la calle por leche. Entras por 3ra vez por el pan. <strong class="text-red-300">Caminas el mismo recorrido 3 veces.</strong> (El motor lee la misma tabla 3 veces).</p>
+                            </div>
+                            <div class="flex items-center justify-center text-slate-600 text-4xl">
+                                <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                            </div>
+                            <div class="bg-slate-800 p-6 rounded-2xl border border-emerald-500/30 relative overflow-hidden shadow-[0_0_30px_rgba(16,185,129,0.1)]">
+                                <!-- Animacion de Compras -->
+                                <div class="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
+                                    <div class="absolute top-1/4 left-0 text-emerald-500 text-2xl animate-conveyor"><i class="fa-solid fa-apple-whole"></i></div>
+                                    <div class="absolute top-1/2 left-0 text-emerald-500 text-2xl animate-conveyor delay-1000"><i class="fa-solid fa-jug-detergent"></i></div>
+                                    <div class="absolute bottom-1/4 left-0 text-emerald-500 text-2xl animate-conveyor delay-2000"><i class="fa-solid fa-bread-slice"></i></div>
+                                </div>
+                                <div class="absolute top-0 left-0 w-full h-1 bg-emerald-500"></div>
+                                <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center text-2xl mx-auto mb-6 relative z-10"><i class="fa-solid fa-cart-arrow-down"></i></div>
+                                <h3 class="text-white font-bold mb-2 relative z-10">Experto (INSERT ALL)</h3>
+                                <p class="text-slate-400 text-sm relative z-10">Llevas un carrito. Recorres el pasillo <strong class="text-emerald-300">UNA SOLA VEZ</strong>, echas todo y en la caja lo separas en 3 bolsas. <strong>Ahorraste horas de caminar</strong> (El motor lee la tabla 1 sola vez).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 4 -->
+                <div class="ppt-slide absolute inset-0 flex items-center justify-center p-12 transition-all duration-500 transform translate-x-full opacity-0 hidden">
+                    <div class="max-w-5xl w-full grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+                        <div class="md:col-span-7">
+                            <div class="text-purple-400 text-6xl mb-6"><i class="fa-solid fa-code-pull-request"></i></div>
+                            <h2 class="text-4xl font-black text-white mb-6">DUAL: El "Hack" Histórico de Oracle</h2>
+                            <p class="text-xl text-slate-300 leading-relaxed mb-6">En los 80s, los creadores de Oracle programaron el motor con una regla inquebrantable: <strong class="text-white bg-purple-900/50 px-2 py-1 rounded">"TODA consulta debe tener un FROM obligatoriamente"</strong>.</p>
+                            <p class="text-lg text-slate-400 leading-relaxed mb-6">Cuando querían hacer un cálculo matemático simple (ej: <code>SELECT 2+2;</code>), el motor se rompía por no tener FROM.</p>
+                            <div class="bg-purple-900/30 border border-purple-500/30 p-6 rounded-2xl">
+                                <p class="text-purple-300 font-medium">💡 En lugar de reescribir el motor central (lo cual era peligrosísimo), inventaron un "parche": <strong>La tabla DUAL</strong>. Una tabla inútil con 1 fila y 1 columna, creada solo para poder escribir <code>SELECT 2+2 FROM DUAL</code>. ¡Ese mismo parche usamos hoy para engañar al INSERT ALL!</p>
+                            </div>
+                        </div>
+                        <div class="md:col-span-5 flex justify-center">
+                            <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 shadow-2xl w-full text-center">
+                                <h3 class="text-xl font-bold text-white mb-6 border-b border-slate-700 pb-4">Anatomía de DUAL</h3>
+                                <table class="w-full text-left mb-6">
+                                    <thead>
+                                        <tr><th class="bg-slate-900 text-slate-400 p-3 rounded-tl-xl border border-slate-700">DUMMY (VARCHAR2)</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td class="bg-slate-800 text-white p-3 border border-slate-700 font-mono text-center">'X'</td></tr>
+                                    </tbody>
+                                </table>
+                                <p class="text-slate-500 text-sm">Fin. Eso es todo lo que contiene. La tabla más famosa (y curiosa) de Oracle.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer Controles PPT -->
+            <div class="h-20 bg-slate-950 flex justify-between items-center px-10 border-t border-slate-800">
+                <button onclick="prevSlide()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-6 rounded-xl transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Anterior
+                </button>
+                <button onclick="nextSlide()" id="ppt-next-btn" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-[0_0_15px_rgba(37,99,235,0.4)] flex items-center gap-2">
+                    Siguiente <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
     </main>
 
     <app-footer></app-footer>
@@ -1105,6 +1331,75 @@ SELECT 1 FROM DUAL;</code></pre>
                     }
                 });
             });
+
+            // --- MODO PPT LOGIC ---
+            let currentSlide = 0;
+            const slides = document.querySelectorAll('.ppt-slide');
+            const totalSlides = slides.length;
+            const slideCounter = document.getElementById('slide-counter');
+            const nextBtn = document.getElementById('ppt-next-btn');
+            
+            window.showSlide = function(index) {
+                if(index < 0) index = 0;
+                if(index >= totalSlides) index = totalSlides - 1;
+                currentSlide = index;
+
+                slides.forEach((slide, i) => {
+                    slide.classList.add('hidden');
+                    slide.classList.remove('translate-x-0', 'opacity-100', '-translate-x-full', 'translate-x-full');
+                    
+                    if (i === currentSlide) {
+                        slide.classList.remove('hidden');
+                        setTimeout(() => {
+                            slide.classList.add('translate-x-0', 'opacity-100');
+                        }, 50);
+                    } else if (i < currentSlide) {
+                        slide.classList.add('-translate-x-full', 'opacity-0');
+                    } else {
+                        slide.classList.add('translate-x-full', 'opacity-0');
+                    }
+                });
+
+                if(slideCounter) slideCounter.innerText = `${currentSlide + 1} / ${totalSlides}`;
+                
+                if(currentSlide === totalSlides - 1) {
+                    if(nextBtn) {
+                        nextBtn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Finalizar';
+                        nextBtn.classList.replace('bg-blue-600', 'bg-emerald-600');
+                        nextBtn.classList.replace('hover:bg-blue-500', 'hover:bg-emerald-500');
+                        nextBtn.classList.replace('shadow-[0_0_15px_rgba(37,99,235,0.4)]', 'shadow-[0_0_15px_rgba(16,185,129,0.4)]');
+                    }
+                } else {
+                    if(nextBtn) {
+                        nextBtn.innerHTML = 'Siguiente <i class="fa-solid fa-arrow-right"></i>';
+                        nextBtn.classList.replace('bg-emerald-600', 'bg-blue-600');
+                        nextBtn.classList.replace('hover:bg-emerald-500', 'hover:bg-blue-500');
+                        nextBtn.classList.replace('shadow-[0_0_15px_rgba(16,185,129,0.4)]', 'shadow-[0_0_15px_rgba(37,99,235,0.4)]');
+                    }
+                }
+            };
+
+            window.nextSlide = function() {
+                if(currentSlide === totalSlides - 1) {
+                    closePPT();
+                } else {
+                    showSlide(currentSlide + 1);
+                }
+            };
+
+            window.prevSlide = function() {
+                showSlide(currentSlide - 1);
+            };
+
+            window.closePPT = function() {
+                const modal = document.getElementById('modal-ppt');
+                modal.classList.add('opacity-0');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('opacity-0');
+                    showSlide(0); // Reset a la portada para la proxima vez
+                }, 300);
+            };
 
         });
     </script>
