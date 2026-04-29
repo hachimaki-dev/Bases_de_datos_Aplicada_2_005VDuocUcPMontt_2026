@@ -12,6 +12,12 @@
         .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .feedback-box { transition: all 0.3s ease; overflow: hidden; max-height: 0; opacity: 0; }
+        .feedback-box.show { max-height: 300px; opacity: 1; margin-top: 1rem; padding: 1rem; }
+        .paired-btn.selected { border-color: #3b82f6; background-color: #eff6ff; transform: scale(1.02); }
+        .paired-btn.matched { border-color: #22c55e; background-color: #f0fdf4; opacity: 0.8; pointer-events: none; }
+        .paired-btn.wrong { animation: shake 0.4s; border-color: #ef4444; background-color: #fef2f2; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
         
         /* Tooltips personalizados */
         .tooltip-trigger { position: relative; cursor: help; border-bottom: 2px dotted #94a3b8; transition: all 0.2s; }
@@ -83,6 +89,9 @@
             <li><button data-tab="activacion" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-blue-700 bg-blue-100 shadow-sm"><i class="fa-solid fa-bolt mr-2"></i>Activación</button></li>
             <li><button data-tab="ticket-entrada" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-ticket mr-2"></i>Ticket Entrada</button></li>
             <li><button data-tab="contenido" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-book-open mr-2"></i>Desarrollo</button></li>
+            <li><button data-tab="seleccion" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-list-check mr-2"></i>Selección</button></li>
+            <li><button data-tab="vf" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-check-double mr-2"></i>V o F</button></li>
+            <li><button data-tab="pareados" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-people-arrows mr-2"></i>Pareados</button></li>
             <li><button data-tab="envivo" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-code mr-2"></i>En Vivo</button></li>
             <li><button data-tab="practica" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-laptop-code mr-2"></i>Práctica</button></li>
             <li><button data-tab="cierre" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-flag-checkered mr-2"></i>Cierre</button></li>
@@ -299,7 +308,7 @@ SELECT emp_id, emp_nom, sueldo FROM empleados;</code></pre>
 
                     <h3 class="text-xl font-bold text-slate-800 mt-8"><i class="fa-solid fa-table-columns text-purple-500 mr-2"></i>Pivoteo en la Misma Tabla</h3>
                     <p class="text-gray-700">También sirve para insertar varias filas en la <strong>misma tabla</strong> de un solo golpe. Para lograr esto sin leer datos reales, se usa una tabla especial de Oracle llamada <span class="tooltip-trigger font-bold text-purple-700">DUAL<span class="tooltip-content">Tabla mágica interna de Oracle que tiene exactamente 1 columna y 1 fila. Se usa para operaciones que requieren la cláusula FROM sintácticamente pero no necesitan consultar datos reales (ej. cálculos matemáticos o funciones del sistema).</span></span>.</p>
-                    <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-inner">
+                    <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-inner mb-4">
                         <pre><code class="language-sql">-- Insertamos 3 roles nuevos de una sola vez
 INSERT ALL
     INTO roles (id_rol, desc) VALUES (1, 'Admin')
@@ -307,6 +316,9 @@ INSERT ALL
     INTO roles (id_rol, desc) VALUES (3, 'Lector')
 SELECT 1 FROM DUAL; -- El motor ejecuta las inserciones 1 vez (porque DUAL tiene 1 fila)</code></pre>
                     </div>
+                    <button onclick="document.getElementById('modal-dual').classList.remove('hidden')" class="bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold py-2.5 px-5 rounded-xl border-2 border-purple-200 shadow-sm transition-all text-sm flex items-center">
+                        <i class="fa-solid fa-circle-question mr-2 text-lg text-purple-500"></i> ¿Por qué Oracle hace esto tan complicado?
+                    </button>
                 </div>
             </section>
 
@@ -383,6 +395,116 @@ VALUES (3, 'Pedro Diaz', 20, 800000, 103, 'Pedro Diaz', 800000);
 COMMIT;</code></pre>
                 </div>
             </section>
+        </div>
+
+        <!-- ================= PESTAÑA X: SELECCIÓN MÚLTIPLE ================= -->
+        <div id="tab-seleccion" class="tab-content">
+            <h2 class="text-3xl font-bold text-center mb-8 text-gray-800"><i class="fa-solid fa-list-check text-blue-500 mr-2"></i> Selección Múltiple</h2>
+            <p class="text-center text-gray-600 mb-8 font-medium">Selecciona la respuesta correcta para cada caso. Recibirás feedback inmediato.</p>
+
+            <div class="space-y-8">
+                <!-- Q1 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm question-block">
+                    <h3 class="font-bold text-xl mb-4">1. El propósito de SAVEPOINT</h3>
+                    <p class="mb-4">¿Cuál es la función principal del comando <code>SAVEPOINT</code> dentro de una transacción en Oracle?</p>
+                    <div class="grid grid-cols-1 gap-3 options">
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-blue-300 transition-all font-medium" data-ans="wrong" data-msg="Esa es la función de COMMIT, no de SAVEPOINT.">A) Guardar permanentemente todos los cambios en el disco duro.</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-blue-300 transition-all font-medium" data-ans="correct" data-msg="¡Correcto! Sirve para dividir una transacción gigante en tramos seguros, permitiendo hacer ROLLBACK solo hasta ese punto.">B) Crear un punto de control temporal para retroceder parcialmente en caso de error.</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-blue-300 transition-all font-medium" data-ans="wrong" data-msg="Un SAVEPOINT no copia tablas, solo marca un punto en el tiempo transaccional.">C) Crear una copia de seguridad de la tabla actual.</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm question-block">
+                    <h3 class="font-bold text-xl mb-4">2. Poblamiento masivo</h3>
+                    <p class="mb-4">Si necesitas insertar miles de registros copiándolos desde otra tabla usando una subconsulta en el INSERT, ¿Qué debes omitir respecto al INSERT tradicional?</p>
+                    <div class="grid grid-cols-1 gap-3 options">
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-blue-300 transition-all font-medium" data-ans="correct" data-msg="¡Exacto! Al usar un SELECT como fuente de datos masiva, reemplazas la palabra y el bloque VALUES por la subconsulta.">A) La palabra clave VALUES.</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-blue-300 transition-all font-medium" data-ans="wrong" data-msg="No, INTO sigue siendo obligatorio para indicar el destino.">B) La cláusula INTO.</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-blue-300 transition-all font-medium" data-ans="wrong" data-msg="Siempre es buena práctica (y a veces obligatorio) definir las columnas de destino, no se omiten por usar subconsulta.">C) La definición de las columnas de destino.</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm question-block">
+                    <h3 class="font-bold text-xl mb-4">3. La tabla DUAL</h3>
+                    <p class="mb-4">En el comando <code>INSERT ALL</code>, muchas veces vemos al final <code>SELECT 1 FROM DUAL;</code>. ¿Por qué usamos la tabla DUAL aquí?</p>
+                    <div class="grid grid-cols-1 gap-3 options">
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-blue-300 transition-all font-medium" data-ans="wrong" data-msg="DUAL no es una tabla para guardar registros de seguridad, es para cálculos al vuelo.">A) Porque es la tabla de seguridad por defecto de Oracle.</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-blue-300 transition-all font-medium" data-ans="wrong" data-msg="DUAL no requiere permisos especiales.">B) Para darle permisos de administrador al INSERT.</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-blue-300 transition-all font-medium" data-ans="correct" data-msg="¡Correcto! Como el motor exige la cláusula SELECT para procesar un INSERT ALL, usamos DUAL para que lea exactamente 1 fila y ejecute las inserciones 1 sola vez sin leer datos reales.">C) Para satisfacer la sintaxis requerida del SELECT utilizando una tabla que tiene exactamente 1 fila, ejecutando la orden una sola vez.</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA Y: VERDADERO Y FALSO ================= -->
+        <div id="tab-vf" class="tab-content">
+            <h2 class="text-3xl font-bold text-center mb-8 text-gray-800"><i class="fa-solid fa-check-double text-teal-500 mr-2"></i> Verdadero o Falso</h2>
+            <p class="text-center text-gray-600 mb-8 font-medium">Analiza la afirmación y determina si es verdadera o falsa.</p>
+
+            <div class="space-y-6">
+                <!-- V/F 1 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm vf-block">
+                    <p class="text-lg font-medium mb-4">1. Si creo un SAVEPOINT y luego ejecuto <code>ROLLBACK TO nombre_savepoint;</code>, la transacción completa se da por finalizada y se cierra.</p>
+                    <div class="flex gap-4">
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="wrong" data-msg="Falso. Retroceder a un SAVEPOINT no cierra la transacción. Debes hacer COMMIT o un ROLLBACK total después para cerrarla.">Verdadero</button>
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="correct" data-msg="¡Correcto! La transacción sigue abierta, dándote la oportunidad de corregir tu error y continuar trabajando antes de hacer COMMIT.">Falso</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+
+                <!-- V/F 2 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm vf-block">
+                    <p class="text-lg font-medium mb-4">2. Con <code>INSERT ALL</code> y la cláusula <code>WHEN</code> puedo leer una tabla base y repartir sus registros hacia múltiples tablas de destino diferentes según condiciones lógicas.</p>
+                    <div class="flex gap-4">
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="correct" data-msg="¡Exacto! Ese es el principal superpoder del INSERT ALL condicional: distribuir masivamente.">Verdadero</button>
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="wrong" data-msg="Falso. Sí se puede, y es de hecho uno de los usos más potentes de esta instrucción.">Falso</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+
+                <!-- V/F 3 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm vf-block">
+                    <p class="text-lg font-medium mb-4">3. Una subconsulta (SELECT anidado) solo puede ser utilizada dentro de las instrucciones <code>INSERT</code>, pero es imposible usarla en un <code>UPDATE</code> o <code>DELETE</code>.</p>
+                    <div class="flex gap-4">
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="wrong" data-msg="Falso. Las subconsultas son universales. Por ejemplo, puedes usarlas en el WHERE de un DELETE para borrar según promedios o condiciones externas.">Verdadero</button>
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="correct" data-msg="¡Correcto! Las subconsultas son súper versátiles y pueden estar en cláusulas WHERE y SET de casi cualquier DML.">Falso</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA Z: TÉRMINOS PAREADOS ================= -->
+        <div id="tab-pareados" class="tab-content">
+            <h2 class="text-3xl font-bold text-center mb-8 text-gray-800"><i class="fa-solid fa-people-arrows text-rose-500 mr-2"></i> Términos Pareados</h2>
+            <p class="text-center text-gray-600 mb-8 font-medium">Selecciona un concepto de la izquierda y luego su definición a la derecha. Si son correctos, se enlazarán en verde.</p>
+            
+            <div class="flex flex-col md:flex-row gap-8 relative" id="pairing-container">
+                <!-- Columna Izquierda (Conceptos) -->
+                <div class="flex-1 space-y-4" id="col-terms">
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-bold paired-btn text-gray-700 hover:border-blue-300" data-type="term" data-pair="1">SAVEPOINT</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-bold paired-btn text-gray-700 hover:border-blue-300" data-type="term" data-pair="2">INSERT ALL (WHEN)</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-bold paired-btn text-gray-700 hover:border-blue-300" data-type="term" data-pair="3">Subconsulta</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-bold paired-btn text-gray-700 hover:border-blue-300" data-type="term" data-pair="4">Tabla DUAL</button>
+                </div>
+
+                <!-- Columna Derecha (Definiciones, desordenadas) -->
+                <div class="flex-1 space-y-4" id="col-defs">
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-medium paired-btn text-gray-700 hover:border-blue-300" data-type="def" data-pair="3">Consulta SELECT anidada dentro de otra instrucción DML para proveer filtros o datos dinámicos.</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-medium paired-btn text-gray-700 hover:border-blue-300" data-type="def" data-pair="1">Punto de control que permite retroceder (ROLLBACK) parcialmente sin cancelar la transacción entera.</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-medium paired-btn text-gray-700 hover:border-blue-300" data-type="def" data-pair="4">Tabla mágica interna de 1 fila usada para operaciones sintácticas que requieren un FROM pero no leen datos reales.</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-medium paired-btn text-gray-700 hover:border-blue-300" data-type="def" data-pair="2">Instrucción masiva que distribuye datos condicionalmente a múltiples tablas distintas.</button>
+                </div>
+            </div>
+            <!-- Feedback general para pareados -->
+            <div id="pareados-feedback" class="text-center font-bold text-xl mt-8 text-emerald-600 hidden">
+                ¡Excelente! Has emparejado correctamente todos los conceptos avanzados de DML.
+            </div>
         </div>
 
         <!-- ================= PESTAÑA 4: EN VIVO ================= -->
@@ -608,6 +730,57 @@ COMMIT;</code></pre>
             </div>
         </div>
 
+        <!-- Modal DUAL -->
+        <div id="modal-dual" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 animate-[fadeIn_0.2s_ease-out]">
+                <div class="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur z-20">
+                    <h3 class="text-2xl font-black text-slate-800"><i class="fa-solid fa-book-journal-whills text-purple-600 mr-2"></i>El misterio de DUAL y los INSERT múltiples</h3>
+                    <button onclick="document.getElementById('modal-dual').classList.add('hidden')" class="text-gray-400 hover:text-rose-500 transition-colors w-10 h-10 flex items-center justify-center rounded-full hover:bg-rose-50 bg-gray-50 border border-gray-200 shadow-sm">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-8 space-y-10">
+                    <!-- MySQL -->
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 relative overflow-hidden">
+                        <div class="absolute -right-6 -top-6 text-slate-200 opacity-50 text-8xl"><i class="fa-solid fa-apple-whole"></i></div>
+                        <h4 class="text-xl font-bold text-slate-800 mb-3 relative z-10"><span class="text-2xl">🍎</span> Cómo lo haces en MySQL (lo que tú sí viste)</h4>
+                        <p class="text-gray-600 mb-4 font-medium relative z-10">En MySQL, SQL Server o PostgreSQL, para insertar varias filas a la vez simplemente separas los valores por comas:</p>
+                        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm mb-4 relative z-10">
+                            <pre class="m-0 p-4"><code class="language-sql text-sm">INSERT INTO roles (id_rol, desc)
+VALUES 
+    (1, 'Admin'),
+    (2, 'Editor'),
+    (3, 'Lector');</code></pre>
+                        </div>
+                        <p class="text-slate-700 font-medium inline-flex items-center relative z-10">
+                            👉 Listo. Sin <code class="mx-1 bg-gray-200 px-1 rounded">SELECT</code>, sin <code class="mx-1 bg-gray-200 px-1 rounded">DUAL</code>, sin nada raro.
+                        </p>
+                    </div>
+
+                    <!-- Oracle -->
+                    <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-200 relative overflow-hidden">
+                        <div class="absolute -right-6 -top-6 text-emerald-200 opacity-50 text-8xl"><i class="fa-solid fa-lemon"></i></div>
+                        <h4 class="text-xl font-bold text-slate-800 mb-3 relative z-10"><span class="text-2xl">🍐</span> Cómo lo hace Oracle</h4>
+                        <p class="text-gray-700 mb-4 font-medium relative z-10">Oracle <strong>no soporta</strong> nativamente esa sintaxis simple de múltiples <code>VALUES</code> (históricamente). Entonces, sus desarrolladores inventaron un truco usando <code>INSERT ALL</code>.</p>
+                        
+                        <div class="bg-white border border-emerald-200 rounded-xl p-5 shadow-sm mb-4 relative z-10">
+                            <p class="text-gray-600 text-sm mb-3">El problema es que todo <code>INSERT ALL</code> <strong>está obligado sintácticamente</strong> a terminar con un <code>SELECT</code>. Pero si no estás leyendo datos de ninguna tabla... ¿Qué haces? <strong class="text-purple-700">¡Llamas a la magia de DUAL!</strong></p>
+                            <div class="bg-gray-900 rounded-lg overflow-hidden">
+                                <pre class="m-0 p-4"><code class="language-sql text-sm">INSERT ALL
+    INTO roles VALUES (1, 'Admin')
+    INTO roles VALUES (2, 'Editor')
+    INTO roles VALUES (3, 'Lector')
+SELECT 1 FROM DUAL;</code></pre>
+                            </div>
+                        </div>
+                        <p class="text-emerald-900 bg-emerald-100 p-4 rounded-lg font-medium relative z-10 shadow-sm border border-emerald-300">
+                            <i class="fa-solid fa-lightbulb text-yellow-500 mr-2 text-lg"></i> <strong>En resumen:</strong> Usamos la tabla mágica <code>DUAL</code> simplemente para "engañar" a Oracle, cumplir su regla de poner un <code>SELECT</code> al final, y lograr que las inserciones se ejecuten exactamente 1 sola vez.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <app-footer></app-footer>
@@ -829,6 +1002,109 @@ COMMIT;</code></pre>
             // Instanciar
             window.kahoot1 = new KahootGame('k1', qK1, 15);
             window.kahoot2 = new KahootGame('k2', qK2, 20);
+
+            // --- HELPERS FOR VISUAL FEEDBACK ---
+            function showFeedback(boxElement, isCorrect, message) {
+                boxElement.className = 'feedback-box rounded-xl font-medium text-white show';
+                if(isCorrect) {
+                    boxElement.classList.add('bg-emerald-500');
+                    boxElement.innerHTML = `<i class="fa-solid fa-circle-check mr-2"></i> ${message}`;
+                } else {
+                    boxElement.classList.add('bg-red-500');
+                    boxElement.innerHTML = `<i class="fa-solid fa-circle-xmark mr-2"></i> ${message}`;
+                }
+            }
+
+            // --- SELECCIÓN MÚLTIPLE ---
+            const optionsBtns = document.querySelectorAll('.options button');
+            optionsBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const parentBox = this.closest('.question-block');
+                    const isCorrect = this.getAttribute('data-ans') === 'correct';
+                    const msg = this.getAttribute('data-msg');
+                    const feedback = parentBox.querySelector('.feedback-box');
+                    
+                    const siblings = parentBox.querySelectorAll('button');
+                    siblings.forEach(sib => {
+                        sib.classList.remove('bg-red-50', 'border-red-400', 'bg-emerald-50', 'border-emerald-400', 'ring-2');
+                    });
+
+                    if(isCorrect) {
+                        this.classList.add('bg-emerald-50', 'border-emerald-400', 'ring-2', 'ring-emerald-200');
+                    } else {
+                        this.classList.add('bg-red-50', 'border-red-400');
+                        this.style.animation = "shake 0.4s";
+                        setTimeout(() => this.style.animation = "", 400);
+                    }
+                    showFeedback(feedback, isCorrect, msg);
+                });
+            });
+
+            // --- VERDADERO Y FALSO ---
+            const vfBtns = document.querySelectorAll('.vf-btn');
+            vfBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const parentBox = this.closest('.vf-block');
+                    const isCorrect = this.getAttribute('data-ans') === 'correct';
+                    const msg = this.getAttribute('data-msg');
+                    const feedback = parentBox.querySelector('.feedback-box');
+                    
+                    const siblings = parentBox.querySelectorAll('.vf-btn');
+                    siblings.forEach(sib => {
+                        sib.classList.remove('bg-red-100', 'text-red-700', 'border-red-400', 'bg-emerald-100', 'text-emerald-700', 'border-emerald-400');
+                    });
+
+                    if(isCorrect) {
+                        this.classList.add('bg-emerald-100', 'text-emerald-700', 'border-emerald-400');
+                    } else {
+                        this.classList.add('bg-red-100', 'text-red-700', 'border-red-400');
+                    }
+                    showFeedback(feedback, isCorrect, msg);
+                });
+            });
+
+            // --- TÉRMINOS PAREADOS ---
+            let selectedTerm = null;
+            let matchedPairs = 0;
+            const pairedBtns = document.querySelectorAll('.paired-btn');
+            
+            pairedBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (this.classList.contains('matched')) return;
+                    const type = this.getAttribute('data-type');
+                    const pairId = this.getAttribute('data-pair');
+
+                    if (type === 'term') {
+                        document.querySelectorAll('[data-type="term"]').forEach(b => {
+                            if(!b.classList.contains('matched')) b.classList.remove('selected');
+                        });
+                        this.classList.add('selected');
+                        selectedTerm = { element: this, id: pairId };
+                    } 
+                    else if (type === 'def') {
+                        if (!selectedTerm) return; 
+                        
+                        if (selectedTerm.id === pairId) {
+                            this.classList.add('matched');
+                            selectedTerm.element.classList.remove('selected');
+                            selectedTerm.element.classList.add('matched');
+                            
+                            this.innerHTML += ' <i class="fa-solid fa-check text-emerald-600 float-right mt-1"></i>';
+                            selectedTerm.element.innerHTML += ' <i class="fa-solid fa-check text-emerald-600 float-right mt-1"></i>';
+                            
+                            selectedTerm = null;
+                            matchedPairs++;
+
+                            if (matchedPairs === 4) {
+                                document.getElementById('pareados-feedback').classList.remove('hidden');
+                            }
+                        } else {
+                            this.classList.add('wrong');
+                            setTimeout(() => { this.classList.remove('wrong'); }, 400);
+                        }
+                    }
+                });
+            });
 
         });
     </script>
