@@ -279,6 +279,28 @@ const appData = {
                 iconShadow: 'drop-shadow-[0_0_15px_rgba(59,130,246,0.6)]'
             },
             icon: 'fa-code-branch', iconContainer: 'bg-blue-900/40 border-blue-500/30', iconColor: 'text-blue-400'
+        },
+        {
+            id: 'clase-ea2-3',
+            unit: 'EA2',
+            type: 'hero',
+            href: 'clase-ea2-3.html',
+            colSpan: 2,
+            date: '2026-05-02',
+            dateText: '2 May 2026',
+            tag: 'ESTRUCTURA Y SEGURIDAD', tagIcon: 'fa-shield-halved text-indigo-300',
+            badge: 'Clase 3',
+            title: 'Control y Manipulación:<br>Vistas, Secuencias y Roles',
+            description: 'Estructura la base de datos más allá de las tablas básicas para mejorar la seguridad, la automatización y la experiencia del usuario con Vistas, Secuencias y Control de Acceso (Privilegios).',
+            btnText: 'Iniciar Clase 3', btnIcon: 'fa-play',
+            theme: {
+                outerBorder: 'border-indigo-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-indigo-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-indigo-500/20', circle2: 'bg-violet-500/20',
+                tagBox: 'bg-indigo-900/50 text-indigo-200 border-indigo-700 backdrop-blur-sm', tagText: 'text-indigo-200', badgeTheme: 'bg-indigo-600 text-white border-indigo-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-indigo-100', btn: 'bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 w-full justify-center text-white shadow-lg border border-indigo-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(99,102,241,0.6)]'
+            },
+            icon: 'fa-user-lock', iconContainer: 'bg-indigo-900/40 border-indigo-500/30', iconColor: 'text-indigo-400'
         }
     ]
 };

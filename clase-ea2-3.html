@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 3 - Diario de Clases EA2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <style>
+        .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .feedback-box { transition: all 0.3s ease; overflow: hidden; max-height: 0; opacity: 0; }
+        .feedback-box.show { max-height: 300px; opacity: 1; margin-top: 1rem; padding: 1rem; }
+        .paired-btn.selected { border-color: #6366f1; background-color: #e0e7ff; transform: scale(1.02); }
+        .paired-btn.matched { border-color: #22c55e; background-color: #f0fdf4; opacity: 0.8; pointer-events: none; }
+        .paired-btn.wrong { animation: shake 0.4s; border-color: #ef4444; background-color: #fef2f2; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        
+        /* Tooltips personalizados */
+        .tooltip-trigger { position: relative; cursor: help; border-bottom: 2px dotted #94a3b8; transition: all 0.2s; }
+        .tooltip-trigger:hover { color: #6366f1; border-color: #6366f1; }
+        .tooltip-trigger .tooltip-content {
+            visibility: hidden; background-color: #1e293b; color: #f8fafc; text-align: center;
+            border-radius: 8px; padding: 0.75rem 1rem; position: absolute; z-index: 50;
+            bottom: 130%; left: 50%; transform: translateX(-50%) translateY(10px); opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: max-content; max-width: 280px; 
+            font-size: 0.875rem; font-weight: 500; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); line-height: 1.5; pointer-events: none;
+        }
+        .tooltip-trigger .tooltip-content::after {
+            content: ""; position: absolute; top: 100%; left: 50%;
+            margin-left: -6px; border-width: 6px; border-style: solid;
+            border-color: #1e293b transparent transparent transparent;
+        }
+        .tooltip-trigger:hover .tooltip-content { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* Kahoot Style Classes */
+        .kahoot-btn { transition: all 0.2s; }
+        .kahoot-btn:hover { transform: scale(1.02); filter: brightness(1.1); }
+        .kahoot-btn:active { transform: scale(0.95); }
+        .kahoot-red { background-color: #e21b3c; border-bottom: 4px solid #b0102b; color: white; }
+        .kahoot-blue { background-color: #1368ce; border-bottom: 4px solid #0c4d9a; color: white; }
+        .kahoot-yellow { background-color: #d89e00; border-bottom: 4px solid #a87b00; color: white; }
+        .kahoot-green { background-color: #26890c; border-bottom: 4px solid #1a6108; color: white; }
+        
+        .timer-bar-container { width: 100%; height: 20px; background-color: #e5e7eb; border-radius: 10px; overflow: hidden; }
+        .timer-bar { height: 100%; background-color: #8b5cf6; transition: width 1s linear, background-color 0.5s; width: 100%; }
+        .timer-bar.urgent { background-color: #ef4444; animation: pulse-fast 0.5s infinite alternate; }
+        
+        @keyframes pulse-fast { from { opacity: 1; } to { opacity: 0.7; } }
+        @keyframes shake-screen {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .shake-urgent { animation: shake-screen 0.5s; }
+        
+        .kahoot-screen { display: none; }
+        .kahoot-screen.active { display: flex; flex-direction: column; }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen bg-gray-50 text-gray-800 pb-20">
+    <app-nav></app-nav>
+
+    <header class="max-w-5xl mx-auto px-6 text-center mb-10 pt-10">
+        <div class="inline-block bg-indigo-100 px-6 py-2.5 rounded-full text-indigo-700 font-bold text-base mb-6 border-2 border-indigo-200 shadow-sm">
+            Unidad EA2 - Clase 3
+        </div>
+        <h1 class="text-5xl md:text-6xl font-bold text-indigo-600 mb-6 drop-shadow-sm leading-tight">Control y Manipulación:<br>Vistas, Secuencias y Roles</h1>
+        <p class="text-xl md:text-2xl text-gray-700 bg-white inline-flex items-center gap-3 px-8 py-4 rounded-full shadow-md border-2 border-indigo-100 mt-4 font-bold mx-auto justify-center">
+            Seguridad y automatización más allá de las tablas
+        </p>
+    </header>
+
+    <!-- Navegación de Pestañas (Tabs) -->
+    <nav class="max-w-6xl mx-auto px-4 mb-8 sticky top-4 z-40">
+        <ul class="flex flex-wrap justify-center gap-2 bg-white/90 backdrop-blur-md p-2 rounded-2xl shadow-md border border-gray-200">
+            <li><button data-tab="activacion" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-indigo-700 bg-indigo-100 shadow-sm"><i class="fa-solid fa-bolt mr-2"></i>Activación</button></li>
+            <li><button data-tab="ticket-entrada" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-ticket mr-2"></i>Ticket Entrada</button></li>
+            <li><button data-tab="contenido" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-book-open mr-2"></i>Desarrollo</button></li>
+            <li><button data-tab="seleccion" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-list-check mr-2"></i>Selección</button></li>
+            <li><button data-tab="vf" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-check-double mr-2"></i>V o F</button></li>
+            <li><button data-tab="pareados" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-people-arrows mr-2"></i>Pareados</button></li>
+            <li><button data-tab="envivo" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-code mr-2"></i>En Vivo</button></li>
+            <li><button data-tab="practica" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-laptop-code mr-2"></i>Práctica</button></li>
+            <li><button data-tab="cierre" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-flag-checkered mr-2"></i>Cierre</button></li>
+            <li><button data-tab="ticket-salida" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-trophy mr-2"></i>Ticket Salida</button></li>
+        </ul>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-6">
+        
+        <!-- ================= PESTAÑA 1: ACTIVACIÓN ================= -->
+        <div id="tab-activacion" class="tab-content active">
+            <section class="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm mb-10 text-center">
+                <h2 class="text-3xl font-bold text-slate-800 mb-6">El Límite de las Tablas 🧱</h2>
+                <p class="text-lg text-gray-600 mb-8">Hasta ahora, todo nuestro mundo han sido las tablas. Pero en un sistema real, una tabla por sí sola tiene problemas de seguridad y eficiencia. Pasa el cursor sobre cada tarjeta.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="group perspective">
+                        <div class="relative preserve-3d group-hover-rotate w-full h-40 duration-700 cursor-pointer">
+                            <!-- Frente -->
+                            <div class="absolute backface-hidden w-full h-full flex items-center justify-center bg-white border-2 border-indigo-200 rounded-2xl shadow-sm p-6">
+                                <h3 class="text-2xl font-bold text-indigo-700"><i class="fa-solid fa-eye-slash mr-2"></i>El Problema de la Privacidad</h3>
+                            </div>
+                            <!-- Dorso -->
+                            <div class="absolute my-rotate-y-180 backface-hidden w-full h-full flex flex-col items-center justify-center p-6 bg-indigo-50 rounded-2xl text-indigo-900 border-2 border-indigo-300 shadow-sm">
+                                <p class="font-medium text-sm text-center">Si le das a alguien acceso a la tabla "Empleados", podrá ver TODAS sus columnas. ¿Qué pasa si quieres que vean los nombres pero NO los salarios? Necesitamos <strong class="text-indigo-700">Vistas</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="group perspective">
+                        <div class="relative preserve-3d group-hover-rotate w-full h-40 duration-700 cursor-pointer">
+                            <div class="absolute backface-hidden w-full h-full flex items-center justify-center bg-white border-2 border-violet-200 rounded-2xl shadow-sm p-6">
+                                <h3 class="text-2xl font-bold text-violet-700"><i class="fa-solid fa-hashtag mr-2"></i>El Problema de los IDs</h3>
+                            </div>
+                            <div class="absolute my-rotate-y-180 backface-hidden w-full h-full flex flex-col items-center justify-center p-6 bg-violet-50 rounded-2xl text-violet-900 border-2 border-violet-300 shadow-sm">
+                                <p class="font-medium text-sm text-center">Insertar IDs manualmente (1, 2, 3...) es lento y propenso a errores en sistemas con miles de usuarios concurrentes. Necesitamos un generador automático: <strong class="text-violet-700">Secuencias</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="group perspective">
+                        <div class="relative preserve-3d group-hover-rotate w-full h-40 duration-700 cursor-pointer">
+                            <div class="absolute backface-hidden w-full h-full flex items-center justify-center bg-white border-2 border-fuchsia-200 rounded-2xl shadow-sm p-6">
+                                <h3 class="text-2xl font-bold text-fuchsia-700"><i class="fa-solid fa-user-lock mr-2"></i>El Problema de "Soy Dios"</h3>
+                            </div>
+                            <div class="absolute my-rotate-y-180 backface-hidden w-full h-full flex flex-col items-center justify-center p-6 bg-fuchsia-50 rounded-2xl text-fuchsia-900 border-2 border-fuchsia-300 shadow-sm">
+                                <p class="font-medium text-sm text-center">Un sistema no puede tener un solo usuario administrador para todo el equipo. Necesitamos crear cuentas separadas y limitar qué pueden hacer: <strong class="text-fuchsia-700">Control de Acceso</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="group perspective">
+                        <div class="relative preserve-3d group-hover-rotate w-full h-40 duration-700 cursor-pointer">
+                            <div class="absolute backface-hidden w-full h-full flex items-center justify-center bg-white border-2 border-slate-200 rounded-2xl shadow-sm p-6">
+                                <h3 class="text-2xl font-bold text-slate-700"><i class="fa-solid fa-layer-group mr-2"></i>Arquitectura Real</h3>
+                            </div>
+                            <div class="absolute my-rotate-y-180 backface-hidden w-full h-full flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl text-slate-900 border-2 border-slate-300 shadow-sm">
+                                <p class="font-medium text-sm text-center">Una Base de Datos no es solo una hoja de cálculo gigante. Es un motor complejo que maneja seguridad, automatización y múltiples capas lógicas para proteger la información.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Custom CSS for 3D flip card -->
+                <style>
+                    .perspective { perspective: 1000px; }
+                    .preserve-3d { transform-style: preserve-3d; }
+                    .backface-hidden { backface-visibility: hidden; }
+                    .my-rotate-y-180 { transform: rotateY(180deg); }
+                    .group:hover .group-hover-rotate { transform: rotateY(180deg); }
+                </style>
+            </section>
+        </div>
+
+        <!-- ================= PESTAÑA 2: TICKET ENTRADA (KAHOOT) ================= -->
+        <div id="tab-ticket-entrada" class="tab-content">
+            <div id="k1-container" class="bg-gray-100 rounded-3xl p-8 max-w-3xl mx-auto shadow-inner border-4 border-gray-200 text-center min-h-[500px] flex flex-col relative overflow-hidden">
+                
+                <!-- Pantalla Inicial -->
+                <div id="k1-start" class="kahoot-screen active h-full justify-center items-center flex-1">
+                    <i class="fa-solid fa-stopwatch text-6xl text-indigo-600 mb-6 drop-shadow-md animate-bounce"></i>
+                    <h2 class="text-4xl font-black text-slate-800 mb-4">Ticket de Entrada</h2>
+                    <p class="text-xl font-bold text-gray-600 mb-8">2 preguntas. 15 segundos cada una. ¡Prepárate!</p>
+                    <button onclick="kahoot1.start()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-2xl py-4 px-12 rounded-xl shadow-[0_6px_0_#4338ca] active:shadow-[0_0px_0_#4338ca] active:translate-y-1.5 transition-all">¡Comenzar!</button>
+                </div>
+
+                <!-- Pantalla de Pregunta -->
+                <div id="k1-question" class="kahoot-screen flex-1">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="bg-white px-4 py-1 rounded-full font-bold text-gray-600 shadow-sm" id="k1-counter">Pregunta 1 de 2</span>
+                        <span class="bg-indigo-100 text-indigo-800 px-4 py-1 rounded-full font-black text-xl shadow-sm" id="k1-timer-text">15</span>
+                    </div>
+                    <div class="timer-bar-container mb-6 shadow-sm">
+                        <div id="k1-timer-bar" class="timer-bar"></div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-2xl shadow-sm mb-8 border border-gray-200">
+                        <h3 class="text-2xl md:text-3xl font-bold text-slate-800" id="k1-q-text">Pregunta...</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-auto" id="k1-options">
+                        <!-- Botones inyectados vía JS -->
+                    </div>
+                </div>
+
+                <!-- Pantalla de Feedback -->
+                <div id="k1-feedback" class="kahoot-screen justify-center items-center flex-1">
+                    <div id="k1-fb-icon" class="text-8xl mb-6"></div>
+                    <h2 id="k1-fb-title" class="text-5xl font-black mb-4"></h2>
+                    <p id="k1-fb-points" class="text-xl font-bold text-white bg-black/20 px-6 py-2 rounded-full mb-8"></p>
+                    <button onclick="kahoot1.next()" class="bg-white/20 hover:bg-white/30 text-white border-2 border-white font-bold text-xl py-3 px-10 rounded-xl transition-all">Siguiente</button>
+                </div>
+
+                <!-- Pantalla Final -->
+                <div id="k1-end" class="kahoot-screen justify-center items-center flex-1">
+                    <i class="fa-solid fa-trophy text-7xl text-yellow-500 mb-6 drop-shadow-md"></i>
+                    <h2 class="text-4xl font-black text-slate-800 mb-2">¡Completado!</h2>
+                    <p class="text-lg text-gray-600 mb-6 font-medium">Puntaje Total:</p>
+                    <div class="text-6xl font-black text-indigo-600 mb-8" id="k1-final-score">0</div>
+                    <p class="text-gray-500 font-bold mb-4">Ya puedes pasar a la pestaña de Desarrollo.</p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 3: DESARROLLO (CONTENIDO) ================= -->
+        <div id="tab-contenido" class="tab-content">
+            
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 bg-slate-900 rounded-2xl p-6 shadow-lg border border-slate-700">
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-2"><i class="fa-solid fa-book-open text-indigo-400 mr-2"></i> Lectura y Análisis</h2>
+                    <p class="text-slate-400 text-sm">Estudia el contenido técnico sobre los objetos de BD.</p>
+                </div>
+            </div>
+
+            <!-- Sección 1: Vistas (Views) -->
+            <section class="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm mb-10">
+                <h2 class="text-3xl font-bold text-indigo-700 border-b-2 border-indigo-100 pb-4 mb-6">
+                    <i class="fa-solid fa-eye text-indigo-500 bg-indigo-50 p-3 rounded-2xl"></i> Vistas (Views): Las Tablas Virtuales
+                </h2>
+                <div class="space-y-6">
+                    <p class="text-lg leading-relaxed text-gray-700">
+                        Una <strong>Vista</strong> es una consulta <code>SELECT</code> guardada en la base de datos con un nombre. Se comporta exactamente igual que una tabla cuando la consultas, pero <strong>no almacena datos físicos</strong> por sí sola; los extrae de las tablas originales en tiempo real.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-200">
+                            <h3 class="text-xl font-bold text-indigo-900 mb-2"><i class="fa-solid fa-shield-halved mr-2"></i>Para Seguridad</h3>
+                            <p class="text-indigo-800 text-sm">Oculta columnas sensibles (como salarios o contraseñas). Le das acceso al usuario a la Vista, en lugar de a la Tabla original completa.</p>
+                        </div>
+                        <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-200">
+                            <h3 class="text-xl font-bold text-indigo-900 mb-2"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Para Simplicidad</h3>
+                            <p class="text-indigo-800 text-sm">Si tienes un <code>JOIN</code> súper complejo que usas todos los días, guárdalo como una Vista. Luego solo haces <code>SELECT * FROM tu_vista</code>.</p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-inner mt-6">
+                        <pre><code class="language-sql">-- 1. Creamos la vista para ocultar el salario
+CREATE OR REPLACE VIEW vista_empleados_publico AS
+SELECT id, nombre, cargo 
+FROM empleados; -- Nota: NO seleccionamos la columna 'salario'
+
+-- 2. El usuario consulta la vista como si fuera una tabla
+SELECT * FROM vista_empleados_publico;</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección 2: Secuencias (Sequences) -->
+            <section class="bg-white p-8 rounded-3xl border border-violet-100 shadow-sm mb-10">
+                <h2 class="text-3xl font-bold text-violet-600 border-b-2 border-violet-200 pb-4 mb-6">
+                    <i class="fa-solid fa-arrow-up-9-1 text-violet-500 bg-violet-100 p-3 rounded-2xl"></i> Secuencias: Generadores Numéricos
+                </h2>
+                <div class="space-y-6">
+                    <p class="text-lg leading-relaxed text-gray-700 font-medium">
+                        Una <strong>Secuencia</strong> es un objeto que genera números secuenciales y únicos (1, 2, 3...). Son independientes de las tablas y se utilizan casi exclusivamente para rellenar de forma automática las <strong>Claves Primarias (Primary Keys)</strong> de las tablas al hacer un <code>INSERT</code>.
+                    </p>
+                    
+                    <h3 class="text-xl font-bold text-slate-800 mt-6"><i class="fa-solid fa-gear text-violet-500 mr-2"></i>El Motor de la Secuencia</h3>
+                    <p class="text-gray-700">La magia ocurre con dos palabras clave que debes añadirle al nombre de tu secuencia:</p>
+                    <ul class="list-disc pl-6 text-gray-700 space-y-2 mb-4">
+                        <li><code>.NEXTVAL</code>: Genera el <strong>siguiente</strong> número en la secuencia y lo devuelve. (Lo usas para insertar).</li>
+                        <li><code>.CURRVAL</code>: Devuelve el número <strong>actual</strong> que generaste en tu sesión, sin incrementarlo. (Útil para revisar en qué número vas).</li>
+                    </ul>
+                    
+                    <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-inner">
+                        <pre><code class="language-sql">-- 1. Crear la secuencia
+CREATE SEQUENCE seq_empleados 
+START WITH 100 
+INCREMENT BY 1;
+
+-- 2. Usar la secuencia en un INSERT
+INSERT INTO empleados (id, nombre, cargo, salario) 
+VALUES (seq_empleados.NEXTVAL, 'Ana', 'Dev', 2000); 
+-- Ana obtiene el ID 100
+
+INSERT INTO empleados (id, nombre, cargo, salario) 
+VALUES (seq_empleados.NEXTVAL, 'Beto', 'Ops', 1800); 
+-- Beto obtiene el ID 101</code></pre>
+                    </div>
+                    <div class="mt-6 text-center">
+                        <button onclick="document.getElementById('modal-identity').classList.remove('hidden')" class="inline-flex items-center bg-violet-100 hover:bg-violet-200 text-violet-800 font-bold py-3 px-6 rounded-full border-2 border-violet-300 shadow-sm transition-all transform hover:scale-105">
+                            <i class="fa-solid fa-code-compare mr-2 text-xl text-violet-600"></i> Identity vs Sequences: ¿Cuál usar?
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección 3: Control de Acceso (Usuarios y Privilegios) -->
+            <section class="bg-white p-8 rounded-3xl border border-fuchsia-100 shadow-sm mb-10">
+                <h2 class="text-3xl font-bold text-fuchsia-600 border-b-2 border-fuchsia-200 pb-4 mb-6">
+                    <i class="fa-solid fa-user-shield text-fuchsia-500 bg-fuchsia-100 p-3 rounded-2xl"></i> DCL: Control de Acceso y Privilegios
+                </h2>
+                <div class="space-y-6">
+                    <p class="text-lg leading-relaxed text-gray-700">
+                        No todos pueden hacer todo. El Data Control Language (DCL) nos permite administrar la seguridad de nuestra base de datos creando usuarios y otorgando (o quitando) permisos específicos mediante los comandos <code>GRANT</code> y <code>REVOKE</code>.
+                    </p>
+                    
+                    <div class="flex flex-col md:flex-row gap-6 mt-6">
+                        <div class="flex-1 bg-white border-2 border-fuchsia-100 p-6 rounded-2xl shadow-sm">
+                            <h3 class="font-bold text-slate-800 text-lg mb-3 border-b pb-2"><i class="fa-solid fa-globe text-fuchsia-500 mr-2"></i>Privilegios de Sistema</h3>
+                            <p class="text-gray-600 text-sm mb-3">Permisos generales sobre la base de datos entera. Ej: Poder conectarse, poder crear tablas, crear usuarios.</p>
+                            <code class="text-xs bg-gray-100 text-pink-600 p-2 rounded block">GRANT CREATE SESSION TO juan;</code>
+                        </div>
+                        <div class="flex-1 bg-white border-2 border-fuchsia-100 p-6 rounded-2xl shadow-sm">
+                            <h3 class="font-bold text-slate-800 text-lg mb-3 border-b pb-2"><i class="fa-solid fa-table text-fuchsia-500 mr-2"></i>Privilegios de Objeto</h3>
+                            <p class="text-gray-600 text-sm mb-3">Permisos sobre un objeto específico (una tabla o vista). Ej: Poder hacer SELECT o UPDATE solo a la tabla 'empleados'.</p>
+                            <code class="text-xs bg-gray-100 text-pink-600 p-2 rounded block">GRANT SELECT ON empleados TO juan;</code>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-inner mt-4">
+                        <pre><code class="language-sql">-- 1. Crear el usuario (requieres ser administrador)
+CREATE USER analista_rrhh IDENTIFIED BY "Password123";
+
+-- 2. Darle permiso para que pueda iniciar sesión (Sistema)
+GRANT CREATE SESSION TO analista_rrhh;
+
+-- 3. Darle permiso para ver nuestra VISTA segura (Objeto)
+GRANT SELECT ON vista_empleados_publico TO analista_rrhh;
+
+-- Si se porta mal, le quitamos el permiso
+REVOKE SELECT ON vista_empleados_publico FROM analista_rrhh;</code></pre>
+                    </div>
+
+                    <!-- FAQ Pedagógico: Por qué crear usuarios en BD -->
+                    <div class="bg-fuchsia-50 border-l-4 border-fuchsia-500 p-6 rounded-r-2xl mt-8 relative shadow-sm">
+                        <div class="absolute -left-4 -top-4 bg-fuchsia-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-md"><i class="fa-solid fa-question text-sm"></i></div>
+                        <h4 class="font-bold text-fuchsia-900 text-lg mb-2 pl-2">Pregunta Frecuente: ¿Por qué crear usuarios en la BD si existe el "Frontend"?</h4>
+                        <p class="text-gray-700 text-sm leading-relaxed mb-3 pl-2">
+                            Muchos estudiantes se preguntan: <em>"¿Para qué crear un usuario <code>us_cobranzas</code> en la base de datos si el analista de cobranzas va a usar una página web (Frontend) o una app, y no va a ejecutar código SQL manualmente en la consola?"</em>
+                        </p>
+                        <p class="text-gray-700 text-sm leading-relaxed pl-2 font-medium">
+                            La respuesta está en la <strong>Arquitectura Segura</strong>:
+                        </p>
+                        <ul class="list-disc pl-8 text-sm text-gray-700 space-y-2 mt-2">
+                            <li>El Frontend se comunica con una <strong>API (Backend)</strong>. Es el código de esa API el que hace la conexión real a la base de datos.</li>
+                            <li>Si el Backend se conecta a Oracle usando un superusuario administrador, y un hacker logra encontrar una vulnerabilidad en la web, ¡tendrá control total de todos tus datos!</li>
+                            <li>Para evitar esto, el Backend se configura para que se conecte usando credenciales limitadas (ej: nuestro <code>us_cobranzas</code>). Así, la seguridad está garantizada <strong>a nivel de motor</strong>. Si la web es hackeada, el atacante igual no podrá ver los diagnósticos de los pacientes, porque el motor de base de datos le bloqueará el paso (Principio de Menor Privilegio).</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-6 text-center">
+                        <button onclick="document.getElementById('modal-polp').classList.remove('hidden')" class="inline-flex items-center bg-fuchsia-100 hover:bg-fuchsia-200 text-fuchsia-800 font-bold py-3 px-6 rounded-full border-2 border-fuchsia-300 shadow-sm transition-all transform hover:scale-105">
+                            <i class="fa-solid fa-book-journal-whills mr-2 text-xl text-fuchsia-600"></i> Cultura Dev: El Principio de Menor Privilegio
+                        </button>
+                    </div>
+
+                    <!-- Tabla de Comandos DCL -->
+                    <div class="mt-10 overflow-x-auto">
+                        <h3 class="text-xl font-bold text-slate-800 mb-4 border-b border-gray-200 pb-2"><i class="fa-solid fa-table-list text-fuchsia-500 mr-2"></i> Cheatsheet: Comandos DCL y Variantes</h3>
+                        <table class="w-full text-left bg-white border-collapse rounded-2xl overflow-hidden shadow-sm border border-gray-200">
+                            <thead class="bg-slate-100 text-slate-700">
+                                <tr>
+                                    <th class="p-4 font-bold border-b border-gray-200 w-1/4">Comando / Variante</th>
+                                    <th class="p-4 font-bold border-b border-gray-200 w-1/4">¿Qué hace?</th>
+                                    <th class="p-4 font-bold border-b border-gray-200 w-1/2">Ejemplo Práctico</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm">
+                                <tr class="hover:bg-slate-50 border-b border-gray-100">
+                                    <td class="p-4 text-fuchsia-700 font-mono font-bold bg-fuchsia-50/50">CREATE USER</td>
+                                    <td class="p-4 text-gray-700">Crea una nueva cuenta de usuario y le asigna una contraseña.</td>
+                                    <td class="p-4 font-mono text-xs bg-slate-900 text-emerald-400 rounded inline-block">CREATE USER pablo IDENTIFIED BY "p123";</td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 border-b border-gray-100">
+                                    <td class="p-4 text-fuchsia-700 font-mono font-bold bg-fuchsia-50/50">GRANT CREATE SESSION</td>
+                                    <td class="p-4 text-gray-700">Da permiso para iniciar sesión (conectarse a la BD). Esencial, sin esto el usuario no sirve.</td>
+                                    <td class="p-4 font-mono text-xs bg-slate-900 text-emerald-400 rounded inline-block">GRANT CREATE SESSION TO pablo;</td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 border-b border-gray-100">
+                                    <td class="p-4 text-fuchsia-700 font-mono font-bold bg-fuchsia-50/50">GRANT SELECT</td>
+                                    <td class="p-4 text-gray-700">Permite leer (hacer SELECT) datos de una tabla o vista específica.</td>
+                                    <td class="p-4 font-mono text-xs bg-slate-900 text-emerald-400 rounded inline-block">GRANT SELECT ON empleados TO pablo;</td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 border-b border-gray-100">
+                                    <td class="p-4 text-fuchsia-700 font-mono font-bold bg-fuchsia-50/50">GRANT INSERT, UPDATE, DELETE</td>
+                                    <td class="p-4 text-gray-700">Permite modificar datos. Puedes otorgar varios separándolos por comas.</td>
+                                    <td class="p-4 font-mono text-xs bg-slate-900 text-emerald-400 rounded inline-block">GRANT INSERT, UPDATE ON empleados TO pablo;</td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 border-b border-gray-100">
+                                    <td class="p-4 text-fuchsia-700 font-mono font-bold bg-fuchsia-50/50">GRANT ALL PRIVILEGES</td>
+                                    <td class="p-4 text-gray-700">Da TODOS los permisos sobre un objeto específico. Útil para administradores.</td>
+                                    <td class="p-4 font-mono text-xs bg-slate-900 text-emerald-400 rounded inline-block">GRANT ALL PRIVILEGES ON empleados TO lider_db;</td>
+                                </tr>
+                                <tr class="hover:bg-slate-50">
+                                    <td class="p-4 text-rose-600 font-mono font-bold bg-rose-50/50">REVOKE</td>
+                                    <td class="p-4 text-gray-700">Quita un permiso previamente otorgado. Su sintaxis usa FROM en lugar de TO.</td>
+                                    <td class="p-4 font-mono text-xs bg-slate-900 text-rose-400 rounded inline-block">REVOKE DELETE ON empleados FROM pablo;</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Sección 4: Script DDL de Preparación -->
+            <section class="bg-slate-800 p-8 rounded-3xl shadow-md mb-10 border border-slate-700">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 rounded-full bg-indigo-500 flex items-center justify-center shadow-[0_0_15px_#6366f1]">
+                        <i class="fa-solid fa-database text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Script de Preparación</h2>
+                        <p class="text-slate-400 text-sm">Ejecuta este código para crear las tablas base necesarias antes de probar los ejemplos de arriba.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-900 rounded-2xl overflow-hidden border border-slate-700">
+                    <div class="bg-slate-950 px-4 py-2 flex justify-between items-center border-b border-slate-800">
+                        <span class="text-gray-400 text-xs font-mono">preparacion_clase3.sql</span>
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('scriptDDL').innerText); this.innerHTML='<i class=\'fa-solid fa-check mr-1\'></i> Copiado!'; this.classList.add('text-emerald-400'); setTimeout(() => { this.innerHTML='<i class=\'fa-regular fa-copy mr-1\'></i> Copiar'; this.classList.remove('text-emerald-400'); }, 2000);" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm"><i class="fa-regular fa-copy mr-2"></i> Copiar Código</button>
+                    </div>
+                    <pre class="m-0 p-6"><code id="scriptDDL" class="language-sql text-sm">-- ==========================================
+-- SCRIPT DE PREPARACIÓN (DDL) - CLASE 3
+-- Ejecuta esto antes de probar los ejemplos
+-- ==========================================
+
+-- 1. Tabla Base Sensible
+CREATE TABLE empleados (
+    id NUMBER PRIMARY KEY,
+    nombre VARCHAR2(50),
+    cargo VARCHAR2(50),
+    salario NUMBER -- Dato Sensible
+);
+
+-- (Las Vistas y Secuencias las crearás tú en los ejercicios)
+</code></pre>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= PESTAÑA X: SELECCIÓN MÚLTIPLE ================= -->
+        <div id="tab-seleccion" class="tab-content">
+            <h2 class="text-3xl font-bold text-center mb-8 text-gray-800"><i class="fa-solid fa-list-check text-indigo-500 mr-2"></i> Selección Múltiple</h2>
+            <p class="text-center text-gray-600 mb-8 font-medium">Selecciona la respuesta correcta para cada caso. Recibirás feedback inmediato.</p>
+
+            <div class="space-y-8">
+                <!-- Q1 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm question-block">
+                    <h3 class="font-bold text-xl mb-4">1. El propósito de las Vistas</h3>
+                    <p class="mb-4">¿Cuál es una ventaja principal de utilizar Vistas (Views) en tu base de datos?</p>
+                    <div class="grid grid-cols-1 gap-3 options">
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="wrong" data-msg="Falso. Las vistas no guardan datos físicamente, los extraen en tiempo real de las tablas subyacentes.">A) Hacen un respaldo físico automático de los datos de la tabla.</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="correct" data-msg="¡Correcto! Una vista puede seleccionar solo las columnas no sensibles, actuando como un escudo protector para la tabla real.">B) Permiten restringir el acceso a columnas sensibles mostrando solo la información necesaria.</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="wrong" data-msg="Las vistas no aceleran las inserciones ni las modificaciones.">C) Aceleran los procesos de inserción y actualización de registros.</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm question-block">
+                    <h3 class="font-bold text-xl mb-4">2. Extrayendo números de una Secuencia</h3>
+                    <p class="mb-4">¿Qué palabra clave se usa junto a la secuencia dentro de un INSERT para generar y obtener el siguiente número disponible?</p>
+                    <div class="grid grid-cols-1 gap-3 options">
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="wrong" data-msg="Casi. CURRVAL muestra el valor actual generado en tu sesión, pero NO genera el siguiente número.">A) .CURRVAL</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="wrong" data-msg="Esta palabra no existe en la sintaxis de secuencias de Oracle.">B) .NEWVAL</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="correct" data-msg="¡Correcto! NEXTVAL genera el incremento matemático y devuelve el nuevo número listo para ser insertado.">C) .NEXTVAL</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm question-block">
+                    <h3 class="font-bold text-xl mb-4">3. Tipos de Privilegios</h3>
+                    <p class="mb-4">Otorgar el permiso para ejecutar un <code>SELECT</code> sobre la tabla 'empleados', corresponde a un privilegio de tipo:</p>
+                    <div class="grid grid-cols-1 gap-3 options">
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="wrong" data-msg="Los privilegios de sistema son genéricos (ej. poder conectarse, poder crear CUALQUIER tabla).">A) Privilegio de Sistema</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="correct" data-msg="¡Exacto! Al ser un permiso enfocado en una tabla o vista específica, se clasifica como Privilegio de Objeto.">B) Privilegio de Objeto</button>
+                        <button class="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-300 transition-all font-medium" data-ans="wrong" data-msg="Las secuencias generan números, no administran permisos.">C) Privilegio de Secuencia</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA Y: VERDADERO Y FALSO ================= -->
+        <div id="tab-vf" class="tab-content">
+            <h2 class="text-3xl font-bold text-center mb-8 text-gray-800"><i class="fa-solid fa-check-double text-teal-500 mr-2"></i> Verdadero o Falso</h2>
+            <p class="text-center text-gray-600 mb-8 font-medium">Analiza la afirmación y determina si es verdadera o falsa.</p>
+
+            <div class="space-y-6">
+                <!-- V/F 1 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm vf-block">
+                    <p class="text-lg font-medium mb-4">1. Al borrar una Vista (usando <code>DROP VIEW</code>), se eliminan también los datos reales almacenados en las tablas que la vista estaba consultando.</p>
+                    <div class="flex gap-4">
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="wrong" data-msg="Falso. La vista es solo la 'ventana' a los datos (la consulta SQL guardada). Borrar la ventana no destruye la casa (las tablas base están a salvo).">Verdadero</button>
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="correct" data-msg="¡Correcto! Las vistas no almacenan los datos. Borrar la vista solo borra la instrucción SQL guardada, dejando intactas tus tablas.">Falso</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+
+                <!-- V/F 2 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm vf-block">
+                    <p class="text-lg font-medium mb-4">2. Para poder asignarle permisos a un usuario usando <code>GRANT</code>, el usuario debió ser creado previamente con el comando <code>CREATE USER</code>.</p>
+                    <div class="flex gap-4">
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="correct" data-msg="¡Exacto! No puedes darle llaves de tu casa a alguien que no existe en tu sistema. Primero creas el usuario, luego le asignas privilegios.">Verdadero</button>
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="wrong" data-msg="Falso. Un usuario debe existir en el sistema antes de poder recibir permisos a su nombre.">Falso</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+
+                <!-- V/F 3 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm vf-block">
+                    <p class="text-lg font-medium mb-4">3. Una sola secuencia puede ser utilizada para generar números de claves primarias para múltiples tablas diferentes al mismo tiempo.</p>
+                    <div class="flex gap-4">
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="correct" data-msg="¡Correcto! Las secuencias son independientes de las tablas. Aunque es buena práctica usar una por tabla para no dejar 'huecos', técnicamente una misma secuencia puede proveer números a todas.">Verdadero</button>
+                        <button class="flex-1 py-3 rounded-xl border-2 font-bold text-gray-600 hover:bg-gray-50 transition-colors vf-btn" data-ans="wrong" data-msg="Falso. Las secuencias no están atadas a una tabla específica. Sí pueden compartirse, aunque no suele ser la mejor práctica organizativa.">Falso</button>
+                    </div>
+                    <div class="feedback-box rounded-xl font-medium text-white"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA Z: TÉRMINOS PAREADOS ================= -->
+        <div id="tab-pareados" class="tab-content">
+            <h2 class="text-3xl font-bold text-center mb-8 text-gray-800"><i class="fa-solid fa-people-arrows text-rose-500 mr-2"></i> Términos Pareados</h2>
+            <p class="text-center text-gray-600 mb-8 font-medium">Selecciona un concepto de la izquierda y luego su definición a la derecha. Si son correctos, se enlazarán en verde.</p>
+            
+            <div class="flex flex-col md:flex-row gap-8 relative" id="pairing-container">
+                <!-- Columna Izquierda (Conceptos) -->
+                <div class="flex-1 space-y-4" id="col-terms">
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-bold paired-btn text-gray-700 hover:border-indigo-300" data-type="term" data-pair="1">VIEW</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-bold paired-btn text-gray-700 hover:border-indigo-300" data-type="term" data-pair="2">NEXTVAL</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-bold paired-btn text-gray-700 hover:border-indigo-300" data-type="term" data-pair="3">GRANT</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-bold paired-btn text-gray-700 hover:border-indigo-300" data-type="term" data-pair="4">REVOKE</button>
+                </div>
+
+                <!-- Columna Derecha (Definiciones, desordenadas) -->
+                <div class="flex-1 space-y-4" id="col-defs">
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-medium paired-btn text-gray-700 hover:border-indigo-300" data-type="def" data-pair="3">Comando DCL utilizado para otorgar permisos (de sistema o de objeto) a un usuario o rol.</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-medium paired-btn text-gray-700 hover:border-indigo-300" data-type="def" data-pair="1">Tabla virtual basada en el resultado de una consulta SELECT, no almacena datos por sí misma.</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-medium paired-btn text-gray-700 hover:border-indigo-300" data-type="def" data-pair="4">Comando DCL que sirve para revocar o quitar un permiso previamente otorgado.</button>
+                    <button class="w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm font-medium paired-btn text-gray-700 hover:border-indigo-300" data-type="def" data-pair="2">Pseudocolumna que genera e incrementa automáticamente el valor de una secuencia.</button>
+                </div>
+            </div>
+            <!-- Feedback general para pareados -->
+            <div id="pareados-feedback" class="text-center font-bold text-xl mt-8 text-emerald-600 hidden">
+                ¡Excelente! Has emparejado correctamente los conceptos de seguridad y automatización.
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 4: EN VIVO ================= -->
+        <div id="tab-envivo" class="tab-content">
+            <section class="bg-slate-800 p-8 rounded-3xl shadow-md mb-10 border border-slate-700">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center animate-pulse shadow-[0_0_15px_#ef4444]">
+                        <div class="w-4 h-4 rounded-full bg-white"></div>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Demostración en Vivo: Arquitectura Completa</h2>
+                        <p class="text-slate-400 text-sm">Copia este script y ejecútalo para ver la sinergia entre tablas, secuencias, vistas y permisos.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-900 rounded-2xl overflow-hidden border border-slate-700">
+                    <div class="bg-slate-950 px-4 py-2 flex justify-between items-center border-b border-slate-800">
+                        <span class="text-gray-400 text-xs font-mono">script_demo_arquitectura.sql</span>
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('scriptDemo').innerText); this.innerHTML='<i class=\'fa-solid fa-check mr-1\'></i> Copiado!'; this.classList.add('text-emerald-400'); setTimeout(() => { this.innerHTML='<i class=\'fa-regular fa-copy mr-1\'></i> Copiar'; this.classList.remove('text-emerald-400'); }, 2000);" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm"><i class="fa-regular fa-copy mr-2"></i> Copiar Código</button>
+                    </div>
+                    <pre class="m-0 p-6"><code id="scriptDemo" class="language-sql text-sm">-- (Si ya creaste la tabla 'empleados' en la preparación, saltate este paso)
+-- 1. Aseguramos la tabla base
+CREATE TABLE hr_empleados (
+    id NUMBER PRIMARY KEY,
+    nombre VARCHAR2(50),
+    salario NUMBER
+);
+
+-- 2. Creamos el Generador Automático (Secuencia)
+CREATE SEQUENCE seq_hr_emp START WITH 1 INCREMENT BY 1;
+
+-- 3. Insertamos usando la Secuencia en lugar de escribir los IDs a mano
+INSERT INTO hr_empleados (id, nombre, salario) VALUES (seq_hr_emp.NEXTVAL, 'Carlos', 2500000);
+INSERT INTO hr_empleados (id, nombre, salario) VALUES (seq_hr_emp.NEXTVAL, 'Diana', 1800000);
+COMMIT;
+
+-- 4. Creamos la VISTA segura (sin el salario)
+CREATE OR REPLACE VIEW vista_hr_publico AS
+SELECT id, nombre FROM hr_empleados;
+
+-- 5. Demostración de Control de Acceso (Requiere permisos de Admin)
+-- Creamos un usuario de solo lectura
+-- (Nota: Dependiendo de tu entorno puede que no tengas permisos para crear usuarios. 
+-- Si da error, ignora los pasos de GRANT/CREATE USER)
+CREATE USER consultor_externo IDENTIFIED BY "Ext123";
+GRANT CREATE SESSION TO consultor_externo;
+
+-- Le damos acceso SOLO a la vista segura, NO a la tabla base
+GRANT SELECT ON vista_hr_publico TO consultor_externo;
+
+-- Si nos loguearamos como 'consultor_externo' e hiciéramos:
+-- SELECT * FROM hr_empleados; --> DARÍA ERROR DE PERMISOS
+-- SELECT * FROM vista_hr_publico; --> FUNCIONARÍA y solo vería (id, nombre)
+</code></pre>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= PESTAÑA 5: PRÁCTICA ================= -->
+        <div id="tab-practica" class="tab-content">
+            <h2 class="text-3xl font-bold text-slate-800 text-center mb-6"><i class="fa-solid fa-laptop-code text-slate-600 mr-2"></i> Taller Práctico: Asegurando el Hospital</h2>
+            <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-6 mb-8 max-w-4xl mx-auto text-center">
+                <p class="text-gray-800 text-lg font-medium mb-3">
+                    Aplica la creación de Vistas y Secuencias para resolver un problema de privacidad médica.
+                </p>
+                <div class="inline-block bg-white border border-indigo-100 p-4 rounded-xl text-left shadow-sm mt-2">
+                    <p class="font-bold text-indigo-800 mb-2"><i class="fa-solid fa-upload mr-2"></i>Instrucciones de Entrega:</p>
+                    <ul class="list-disc pl-5 text-gray-700 text-sm space-y-1">
+                        <li>Guarda tu código en un archivo con formato <code>.sql</code>.</li>
+                        <li>El archivo debe contener como comentario inicial tu <strong>Nombre y Apellido</strong>.</li>
+                        <li>Sube el archivo final a la plataforma AVA en la sección correspondiente a este taller.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Script Preparación Práctica -->
+            <div class="bg-slate-800 rounded-2xl overflow-hidden mb-8 shadow-md">
+                <div class="bg-slate-900 px-6 py-3 flex justify-between items-center border-b border-slate-700">
+                    <span class="text-gray-300 font-bold text-sm">1. Script Inicial (Ejecuta esto primero):</span>
+                    <button id="btnCopyPractica" class="text-slate-300 hover:text-white transition-colors bg-slate-700 px-3 py-1 rounded text-xs"><i class="fa-regular fa-copy mr-1"></i> Copiar Script</button>
+                </div>
+                <pre class="m-0 p-6"><code id="scriptPractica" class="language-sql text-sm">CREATE TABLE pacientes_hospital (
+    id_paciente NUMBER PRIMARY KEY,
+    nombre VARCHAR2(100),
+    rut VARCHAR2(12),
+    diagnostico VARCHAR2(200), -- Dato Sensible
+    estado_pago VARCHAR2(20)
+);
+
+-- Insertamos algunos datos de prueba manualmente
+INSERT INTO pacientes_hospital VALUES (10, 'Elena Rojas', '11111111-1', 'Hipertensión Severa', 'PAGADO');
+INSERT INTO pacientes_hospital VALUES (11, 'Felipe Tapia', '22222222-2', 'Operación de Apéndice', 'PENDIENTE');
+COMMIT;</code></pre>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative pt-10">
+                    <span class="absolute top-0 left-0 bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-br-lg rounded-tl-xl">EL RETO</span>
+                    <h4 class="font-bold text-lg mb-2 text-slate-800">El Sistema de Cobranzas</h4>
+                    <p class="text-sm text-gray-600 mb-4">
+                        El departamento de cobranzas necesita ver a los pacientes para llamar a los morosos, pero por la <strong>Ley de Privacidad Médica</strong>, tienen PROHIBIDO ver el "diagnóstico".
+                    </p>
+                    <ul class="list-disc pl-5 text-sm text-gray-700 space-y-2 font-medium bg-gray-50 p-4 rounded-lg border border-gray-100">
+                        <li><strong>Paso 1:</strong> Crea una secuencia llamada <code>SEQ_PACIENTES</code> que comience en 100 y avance de 10 en 10.</li>
+                        <li><strong>Paso 2:</strong> Inserta un nuevo paciente a la tabla base, usando la secuencia para su ID. (Inventa el nombre y diagnóstico).</li>
+                        <li><strong>Paso 3:</strong> Crea una vista llamada <code>VISTA_COBRANZAS</code> que seleccione todas las columnas de la tabla EXCEPTO el diagnóstico.</li>
+                        <li><strong>Paso 4:</strong> Crea un usuario (ej. <code>us_cobranzas</code>) con su respectiva contraseña y permiso de conexión, y otórgale permiso para consultar ÚNICAMENTE la vista que acabas de crear.</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative pt-10 flex flex-col justify-center">
+                    <span class="absolute top-0 left-0 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-br-lg rounded-tl-xl">VERIFICACIÓN</span>
+                    <h4 class="font-bold text-lg mb-2 text-slate-800">¿Lo hiciste bien?</h4>
+                    <p class="text-sm text-gray-600 mb-4">Al finalizar tu query, ejecuta:</p>
+                    <code class="text-xs bg-slate-900 text-emerald-400 p-2 rounded block mb-2">SELECT * FROM VISTA_COBRANZAS;</code>
+                    <p class="text-sm text-gray-600 mb-4">Deberías ver a Elena, Felipe y a tu nuevo paciente (que debería tener el ID 100), pero <strong>no debería haber ninguna columna de diagnóstico</strong> visible en el resultado.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 6: CIERRE ================= -->
+        <div id="tab-cierre" class="tab-content">
+            <section class="bg-gradient-to-br from-indigo-900 to-slate-900 p-10 rounded-3xl shadow-xl mb-10 text-center relative overflow-hidden">
+                <!-- Decoración -->
+                <div class="absolute -top-20 -right-20 w-64 h-64 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+                <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-violet-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+                
+                <h2 class="text-4xl font-black text-white mb-8 relative z-10">Resumen de la Clase 🏆</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+                    <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 text-left">
+                        <i class="fa-solid fa-eye text-4xl text-indigo-400 mb-4"></i>
+                        <h3 class="text-xl font-bold text-white mb-2">Vistas</h3>
+                        <p class="text-indigo-100 text-sm leading-relaxed">
+                            Máscaras virtuales de nuestras tablas. Ocultan complejidad (guardando JOINs gigantes) y mejoran la seguridad filtrando columnas sensibles.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 text-left">
+                        <i class="fa-solid fa-arrow-up-9-1 text-4xl text-violet-400 mb-4"></i>
+                        <h3 class="text-xl font-bold text-white mb-2">Secuencias</h3>
+                        <p class="text-indigo-100 text-sm leading-relaxed">
+                            Contadores independientes que nos libran de la responsabilidad de calcular las Claves Primarias manualmente mediante el uso de <code>NEXTVAL</code>.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 text-left">
+                        <i class="fa-solid fa-user-shield text-4xl text-fuchsia-400 mb-4"></i>
+                        <h3 class="text-xl font-bold text-white mb-2">Control DCL</h3>
+                        <p class="text-indigo-100 text-sm leading-relaxed">
+                            No somos una monarquía de datos. A través de <code>GRANT</code> entregamos permisos específicos, blindando nuestro sistema contra errores y accesos maliciosos.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= PESTAÑA 7: TICKET SALIDA (KAHOOT) ================= -->
+        <div id="tab-ticket-salida" class="tab-content">
+            <div id="k2-container" class="bg-gray-100 rounded-3xl p-8 max-w-3xl mx-auto shadow-inner border-4 border-gray-200 text-center min-h-[500px] flex flex-col relative overflow-hidden">
+                
+                <!-- Pantalla Inicial -->
+                <div id="k2-start" class="kahoot-screen active h-full justify-center items-center flex-1">
+                    <i class="fa-solid fa-graduation-cap text-6xl text-violet-600 mb-6 drop-shadow-md animate-bounce"></i>
+                    <h2 class="text-4xl font-black text-slate-800 mb-4">Ticket de Salida</h2>
+                    <p class="text-xl font-bold text-gray-600 mb-8">El desafío final. 2 preguntas decisivas.</p>
+                    <button onclick="kahoot2.start()" class="bg-violet-600 hover:bg-violet-700 text-white font-bold text-2xl py-4 px-12 rounded-xl shadow-[0_6px_0_#5b21b6] active:shadow-[0_0px_0_#5b21b6] active:translate-y-1.5 transition-all">Desafíame</button>
+                </div>
+
+                <!-- Pantalla de Pregunta -->
+                <div id="k2-question" class="kahoot-screen flex-1">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="bg-white px-4 py-1 rounded-full font-bold text-gray-600 shadow-sm" id="k2-counter">Pregunta 1 de 2</span>
+                        <span class="bg-violet-100 text-violet-800 px-4 py-1 rounded-full font-black text-xl shadow-sm" id="k2-timer-text">20</span>
+                    </div>
+                    <div class="timer-bar-container mb-6 shadow-sm">
+                        <div id="k2-timer-bar" class="timer-bar" style="background-color: #8b5cf6;"></div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-2xl shadow-sm mb-8 border border-gray-200 text-left">
+                        <h3 class="text-xl md:text-2xl font-bold text-slate-800" id="k2-q-text">Pregunta...</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-auto" id="k2-options">
+                        <!-- Botones inyectados vía JS -->
+                    </div>
+                </div>
+
+                <!-- Pantalla de Feedback -->
+                <div id="k2-feedback" class="kahoot-screen justify-center items-center flex-1">
+                    <div id="k2-fb-icon" class="text-8xl mb-6"></div>
+                    <h2 id="k2-fb-title" class="text-5xl font-black mb-4"></h2>
+                    <p id="k2-fb-points" class="text-xl font-bold text-white bg-black/20 px-6 py-2 rounded-full mb-8"></p>
+                    <button onclick="kahoot2.next()" class="bg-white/20 hover:bg-white/30 text-white border-2 border-white font-bold text-xl py-3 px-10 rounded-xl transition-all">Siguiente</button>
+                </div>
+
+                <!-- Pantalla Final -->
+                <div id="k2-end" class="kahoot-screen justify-center items-center flex-1">
+                    <i class="fa-solid fa-star text-7xl text-yellow-500 mb-6 drop-shadow-md"></i>
+                    <h2 class="text-4xl font-black text-slate-800 mb-2">¡Misión Cumplida!</h2>
+                    <p class="text-lg text-gray-600 mb-6 font-medium">Puntaje Final:</p>
+                    <div class="text-6xl font-black text-violet-600 mb-8" id="k2-final-score">0</div>
+                    <p class="text-gray-500 font-bold mb-4">¡Nos vemos en la próxima clase!</p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Modal PoLP -->
+        <div id="modal-polp" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 animate-[fadeIn_0.2s_ease-out]">
+                <div class="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur z-20">
+                    <h3 class="text-2xl font-black text-slate-800"><i class="fa-solid fa-book-journal-whills text-fuchsia-600 mr-2"></i> Cultura Dev: El Principio de Menor Privilegio</h3>
+                    <button onclick="document.getElementById('modal-polp').classList.add('hidden')" class="text-gray-400 hover:text-rose-500 transition-colors w-10 h-10 flex items-center justify-center rounded-full hover:bg-rose-50 bg-gray-50 border border-gray-200 shadow-sm">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-8 space-y-8">
+                    
+                    <div class="bg-fuchsia-50 p-6 rounded-2xl border border-fuchsia-200 text-center relative overflow-hidden">
+                        <i class="fa-solid fa-quote-left text-6xl text-fuchsia-200 absolute -top-2 -left-2 opacity-50"></i>
+                        <p class="text-xl font-medium text-fuchsia-900 italic mb-4 relative z-10">"Every program and every privileged user of the system should operate using the least amount of privilege necessary to complete the job."</p>
+                        <p class="text-sm font-bold text-fuchsia-700 relative z-10">— Jerome Saltzer & Michael Schroeder (1974)</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h4 class="text-2xl font-bold text-slate-800 flex items-center"><i class="fa-solid fa-clock-rotate-left text-fuchsia-500 mr-2"></i> El Origen en el MIT</h4>
+                        <p class="text-gray-700 leading-relaxed text-lg">
+                            Lo que hoy te suena como algo "obvio" (no le des la contraseña de administrador al pasante), en realidad fue formalizado como un principio arquitectónico en <strong>1974</strong> por investigadores del MIT mientras desarrollaban <em>Multics</em> (el abuelo de Linux). Nació porque en los primeros computadores compartidos, si un programa fallaba, destruía el sistema entero. Necesitaban "contenedores" de permisos.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white border-2 border-slate-100 p-6 rounded-2xl shadow-sm hover:border-fuchsia-200 transition-colors">
+                            <div class="w-12 h-12 bg-fuchsia-100 rounded-full flex items-center justify-center mb-4"><i class="fa-solid fa-scale-balanced text-fuchsia-600 text-xl"></i></div>
+                            <h5 class="font-bold text-lg mb-2">La Definición Formal</h5>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                El <strong>Principio de Menor Privilegio (PoLP)</strong> dicta que un usuario o programa debe recibir <em>únicamente</em> los privilegios estrictamente necesarios para realizar su tarea, y por el tiempo mínimo requerido. Ni un permiso más.
+                            </p>
+                        </div>
+                        <div class="bg-white border-2 border-slate-100 p-6 rounded-2xl shadow-sm hover:border-fuchsia-200 transition-colors">
+                            <div class="w-12 h-12 bg-fuchsia-100 rounded-full flex items-center justify-center mb-4"><i class="fa-solid fa-shield-virus text-fuchsia-600 text-xl"></i></div>
+                            <h5 class="font-bold text-lg mb-2">Por qué salva empresas hoy</h5>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                Si un <em>Ransomware</em> (virus de secuestro) entra al computador de alguien, el virus "hereda" sus permisos. Si aplicaste PoLP, el virus <strong>no podrá destruir la base de datos</strong>, bloqueando lo que en ciberseguridad se llama "movimiento lateral".
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden mt-6">
+                        <h4 class="text-xl font-bold mb-3 flex items-center"><i class="fa-solid fa-cloud text-blue-400 mr-2"></i> Evolución: Zero Trust y Cloud Computing</h4>
+                        <p class="text-slate-300 text-sm leading-relaxed mb-4 relative z-10">
+                            Hoy en día, este principio de 1974 es la base absoluta de la Nube (AWS, Google Cloud, Azure) y de la moderna arquitectura <strong>Zero Trust (Confianza Cero)</strong>. En la nube ya no existen contraseñas compartidas para las aplicaciones; se usan roles ultra-específicos (IAM).
+                        </p>
+                        <p class="text-slate-300 text-sm leading-relaxed relative z-10">
+                            Aprender a usar <code>GRANT</code> y <code>REVOKE</code> no es solo "una tarea de Base de Datos", es entrenar tu mente para pensar como un <strong>Cloud Architect</strong> o un ingeniero de <strong>Ciberseguridad</strong>.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Identity vs Sequence -->
+        <div id="modal-identity" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 animate-[fadeIn_0.2s_ease-out]">
+                <div class="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur z-20">
+                    <h3 class="text-2xl font-black text-slate-800"><i class="fa-solid fa-code-compare text-violet-600 mr-2"></i> IDENTITY vs SEQUENCE</h3>
+                    <button onclick="document.getElementById('modal-identity').classList.add('hidden')" class="text-gray-400 hover:text-rose-500 transition-colors w-10 h-10 flex items-center justify-center rounded-full hover:bg-rose-50 bg-gray-50 border border-gray-200 shadow-sm">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-8 space-y-8">
+                    <!-- Introducción -->
+                    <p class="text-gray-700 text-lg leading-relaxed">
+                        Durante décadas, en Oracle la <strong>única forma</strong> de hacer una clave primaria autoincremental era creando una <code>SEQUENCE</code> y usando un Trigger (o llamando a <code>.NEXTVAL</code> en los INSERTs). Sin embargo, a partir de <strong>Oracle 12c (2013)</strong>, se introdujo <code>GENERATED ALWAYS AS IDENTITY</code> para acercarse a lo que otros motores (como SQL Server o MySQL) ya hacían.
+                    </p>
+
+                    <!-- Comparativa -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Secuencia Tradicional -->
+                        <div class="bg-slate-50 border border-slate-200 p-6 rounded-2xl relative overflow-hidden">
+                            <div class="absolute -right-4 -top-4 text-slate-200 opacity-30 text-8xl"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                            <h4 class="text-xl font-bold text-slate-800 mb-4 relative z-10">La Forma Clásica (Sequences)</h4>
+                            <ul class="space-y-3 text-sm text-gray-700 relative z-10 font-medium">
+                                <li><i class="fa-solid fa-xmark text-rose-500 mr-2"></i> Requiere dos objetos: la tabla y la secuencia.</li>
+                                <li><i class="fa-solid fa-xmark text-rose-500 mr-2"></i> Debes escribir <code>.NEXTVAL</code> en cada INSERT explícitamente.</li>
+                                <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> <strong>Súper Flexible:</strong> Una misma secuencia puede alimentar múltiples tablas.</li>
+                                <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Permite extraer números antes de insertar (ej: para usarlos en transacciones relacionadas).</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Identity Column -->
+                        <div class="bg-violet-50 border border-violet-200 p-6 rounded-2xl relative overflow-hidden">
+                            <div class="absolute -right-4 -top-4 text-violet-200 opacity-30 text-8xl"><i class="fa-solid fa-bolt"></i></div>
+                            <h4 class="text-xl font-bold text-violet-900 mb-4 relative z-10">La Forma Moderna (Identity)</h4>
+                            <div class="bg-white p-3 rounded border border-violet-100 mb-4 font-mono text-xs text-violet-800 relative z-10">
+                                id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY
+                            </div>
+                            <ul class="space-y-3 text-sm text-gray-700 relative z-10 font-medium">
+                                <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Más fácil de escribir. El motor hace todo por detrás.</li>
+                                <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Código más limpio en los INSERTs (solo pasas las otras columnas).</li>
+                                <li><i class="fa-solid fa-xmark text-rose-500 mr-2"></i> Si intentas insertar un ID manualmente, Oracle lanzará un error si usaste "ALWAYS".</li>
+                                <li><i class="fa-solid fa-xmark text-rose-500 mr-2"></i> Menos control manual si necesitas manipular el número antes de guardarlo.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- El Mundo Real -->
+                    <div class="bg-slate-800 rounded-2xl overflow-hidden shadow-lg border border-slate-700 mt-6">
+                        <div class="bg-emerald-500/10 px-6 py-3 border-b border-emerald-500/30 flex items-center gap-3">
+                            <i class="fa-solid fa-newspaper text-emerald-400"></i>
+                            <h4 class="text-emerald-300 font-bold">¿Qué se usa en la industria real?</h4>
+                        </div>
+                        <div class="p-6">
+                            <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                                Aunque <code>IDENTITY</code> es mucho más moderno y cómodo, en la banca, retail y grandes corporativos verás que <strong>casi todos usan Sequences</strong>. ¿Por qué?
+                            </p>
+                            <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                                <strong>1. Sistemas Legacy (Antiguos):</strong> Gran parte de la infraestructura crítica financiera se escribió antes de 2013 (Oracle 11g o inferior). Las secuencias eran la única opción, y reescribir la base de datos de un banco solo por usar una sintaxis nueva no es rentable ni seguro.
+                            </p>
+                            <p class="text-slate-300 text-sm leading-relaxed">
+                                <strong>2. Arquitecturas ORM (Hibernate / Java):</strong> Herramientas empresariales gigantes en Java muchas veces están configuradas para pedir el número a la base de datos ANTES de insertar (<code>SELECT seq.NEXTVAL</code>). Usan ese número para amarrar otras lógicas en memoria antes de siquiera mandar el <code>INSERT</code> real a la base de datos.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <app-footer></app-footer>
+
+    <script src="js/components.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    
+    <!-- Lógica de Interactividad -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- 1. TABS SYSTEM ---
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Reset all
+                    tabBtns.forEach(b => {
+                        b.classList.remove('text-indigo-700', 'bg-indigo-100', 'shadow-sm');
+                        b.classList.add('text-gray-500', 'hover:bg-gray-100');
+                    });
+                    tabContents.forEach(c => c.classList.remove('active'));
+
+                    // Activate clicked
+                    btn.classList.remove('text-gray-500', 'hover:bg-gray-100');
+                    btn.classList.add('text-indigo-700', 'bg-indigo-100', 'shadow-sm');
+                    const targetTab = btn.getAttribute('data-tab');
+                    document.getElementById('tab-' + targetTab).classList.add('active');
+                });
+            });
+
+            // Script Copy handler para Práctica
+            const btnCopyPrac = document.getElementById('btnCopyPractica');
+            if(btnCopyPrac) {
+                btnCopyPrac.addEventListener('click', () => {
+                    const code = document.getElementById('scriptPractica').innerText;
+                    navigator.clipboard.writeText(code).then(() => {
+                        const originalHTML = btnCopyPrac.innerHTML;
+                        btnCopyPrac.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Copiado!';
+                        btnCopyPrac.classList.add('text-emerald-400');
+                        setTimeout(() => {
+                            btnCopyPrac.innerHTML = originalHTML;
+                            btnCopyPrac.classList.remove('text-emerald-400');
+                        }, 2000);
+                    });
+                });
+            }
+
+            // --- KAHOOT ENGINE ---
+            class KahootGame {
+                constructor(prefix, questions, timePerQuestion) {
+                    this.prefix = prefix;
+                    this.questions = questions;
+                    this.timeLimit = timePerQuestion;
+                    this.currentQ = 0;
+                    this.score = 0;
+                    this.timer = null;
+                    this.timeLeft = 0;
+                    
+                    // DOM Elements
+                    this.elStart = document.getElementById(`${prefix}-start`);
+                    this.elQuestion = document.getElementById(`${prefix}-question`);
+                    this.elFeedback = document.getElementById(`${prefix}-feedback`);
+                    this.elEnd = document.getElementById(`${prefix}-end`);
+                    
+                    this.elCounter = document.getElementById(`${prefix}-counter`);
+                    this.elTimerText = document.getElementById(`${prefix}-timer-text`);
+                    this.elTimerBar = document.getElementById(`${prefix}-timer-bar`);
+                    this.elQText = document.getElementById(`${prefix}-q-text`);
+                    this.elOptions = document.getElementById(`${prefix}-options`);
+                    this.elContainer = document.getElementById(`${prefix}-container`);
+                }
+
+                showScreen(screenEl) {
+                    [this.elStart, this.elQuestion, this.elFeedback, this.elEnd].forEach(el => el.classList.remove('active'));
+                    screenEl.classList.add('active');
+                }
+
+                start() {
+                    this.currentQ = 0;
+                    this.score = 0;
+                    this.loadQuestion();
+                }
+
+                loadQuestion() {
+                    if (this.currentQ >= this.questions.length) {
+                        this.endGame();
+                        return;
+                    }
+
+                    const q = this.questions[this.currentQ];
+                    this.elCounter.innerText = `Pregunta ${this.currentQ + 1} de ${this.questions.length}`;
+                    this.elQText.innerHTML = q.text;
+                    
+                    this.elOptions.innerHTML = '';
+                    const colors = ['kahoot-red', 'kahoot-blue', 'kahoot-yellow', 'kahoot-green'];
+                    const icons = ['fa-triangle', 'fa-square', 'fa-circle', 'fa-diamond'];
+
+                    q.options.forEach((opt, index) => {
+                        const btn = document.createElement('button');
+                        btn.className = `kahoot-btn ${colors[index]} p-6 rounded-xl flex items-center justify-start text-left gap-4 font-bold text-lg`;
+                        btn.innerHTML = `<div class="bg-black/20 w-10 h-10 rounded flex items-center justify-center shrink-0"><i class="fa-solid ${icons[index]}"></i></div><span>${opt.text}</span>`;
+                        btn.onclick = () => this.handleAnswer(index, opt.isCorrect);
+                        this.elOptions.appendChild(btn);
+                    });
+
+                    this.showScreen(this.elQuestion);
+                    this.startTimer();
+                }
+
+                startTimer() {
+                    this.timeLeft = this.timeLimit;
+                    this.elTimerText.innerText = this.timeLeft;
+                    this.elTimerBar.style.width = '100%';
+                    this.elTimerBar.classList.remove('urgent');
+                    this.elContainer.classList.remove('shake-urgent');
+
+                    clearInterval(this.timer);
+                    this.timer = setInterval(() => {
+                        this.timeLeft--;
+                        this.elTimerText.innerText = this.timeLeft;
+                        
+                        const pct = (this.timeLeft / this.timeLimit) * 100;
+                        this.elTimerBar.style.width = `${pct}%`;
+
+                        if(this.timeLeft <= 5 && this.timeLeft > 0) {
+                            this.elTimerBar.classList.add('urgent');
+                            if(this.timeLeft === 3) this.elContainer.classList.add('shake-urgent');
+                        }
+
+                        if (this.timeLeft <= 0) {
+                            clearInterval(this.timer);
+                            this.handleAnswer(-1, false); // Timeout
+                        }
+                    }, 1000);
+                }
+
+                handleAnswer(selectedIndex, isCorrect) {
+                    clearInterval(this.timer);
+                    this.elContainer.classList.remove('shake-urgent');
+
+                    let pointsGained = 0;
+                    if (isCorrect) {
+                        // Max 1000, min 500 depending on speed
+                        pointsGained = Math.floor(500 + (500 * (this.timeLeft / this.timeLimit)));
+                        this.score += pointsGained;
+                        
+                        document.getElementById(`${this.prefix}-feedback`).className = 'kahoot-screen active justify-center items-center flex-1 bg-green-500 text-white';
+                        document.getElementById(`${this.prefix}-fb-icon`).innerHTML = '<i class="fa-solid fa-check"></i>';
+                        document.getElementById(`${this.prefix}-fb-title`).innerText = '¡Correcto!';
+                        document.getElementById(`${this.prefix}-fb-points`).innerText = `+${pointsGained} puntos`;
+                    } else {
+                        document.getElementById(`${this.prefix}-feedback`).className = 'kahoot-screen active justify-center items-center flex-1 bg-red-500 text-white';
+                        document.getElementById(`${this.prefix}-fb-icon`).innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                        document.getElementById(`${this.prefix}-fb-title`).innerText = selectedIndex === -1 ? '¡Tiempo Agotado!' : '¡Incorrecto!';
+                        document.getElementById(`${this.prefix}-fb-points`).innerText = 'La racha se ha perdido.';
+                    }
+
+                    this.showScreen(this.elFeedback);
+                }
+
+                next() {
+                    this.currentQ++;
+                    this.loadQuestion();
+                }
+
+                endGame() {
+                    document.getElementById(`${this.prefix}-final-score`).innerText = this.score;
+                    this.showScreen(this.elEnd);
+                }
+            }
+
+            // Datos Kahoot 1 (Entrada)
+            const qK1 = [
+                {
+                    text: "¿Una tabla almacena datos físicamente en el disco duro?",
+                    options: [
+                        { text: "Solo si tiene menos de 100 filas.", isCorrect: false },
+                        { text: "No, las tablas son virtuales.", isCorrect: false },
+                        { text: "Sí, es su propósito principal en la BD.", isCorrect: true },
+                        { text: "Depende del usuario.", isCorrect: false }
+                    ]
+                },
+                {
+                    text: "Si todos los analistas usan un solo usuario 'admin' y contraseña compartida, esto es...",
+                    options: [
+                        { text: "Una terrible práctica de seguridad.", isCorrect: true },
+                        { text: "La forma recomendada por Oracle.", isCorrect: false },
+                        { text: "La única forma de trabajar en equipo.", isCorrect: false },
+                        { text: "Eficiente para el motor SQL.", isCorrect: false }
+                    ]
+                }
+            ];
+
+            // Datos Kahoot 2 (Salida)
+            const qK2 = [
+                {
+                    text: "Un permiso para hacer 'UPDATE' sobre una tabla específica se considera un:",
+                    options: [
+                        { text: "Privilegio de Sistema", isCorrect: false },
+                        { text: "Privilegio de Objeto", isCorrect: true },
+                        { text: "Privilegio de Vista", isCorrect: false },
+                        { text: "Permiso Maestro", isCorrect: false }
+                    ]
+                },
+                {
+                    text: "Si consulto una Vista (SELECT * FROM vista), los datos que recibo provienen de:",
+                    options: [
+                        { text: "La memoria caché de la vista.", isCorrect: false },
+                        { text: "Un archivo de texto oculto.", isCorrect: false },
+                        { text: "Las tablas base originales que la vista consulta.", isCorrect: true },
+                        { text: "La papelera de reciclaje de Oracle.", isCorrect: false }
+                    ]
+                }
+            ];
+
+            // Instanciar
+            window.kahoot1 = new KahootGame('k1', qK1, 15);
+            window.kahoot2 = new KahootGame('k2', qK2, 20);
+
+            // --- HELPERS FOR VISUAL FEEDBACK ---
+            function showFeedback(boxElement, isCorrect, message) {
+                boxElement.className = 'feedback-box rounded-xl font-medium text-white show';
+                if(isCorrect) {
+                    boxElement.classList.add('bg-emerald-500');
+                    boxElement.innerHTML = `<i class="fa-solid fa-circle-check mr-2"></i> ${message}`;
+                } else {
+                    boxElement.classList.add('bg-red-500');
+                    boxElement.innerHTML = `<i class="fa-solid fa-circle-xmark mr-2"></i> ${message}`;
+                }
+            }
+
+            // --- SELECCIÓN MÚLTIPLE ---
+            const optionsBtns = document.querySelectorAll('.options button');
+            optionsBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const parentBox = this.closest('.question-block');
+                    const isCorrect = this.getAttribute('data-ans') === 'correct';
+                    const msg = this.getAttribute('data-msg');
+                    const feedback = parentBox.querySelector('.feedback-box');
+                    
+                    const siblings = parentBox.querySelectorAll('button');
+                    siblings.forEach(sib => {
+                        sib.classList.remove('bg-red-50', 'border-red-400', 'bg-emerald-50', 'border-emerald-400', 'ring-2');
+                    });
+
+                    if(isCorrect) {
+                        this.classList.add('bg-emerald-50', 'border-emerald-400', 'ring-2', 'ring-emerald-200');
+                    } else {
+                        this.classList.add('bg-red-50', 'border-red-400');
+                        this.style.animation = "shake 0.4s";
+                        setTimeout(() => this.style.animation = "", 400);
+                    }
+                    showFeedback(feedback, isCorrect, msg);
+                });
+            });
+
+            // --- VERDADERO Y FALSO ---
+            const vfBtns = document.querySelectorAll('.vf-btn');
+            vfBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const parentBox = this.closest('.vf-block');
+                    const isCorrect = this.getAttribute('data-ans') === 'correct';
+                    const msg = this.getAttribute('data-msg');
+                    const feedback = parentBox.querySelector('.feedback-box');
+                    
+                    const siblings = parentBox.querySelectorAll('.vf-btn');
+                    siblings.forEach(sib => {
+                        sib.classList.remove('bg-red-100', 'text-red-700', 'border-red-400', 'bg-emerald-100', 'text-emerald-700', 'border-emerald-400');
+                    });
+
+                    if(isCorrect) {
+                        this.classList.add('bg-emerald-100', 'text-emerald-700', 'border-emerald-400');
+                    } else {
+                        this.classList.add('bg-red-100', 'text-red-700', 'border-red-400');
+                    }
+                    showFeedback(feedback, isCorrect, msg);
+                });
+            });
+
+            // --- TÉRMINOS PAREADOS ---
+            let selectedTerm = null;
+            let matchedPairs = 0;
+            const pairedBtns = document.querySelectorAll('.paired-btn');
+            
+            pairedBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (this.classList.contains('matched')) return;
+                    const type = this.getAttribute('data-type');
+                    const pairId = this.getAttribute('data-pair');
+
+                    if (type === 'term') {
+                        document.querySelectorAll('[data-type="term"]').forEach(b => {
+                            if(!b.classList.contains('matched')) b.classList.remove('selected');
+                        });
+                        this.classList.add('selected');
+                        selectedTerm = { element: this, id: pairId };
+                    } 
+                    else if (type === 'def') {
+                        if (!selectedTerm) return; 
+                        
+                        if (selectedTerm.id === pairId) {
+                            this.classList.add('matched');
+                            selectedTerm.element.classList.remove('selected');
+                            selectedTerm.element.classList.add('matched');
+                            
+                            this.innerHTML += ' <i class="fa-solid fa-check text-emerald-600 float-right mt-1"></i>';
+                            selectedTerm.element.innerHTML += ' <i class="fa-solid fa-check text-emerald-600 float-right mt-1"></i>';
+                            
+                            selectedTerm = null;
+                            matchedPairs++;
+
+                            if (matchedPairs === 4) {
+                                document.getElementById('pareados-feedback').classList.remove('hidden');
+                            }
+                        } else {
+                            this.classList.add('wrong');
+                            setTimeout(() => { this.classList.remove('wrong'); }, 400);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
