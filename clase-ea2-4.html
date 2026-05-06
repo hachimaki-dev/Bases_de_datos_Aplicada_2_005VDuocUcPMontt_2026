@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 4 - Diario de Clases EA2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <style>
+        .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Kahoot Style Classes */
+        .kahoot-btn { transition: all 0.2s; }
+        .kahoot-btn:hover { transform: scale(1.02); filter: brightness(1.1); }
+        .kahoot-btn:active { transform: scale(0.95); }
+        .kahoot-red { background-color: #e21b3c; border-bottom: 4px solid #b0102b; color: white; }
+        .kahoot-blue { background-color: #1368ce; border-bottom: 4px solid #0c4d9a; color: white; }
+        .kahoot-yellow { background-color: #d89e00; border-bottom: 4px solid #a87b00; color: white; }
+        .kahoot-green { background-color: #26890c; border-bottom: 4px solid #1a6108; color: white; }
+        
+        .timer-bar-container { width: 100%; height: 20px; background-color: #e5e7eb; border-radius: 10px; overflow: hidden; }
+        .timer-bar { height: 100%; background-color: #10b981; transition: width 1s linear, background-color 0.5s; width: 100%; }
+        .timer-bar.urgent { background-color: #ef4444; animation: pulse-fast 0.5s infinite alternate; }
+        
+        @keyframes pulse-fast { from { opacity: 1; } to { opacity: 0.7; } }
+        
+        .kahoot-screen { display: none; }
+        .kahoot-screen.active { display: flex; flex-direction: column; }
+
+        /* Easter Rocket Animation */
+        .easter-rocket {
+            position: relative;
+            animation: rocket-rumble 0.1s infinite alternate;
+        }
+
+        @keyframes rocket-rumble {
+            0% { transform: translate(0, 0) rotate(-1deg); }
+            100% { transform: translate(1px, 1px) rotate(1deg); }
+        }
+
+        .easter-rocket::after {
+            content: "🔥";
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%) scaleY(1.5);
+            font-size: 1.2rem;
+            filter: blur(1px);
+            animation: fire-burst 0.15s infinite alternate;
+            opacity: 0.8;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        @keyframes fire-burst {
+            0% { transform: translateX(-50%) scale(0.8, 1.2); opacity: 0.6; }
+            100% { transform: translateX(-50%) scale(1.2, 1.8); opacity: 1; }
+        }
+
+        .easter-rocket::before {
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            width: 4px;
+            height: 4px;
+            background: gold;
+            border-radius: 50%;
+            box-shadow: 
+                -10px 5px 2px orange, 
+                10px 8px 2px yellow, 
+                -5px 15px 3px white,
+                5px 12px 2px orange;
+            animation: particles-fall 0.5s infinite linear;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @keyframes particles-fall {
+            0% { transform: translate(-50%, 0); opacity: 1; }
+            100% { transform: translate(-50%, 20px); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen bg-emerald-50/30 text-gray-800 pb-20">
+    <app-nav></app-nav>
+
+    <header class="max-w-5xl mx-auto px-6 text-center mb-10 pt-10">
+        <div class="inline-block bg-emerald-100 px-6 py-2.5 rounded-full text-emerald-700 font-bold text-base mb-6 border-2 border-emerald-200 shadow-sm">
+            Unidad EA2 - Clase 4
+        </div>
+        <h1 class="text-5xl md:text-6xl font-black text-emerald-700 mb-6 drop-shadow-sm leading-tight tracking-tight">Rendimiento y Optimización:<br>El Poder de los Índices</h1>
+        <p class="text-xl md:text-2xl text-emerald-900 bg-white inline-flex items-center gap-3 px-8 py-4 rounded-full shadow-md border-2 border-emerald-100 mt-4 font-bold mx-auto justify-center">
+            Cómo hacer que Oracle busque a la velocidad de la luz
+        </p>
+    </header>
+
+    <!-- Navegación de Pestañas (Tabs) -->
+    <nav class="max-w-4xl mx-auto px-4 mb-8 sticky top-4 z-40">
+        <ul class="flex flex-wrap justify-center gap-2 bg-white/90 backdrop-blur-md p-2 rounded-2xl shadow-md border border-gray-200">
+            <li><button data-tab="ticket-entrada" class="tab-btn active px-5 py-2.5 rounded-xl font-bold transition-all text-emerald-700 bg-emerald-100 shadow-sm"><i class="fa-solid fa-ticket mr-2"></i>Activación</button></li>
+            <li><button data-tab="contenido" class="tab-btn px-5 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-book-open mr-2"></i>Desarrollo</button></li>
+            <li><button data-tab="practica" class="tab-btn px-5 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-laptop-code mr-2"></i>Práctica</button></li>
+            <li><button data-tab="taller" class="tab-btn px-5 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-user-gear mr-2"></i>Taller Evaluado</button></li>
+            <li><button data-tab="cierre" class="tab-btn px-5 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-flag-checkered mr-2"></i>Resumen</button></li>
+        </ul>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-6">
+        
+        <!-- ================= PESTAÑA 1: ACTIVACIÓN (KAHOOT) ================= -->
+        <div id="tab-ticket-entrada" class="tab-content active">
+            <div id="k1-container" class="bg-gray-100 rounded-3xl p-8 max-w-3xl mx-auto shadow-inner border-4 border-gray-200 text-center min-h-[500px] flex flex-col relative overflow-hidden">
+                
+                <!-- Pantalla Inicial -->
+                <div id="k1-start" class="kahoot-screen active h-full justify-center items-center flex-1">
+                    <i class="fa-solid fa-bolt text-6xl text-emerald-500 mb-6 drop-shadow-md animate-bounce"></i>
+                    <h2 class="text-4xl font-black text-slate-800 mb-4">Ticket de Entrada</h2>
+                    <p class="text-xl font-medium text-gray-600 mb-8">Repaso de Vistas, Secuencias y una pregunta lógica. 3 Preguntas. ¡Prepárate!</p>
+                    <button onclick="kahoot1.start()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-2xl py-4 px-12 rounded-xl shadow-[0_6px_0_#047857] active:shadow-[0_0px_0_#047857] active:translate-y-1.5 transition-all">¡Comenzar!</button>
+                </div>
+
+                <!-- Pantalla de Pregunta -->
+                <div id="k1-question" class="kahoot-screen flex-1">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="bg-white px-4 py-1 rounded-full font-bold text-gray-600 shadow-sm" id="k1-counter">Pregunta 1 de 3</span>
+                        <span class="bg-emerald-100 text-emerald-800 px-4 py-1 rounded-full font-black text-xl shadow-sm" id="k1-timer-text">15</span>
+                    </div>
+                    <div class="timer-bar-container mb-6 shadow-sm">
+                        <div id="k1-timer-bar" class="timer-bar"></div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-2xl shadow-sm mb-8 border border-gray-200">
+                        <h3 class="text-2xl md:text-3xl font-bold text-slate-800" id="k1-q-text">Pregunta...</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-auto" id="k1-options">
+                        <!-- Botones inyectados vía JS -->
+                    </div>
+                </div>
+
+                <!-- Pantalla de Feedback -->
+                <div id="k1-feedback" class="kahoot-screen justify-center items-center flex-1">
+                    <div id="k1-fb-icon" class="text-8xl mb-6"></div>
+                    <h2 id="k1-fb-title" class="text-5xl font-black mb-4"></h2>
+                    <p id="k1-fb-points" class="text-xl font-bold text-white bg-black/20 px-6 py-2 rounded-full mb-8"></p>
+                    <button onclick="kahoot1.next()" class="bg-white/20 hover:bg-white/30 text-white border-2 border-white font-bold text-xl py-3 px-10 rounded-xl transition-all">Siguiente</button>
+                </div>
+
+                <!-- Pantalla Final -->
+                <div id="k1-end" class="kahoot-screen justify-center items-center flex-1">
+                    <i class="fa-solid fa-trophy text-7xl text-yellow-500 mb-6 drop-shadow-md"></i>
+                    <h2 class="text-4xl font-black text-slate-800 mb-2">¡Completado!</h2>
+                    <p class="text-lg text-gray-600 mb-6 font-medium">Puntaje Total:</p>
+                    <div class="text-6xl font-black text-emerald-600 mb-8" id="k1-final-score">0</div>
+                    <p class="text-gray-500 font-bold mb-4">Ya puedes pasar a la pestaña de Desarrollo.</p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 2: DESARROLLO (CONTENIDO) ================= -->
+        <div id="tab-contenido" class="tab-content">
+            
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 bg-slate-900 rounded-2xl p-6 shadow-lg border border-slate-700">
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-2"><i class="fa-solid fa-book-open text-emerald-400 mr-2"></i> Teoría y Demostración</h2>
+                    <p class="text-slate-400 text-sm">Comprende cómo los índices aceleran dramáticamente las búsquedas.</p>
+                </div>
+            </div>
+
+            <!-- DDL Script Inicial -->
+            <section class="bg-slate-800 p-8 rounded-3xl shadow-md mb-10 border border-slate-700 relative">
+                <div class="absolute top-0 right-8 transform -translate-y-1/2">
+                    <span class="bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg border-2 border-slate-800">EJECUTA ESTO PRIMERO</span>
+                </div>
+                <div class="flex items-center gap-4 mb-6 mt-2">
+                    <div class="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center shadow-[0_0_15px_#10b981]">
+                        <i class="fa-solid fa-database text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Preparación del Entorno</h2>
+                        <p class="text-slate-400 text-sm">Crea las tablas que usaremos para los ejemplos de hoy.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-900 rounded-2xl overflow-hidden border border-slate-700">
+                    <div class="bg-slate-950 px-4 py-2 flex justify-between items-center border-b border-slate-800">
+                        <span class="text-gray-400 text-xs font-mono">setup_tablas.sql</span>
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('scriptDDL1').innerText); this.innerHTML='<i class=\'fa-solid fa-check mr-1\'></i> Copiado!'; this.classList.add('text-emerald-400'); setTimeout(() => { this.innerHTML='<i class=\'fa-regular fa-copy mr-1\'></i> Copiar'; this.classList.remove('text-emerald-400'); }, 2000);" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm"><i class="fa-regular fa-copy mr-2"></i> Copiar Código</button>
+                    </div>
+                    <pre class="m-0 p-6"><code id="scriptDDL1" class="language-sql text-sm">CREATE TABLE clientes (
+    id_cliente NUMBER PRIMARY KEY,
+    nombre VARCHAR2(50),
+    apellido VARCHAR2(50),
+    ciudad VARCHAR2(50)
+);
+
+CREATE TABLE productos (
+    id_producto NUMBER PRIMARY KEY,
+    nombre VARCHAR2(100),
+    categoria VARCHAR2(50),
+    precio NUMBER
+);
+
+CREATE TABLE pedidos (
+    id_pedido NUMBER PRIMARY KEY,
+    id_cliente NUMBER,
+    fecha DATE,
+    total NUMBER,
+    CONSTRAINT fk_ped_cli FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
+);
+
+-- Insertamos algunos datos para probar
+INSERT INTO clientes VALUES (1, 'Juan', 'Pérez', 'Santiago');
+INSERT INTO clientes VALUES (2, 'Ana', 'Gómez', 'Valparaíso');
+INSERT INTO clientes VALUES (10, 'Luis', 'Tapia', 'Puerto Montt');
+COMMIT;</code></pre>
+                </div>
+            </section>
+
+            <!-- Sección 1: El Problema -->
+            <section class="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm mb-10">
+                <h2 class="text-3xl font-bold text-emerald-700 border-b-2 border-emerald-100 pb-4 mb-6">
+                    <i class="fa-solid fa-magnifying-glass-chart text-emerald-500 bg-emerald-50 p-3 rounded-2xl mr-2"></i> El Problema: El "Full Table Scan"
+                </h2>
+                <div class="space-y-6">
+                    <p class="text-lg leading-relaxed text-gray-700">
+                        Imagina que quieres buscar el apellido <strong>'Pérez'</strong> en un libro telefónico que NO está ordenado alfabéticamente. 
+                        ¿Qué tendrías que hacer? Tendrías que leer la página 1, luego la 2, luego la 3... hasta encontrar a Pérez, o hasta llegar al final del libro para asegurarte de que no hay más "Pérez".
+                    </p>
+                    <div class="bg-rose-50 border-l-4 border-rose-500 p-6 rounded-r-2xl">
+                        <p class="text-rose-900 font-medium">A esto en bases de datos se le llama <strong>Full Table Scan</strong> (Escaneo Completo de Tabla). Cuando haces <code>SELECT * FROM clientes WHERE apellido = 'Pérez';</code>, Oracle revisará <em>todas</em> las filas si no sabe dónde está Pérez.</p>
+                    </div>
+                    
+                    <div class="flex items-center gap-4 mt-6 bg-emerald-50 p-6 rounded-2xl">
+                        <i class="fa-solid fa-book-bookmark text-4xl text-emerald-500"></i>
+                        <div>
+                            <h3 class="font-bold text-emerald-900 text-lg">La Solución: El Índice</h3>
+                            <p class="text-emerald-800">Un <strong>Índice</strong> en Oracle funciona exactamente igual que el índice alfabético al final de un libro. Es una estructura separada de la tabla que dice: <em>"Pérez está en la fila 15 y en la fila 94"</em>. Así, Oracle va directo a esa fila sin leer el resto.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección 2: Creando Índices -->
+            <section class="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm mb-10">
+                <h2 class="text-3xl font-bold text-emerald-700 border-b-2 border-emerald-100 pb-4 mb-6">
+                    <i class="fa-solid fa-code text-emerald-500 bg-emerald-50 p-3 rounded-2xl mr-2"></i> ¿Cómo se usan los Índices?
+                </h2>
+                <div class="space-y-6">
+                    <p class="text-lg leading-relaxed text-gray-700">
+                        A nivel práctico, el tipo de índice más común es el <strong>B-tree</strong> (Árbol B). Es el estándar por defecto. No necesitas especificar el tipo, Oracle lo crea por ti.
+                    </p>
+
+                    <h3 class="text-xl font-bold text-slate-800 mt-6"><i class="fa-solid fa-star text-yellow-500 mr-2"></i> Casos Ideales para Índices</h3>
+                    <ul class="list-disc pl-6 text-gray-700 space-y-2 mb-4">
+                        <li>Columnas que usas mucho en condiciones <code>WHERE</code> (ej. RUT, Apellidos, Correos).</li>
+                        <li>Columnas usadas para unir tablas en un <code>JOIN</code> (ej. las Claves Foráneas).</li>
+                        <li>Columnas con <strong>alta selectividad</strong> (donde los valores casi no se repiten).</li>
+                    </ul>
+
+                    <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-inner mt-6">
+                        <pre><code class="language-sql">-- 1. Consulta lenta (Full Table Scan)
+SELECT * FROM clientes WHERE apellido = 'Pérez';
+SELECT * FROM pedidos WHERE id_cliente = 10;
+
+-- 2. Creamos los Índices para acelerar esas búsquedas
+-- Sintaxis: CREATE INDEX nombre_indice ON tabla(columna);
+CREATE INDEX idx_clientes_apellido ON clientes(apellido);
+CREATE INDEX idx_pedidos_id_cliente ON pedidos(id_cliente);
+
+-- 3. Si ejecutamos las mismas consultas AHORA, 
+-- Oracle usará automáticamente el índice (Index Range Scan)
+SELECT * FROM clientes WHERE apellido = 'Pérez';</code></pre>
+                    </div>
+
+                    <div class="bg-yellow-50 border border-yellow-200 p-6 rounded-2xl mt-6">
+                        <h4 class="font-bold text-yellow-800 mb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i> El Costo de los Índices</h4>
+                        <p class="text-yellow-900 text-sm">
+                            ¿Por qué no indexar todas las columnas y ya? Porque los índices ocupan espacio en disco y, lo más importante, <strong>hacen más lentos los INSERT, UPDATE y DELETE</strong>. Cada vez que insertas un cliente nuevo, Oracle tiene que insertar el dato en la tabla <em>y además</em> actualizar el índice. ¡Usa índices solo donde haya muchas búsquedas!
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección 3: Mantenimiento y Demostración -->
+            <section class="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm mb-10">
+                <h2 class="text-3xl font-bold text-emerald-700 border-b-2 border-emerald-100 pb-4 mb-6">
+                    <i class="fa-solid fa-broom text-emerald-500 bg-emerald-50 p-3 rounded-2xl mr-2"></i> Mantenimiento y Demostración
+                </h2>
+                
+                <h3 class="text-xl font-bold text-slate-800 mb-4">Eliminando Índices</h3>
+                <p class="text-gray-700 mb-4">
+                    Un error muy común en principiantes es intentar borrar un índice usando <code>DELETE</code>. Recuerda: `DELETE` es para borrar filas (DML). El índice es un objeto de la base de datos (como una tabla), por lo que se elimina con <code>DROP</code>.
+                </p>
+                <code class="text-sm bg-slate-900 text-rose-400 p-3 rounded-lg block font-mono">DROP INDEX idx_clientes_apellido;</code>
+
+                <h3 class="text-xl font-bold text-slate-800 mt-8 mb-4">Comprobando la magia: El GPS de Oracle</h3>
+                <p class="text-gray-700 mb-4">
+                    ¿Cómo estamos seguros de que Oracle está usando el atajo y no leyendo todo el libro? Existe una herramienta interna llamada <strong>EXPLAIN PLAN</strong>. Básicamente, es pedirle a Oracle que nos dibuje su ruta antes de ejecutar el viaje.
+                </p>
+                <p class="text-gray-700 mb-6">
+                    A continuación, te mostramos un resumen simplificado de lo que Oracle responde cuando le preguntamos su ruta. Nota la diferencia entre tomar el camino largo (Full Scan) y el atajo (Index Scan).
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div class="border-2 border-rose-200 rounded-xl overflow-hidden shadow-sm">
+                        <div class="bg-rose-100 p-3 font-bold text-rose-800 text-center"><i class="fa-solid fa-person-walking-luggage mr-2"></i> SIN ÍNDICE (El camino largo)</div>
+                        <div class="p-6 bg-slate-900 text-emerald-400 font-mono text-sm whitespace-pre">
+| Operation                   | Name     |
+|-----------------------------|----------|
+|  <span class="text-rose-400 font-bold bg-rose-900/30 px-2 rounded">TABLE ACCESS FULL</span> | CLIENTES |
+                        </div>
+                    </div>
+                    <div class="border-2 border-emerald-200 rounded-xl overflow-hidden shadow-sm">
+                        <div class="bg-emerald-100 p-3 font-bold text-emerald-800 text-center"><i class="fa-solid fa-rocket mr-2"></i> CON ÍNDICE (El atajo)</div>
+                        <div class="p-6 bg-slate-900 text-emerald-400 font-mono text-sm whitespace-pre">
+| Operation                   | Name                  |
+|-----------------------------|-----------------------|
+|  TABLE ACCESS BY INDEX ROWID| CLIENTES              |
+|   <span class="text-emerald-400 font-bold bg-emerald-900/30 px-2 rounded">INDEX RANGE SCAN</span>   | IDX_CLIENTES_APELLIDO |
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 text-center">
+                    <button onclick="document.getElementById('modal-explain').classList.remove('hidden')" class="inline-flex items-center bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3 px-6 rounded-full border-2 border-slate-300 shadow-sm transition-all transform hover:scale-105">
+                        <i class="fa-solid fa-graduation-cap mr-2 text-xl text-slate-600"></i> ¿Cómo funciona internamente? (Para curiosos)
+                    </button>
+                </div>
+            </section>
+
+            <!-- DDL Final para Desarrollo -->
+            <section class="bg-slate-800 p-8 rounded-3xl shadow-md border border-slate-700">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center">
+                        <i class="fa-solid fa-code-branch text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">¿Quieres probarlo tú mismo?</h2>
+                        <p class="text-slate-400 text-sm">Copia este bloque completo en Oracle o SQL Developer para ver el proceso.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-900 rounded-2xl overflow-hidden border border-slate-700">
+                    <pre class="m-0 p-6"><code class="language-sql text-sm">-- Si quieres asegurarte que no existen, borralas primero
+-- DROP TABLE pedidos;
+-- DROP TABLE clientes;
+-- DROP TABLE productos;
+
+-- (Asegúrate de haber corrido el script setup_tablas.sql del inicio)
+
+-- Haz una consulta a un cliente específico
+SELECT * FROM clientes WHERE apellido = 'Tapia'; 
+
+-- Crea un índice para acelerar esa búsqueda
+CREATE INDEX idx_cliente_ape ON clientes(apellido);
+
+-- Vuelve a hacer la consulta (notarás que ahora usa el índice por debajo)
+SELECT * FROM clientes WHERE apellido = 'Tapia'; 
+
+-- Elimina el índice cuando ya no lo necesites
+DROP INDEX idx_cliente_ape;</code></pre>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= PESTAÑA 3: PRÁCTICA ================= -->
+        <div id="tab-practica" class="tab-content">
+            <h2 class="text-3xl font-bold text-slate-800 text-center mb-6"><i class="fa-solid fa-laptop-code text-slate-600 mr-2"></i> Ejercicio Corto: Optimizando Consultas</h2>
+            
+            <div class="bg-white p-8 rounded-2xl border-2 border-gray-200 shadow-sm max-w-4xl mx-auto">
+                <div class="bg-emerald-50 text-emerald-800 p-4 rounded-xl mb-6 font-medium">
+                    <i class="fa-solid fa-circle-info mr-2"></i> Analiza las siguientes consultas que se ejecutan miles de veces al día en un sistema de ventas. Escribe el comando SQL necesario para crear los índices que acelerarían cada caso.
+                </div>
+
+                <div class="space-y-8">
+                    <!-- Ejercicio 1 -->
+                    <div>
+                        <h4 class="font-bold text-lg mb-2 text-slate-800">1. Búsqueda de Productos</h4>
+                        <p class="text-gray-600 text-sm mb-2">Los usuarios de la tienda virtual filtran mucho los productos por su <code>categoria</code>. La consulta más ejecutada es:</p>
+                        <code class="block bg-gray-100 p-3 rounded font-mono text-sm mb-3">SELECT * FROM productos WHERE categoria = 'Electrónica';</code>
+                        <div class="border border-gray-300 rounded-lg p-2 bg-gray-50">
+                            <textarea class="w-full bg-transparent border-none outline-none resize-none font-mono text-sm text-emerald-700" rows="2" placeholder="Escribe tu CREATE INDEX aquí..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Ejercicio 2 -->
+                    <div>
+                        <h4 class="font-bold text-lg mb-2 text-slate-800">2. Cruce de Tablas (JOIN)</h4>
+                        <p class="text-gray-600 text-sm mb-2">Al generar la boleta, el sistema siempre cruza la tabla <code>pedidos</code> con la tabla <code>clientes</code> usando la llave foránea <code>id_cliente</code> en la tabla pedidos:</p>
+                        <code class="block bg-gray-100 p-3 rounded font-mono text-sm mb-3">SELECT p.fecha, c.nombre FROM pedidos p JOIN clientes c ON p.id_cliente = c.id_cliente;</code>
+                        <div class="border border-gray-300 rounded-lg p-2 bg-gray-50">
+                            <textarea class="w-full bg-transparent border-none outline-none resize-none font-mono text-sm text-emerald-700" rows="2" placeholder="Escribe tu CREATE INDEX aquí para la llave foránea en pedidos..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA TALLER EVALUADO ================= -->
+        <div id="tab-taller" class="tab-content">
+            <h2 class="text-3xl font-bold text-slate-800 text-center mb-6"><i class="fa-solid fa-user-gear text-emerald-600 mr-2"></i> Taller Evaluado: Auditoría de Rendimiento</h2>
+            
+            <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 mb-8 max-w-4xl mx-auto shadow-sm">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 shadow-md">
+                        <i class="fa-solid fa-clipboard-list text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-emerald-900 text-lg mb-2">Instrucciones de Entrega</h3>
+                        <p class="text-gray-700 text-sm mb-3">En este taller serás el auditor de rendimiento de un sistema nuevo. Deberás crear el escenario, medir la velocidad sin optimización, aplicar la mejora y medir el resultado final.</p>
+                        <ul class="list-disc pl-5 text-gray-700 text-sm space-y-1 font-medium">
+                            <li>Abre un <strong>Documento de Word</strong> y úsalo como bitácora.</li>
+                            <li>Pega tu código SQL completo al principio del documento.</li>
+                            <li>Debajo del código, pega las <strong>Capturas de Pantalla</strong> de cada paso que lo requiera.</li>
+                            <li>Al final del documento, responde a las <strong>Preguntas de Metacognición</strong>.</li>
+                            <li>Sube tu documento Word al portal <strong>AVA</strong> antes del cierre de la clase.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6 max-w-4xl mx-auto">
+                <!-- Paso 1 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm relative pt-8">
+                    <span class="absolute top-0 left-0 bg-slate-800 text-white text-xs font-bold px-4 py-1.5 rounded-br-lg rounded-tl-2xl">PASO 1</span>
+                    <h4 class="font-bold text-xl mb-3 text-slate-800">El Escenario Propio</h4>
+                    <p class="text-sm text-gray-600 mb-4">Diseña y crea una tabla con una temática de tu elección (ej. videojuegos, autos, pacientes, inventario). La tabla debe tener al menos 4 columnas. Luego, inserta al menos <strong>5 registros</strong> con datos inventados.</p>
+                    <div class="bg-amber-50 text-amber-800 p-3 rounded-lg text-sm border border-amber-200 inline-block font-medium">
+                        <i class="fa-solid fa-camera mr-2"></i> Evidencia: Toma una captura de pantalla demostrando que la tabla se creó y que los datos fueron insertados correctamente (ej. mostrando un SELECT * de tu tabla).
+                    </div>
+                </div>
+
+                <!-- Paso 2 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm relative pt-8">
+                    <span class="absolute top-0 left-0 bg-rose-600 text-white text-xs font-bold px-4 py-1.5 rounded-br-lg rounded-tl-2xl">PASO 2</span>
+                    <h4 class="font-bold text-xl mb-3 text-slate-800">La Consulta Lenta (El Camino Largo)</h4>
+                    <p class="text-sm text-gray-600 mb-4">Elige una de las columnas de tu tabla que NO sea la llave primaria (Primary Key). Escribe una consulta <code>SELECT</code> usando un <code>WHERE</code> sobre esa columna. Antes de ejecutarla, antepón <code>EXPLAIN PLAN FOR</code> para medir su rendimiento.</p>
+                    <div class="bg-amber-50 text-amber-800 p-3 rounded-lg text-sm border border-amber-200 inline-block font-medium">
+                        <i class="fa-solid fa-camera mr-2"></i> Evidencia: Ejecuta <code>SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);</code> y toma captura del resultado. Debes destacar (marcar o encerrar) el lugar donde dice <strong>TABLE ACCESS FULL</strong> y el valor de la columna <strong>Cost</strong>.
+                    </div>
+                </div>
+
+                <!-- Paso 3 -->
+                <div class="bg-white p-6 rounded-2xl border border-emerald-300 shadow-sm relative pt-8">
+                    <span class="absolute top-0 left-0 bg-emerald-600 text-white text-xs font-bold px-4 py-1.5 rounded-br-lg rounded-tl-2xl">PASO 3</span>
+                    <h4 class="font-bold text-xl mb-3 text-slate-800">La Optimización (El Atajo)</h4>
+                    <p class="text-sm text-gray-600 mb-4">¡Es hora de hacer magia! Crea un <strong>Índice</strong> sobre la misma columna que usaste en el Paso 2. Una vez creado, vuelve a solicitar el <code>EXPLAIN PLAN FOR</code> para tu misma consulta <code>SELECT</code>.</p>
+                    <div class="bg-amber-50 text-amber-800 p-3 rounded-lg text-sm border border-amber-200 inline-block font-medium">
+                        <i class="fa-solid fa-camera mr-2"></i> Evidencia: Vuelve a ejecutar <code>SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);</code> y toma la última captura. Ahora debes destacar que el plan muestra un <strong>INDEX RANGE SCAN</strong> y el nuevo valor (más bajo) de la columna <strong>Cost</strong>.
+                    </div>
+                </div>
+
+                <!-- Paso 4 -->
+                <div class="bg-slate-800 p-8 rounded-2xl shadow-lg border border-slate-700 text-white mt-8">
+                    <h4 class="font-bold text-2xl mb-4 text-emerald-400"><i class="fa-solid fa-brain mr-2"></i> Metacognición (Reflexión Final)</h4>
+                    <p class="text-slate-300 mb-6">En tu documento Word, responde con tus propias palabras a estas 3 preguntas reflexivas basándote en lo que acabas de experimentar:</p>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                            <h5 class="font-bold text-emerald-300 mb-1">Pregunta 1: El Impacto del Costo</h5>
+                            <p class="text-sm text-slate-400">Compara el número de la columna "Cost" del Paso 2 con el del Paso 3. Aunque ahora las tablas sean pequeñas, ¿qué crees que pasaría con ese Costo si tu tabla tuviera 10 millones de registros (como la base de datos del Registro Civil o Netflix)?</p>
+                        </div>
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                            <h5 class="font-bold text-emerald-300 mb-1">Pregunta 2: El Precio de la Velocidad</h5>
+                            <p class="text-sm text-slate-400">Si los índices hacen que las búsquedas sean tan rápidas, ¿por qué crees que Oracle simplemente no le pone índices a todas las columnas por defecto? ¿Qué pasaría con el sistema cada vez que hacemos un INSERT o UPDATE masivo?</p>
+                        </div>
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                            <h5 class="font-bold text-emerald-300 mb-1">Pregunta 3: Aplicación Profesional</h5>
+                            <p class="text-sm text-slate-400">Imagina que entras a trabajar a una empresa y el cliente se queja de que "La página web se demora 10 segundos en cargar la lista de productos por categoría". Antes de esta clase, ¿qué hubieras pensado que era el error? ¿Qué harías ahora como DBA?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 4: CIERRE ================= -->
+        <div id="tab-cierre" class="tab-content">
+            <section class="bg-gradient-to-br from-emerald-900 to-slate-900 p-10 rounded-3xl shadow-xl mb-10 text-center relative overflow-hidden">
+                <!-- Decoración -->
+                <div class="absolute -top-20 -right-20 w-64 h-64 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+                <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+                
+                <h2 class="text-4xl font-black text-white mb-8 relative z-10">Resumen de Índices <span id="easter-rocket" onclick="launchEasterEgg()" class="easter-rocket cursor-pointer inline-block transition-all duration-1000 hover:-translate-y-2 hover:scale-110" title="Easter Egg: Modo Dios (Inserción Masiva)">🚀</span></h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10 max-w-4xl mx-auto">
+                    <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 text-left">
+                        <i class="fa-solid fa-bolt text-4xl text-emerald-400 mb-4"></i>
+                        <h3 class="text-xl font-bold text-white mb-2">Velocidad Extrema</h3>
+                        <p class="text-emerald-100 text-sm leading-relaxed">
+                            Los índices evitan el "Full Table Scan", permitiendo que Oracle salte directamente a la fila que buscas, igual que buscar en el índice de un libro.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 text-left">
+                        <i class="fa-solid fa-scale-balanced text-4xl text-emerald-400 mb-4"></i>
+                        <h3 class="text-xl font-bold text-white mb-2">El Balance</h3>
+                        <p class="text-emerald-100 text-sm leading-relaxed">
+                            No todo se indexa. Aceleran el SELECT, pero ralentizan el INSERT, UPDATE y DELETE porque requieren mantenimiento constante por parte del motor.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Modal Easter Egg -->
+    <div id="modal-easter-egg" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 rounded-3xl w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-[0_0_50px_rgba(16,185,129,0.3)] border border-emerald-500/30 flex flex-col animate-[fadeIn_0.3s_ease-out]">
+            <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-gray-900/95 z-20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-user-ninja text-emerald-400 text-3xl"></i>
+                    <div>
+                        <h3 class="text-2xl font-black text-white tracking-widest uppercase">Modo Dios Activado</h3>
+                        <p class="text-emerald-500/70 text-xs font-mono">Easter Egg Encontrado. Solo para aventureros.</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('modal-easter-egg').classList.add('hidden')" class="text-gray-500 hover:text-rose-500 transition-colors w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-800">
+                    <i class="fa-solid fa-xmark text-2xl"></i>
+                </button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-8 relative">
+                <div class="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                    <i class="fa-solid fa-dragon text-9xl text-emerald-500"></i>
+                </div>
+                
+                <p class="text-gray-300 text-sm mb-4 relative z-10">¿Quieres probar qué tan rápido es un índice en serio? Ejecuta este script. Generará <strong>más de 3 millones de registros</strong> usando funciones matemáticas y recursividad para estresar tu base de datos Oracle. ¡Luego intenta buscar un nombre sin índice y verás cómo tu PC suda!</p>
+
+                <div class="bg-blue-900/40 border border-blue-500/30 p-4 rounded-xl mb-6 relative z-10 shadow-inner">
+                    <h4 class="text-blue-400 font-bold text-sm mb-2"><i class="fa-solid fa-wrench mr-2"></i> Adaptando el script a tus tablas</h4>
+                    <p class="text-gray-400 text-xs leading-relaxed">Si quieres usar este poder divino para llenar las tablas que tú mismo creaste en el taller (en vez de usar las de clientes/pedidos), debes cambiar los siguientes valores en el código:</p>
+                    <ul class="list-disc pl-5 mt-2 text-gray-400 text-xs space-y-1">
+                        <li>Reemplaza <code>INSERT INTO clientes</code> por el nombre de tu tabla (ej: <code>INSERT INTO videojuegos</code>).</li>
+                        <li>Cambia los nombres de las columnas <code>(id_cliente, nombre, apellido, ciudad)</code> por las tuyas.</li>
+                        <li>Ajusta los tipos de datos que se generan en el <code>SELECT</code> debajo: Usa <code>CHR(...)</code> para generar letras aleatorias si tu columna es de texto, o <code>DBMS_RANDOM.VALUE</code> para generar números si tu columna es numérica.</li>
+                    </ul>
+                </div>
+
+                <div class="bg-black/50 rounded-2xl overflow-hidden border border-gray-700 relative z-10">
+                    <div class="flex justify-between items-center bg-gray-800 px-4 py-2 border-b border-gray-700">
+                        <span class="text-gray-400 text-xs font-mono">stress_test_db.sql</span>
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('script-easter').innerText); this.innerHTML='<i class=\'fa-solid fa-check mr-1\'></i> Copiado!'; this.classList.replace('text-emerald-400','text-emerald-300'); setTimeout(() => { this.innerHTML='<i class=\'fa-regular fa-copy mr-1\'></i> Copiar Dios'; this.classList.replace('text-emerald-300','text-emerald-400'); }, 2000);" class="text-emerald-400 hover:text-white transition-colors text-xs font-bold flex items-center bg-emerald-900/30 px-3 py-1 rounded hover:bg-emerald-800/50"><i class="fa-regular fa-copy mr-2"></i> Copiar Dios</button>
+                    </div>
+                    <pre class="m-0 p-6 overflow-x-auto"><code id="script-easter" class="language-sql text-xs text-gray-300">-- ============================================================
+-- PASO 1: Inserción masiva recursiva con CONNECT BY
+-- Genera ~1 millón de clientes, productos y pedidos
+-- Usa secuencias y SELECT recursivo para máximo rendimiento
+-- ============================================================
+
+-- 1A) Crear secuencias para IDs únicos
+CREATE SEQUENCE seq_cliente START WITH 100 INCREMENT BY 1 NOCACHE;
+CREATE SEQUENCE seq_producto START WITH 1   INCREMENT BY 1 NOCACHE;
+CREATE SEQUENCE seq_pedido  START WITH 1   INCREMENT BY 1 NOCACHE;
+
+-- 1B) Insertar 1.000.000 de clientes en un solo INSERT
+--     CONNECT BY LEVEL genera una fila por cada nivel (1..N)
+--     MOD y CHR dan nombres/ciudades variados sin PL/SQL
+INSERT INTO clientes (id_cliente, nombre, apellido, ciudad)
+SELECT
+    seq_cliente.NEXTVAL,
+    CHR(65 + MOD(LEVEL,26)) || TO_CHAR(LEVEL)             AS nombre,
+    CHR(65 + MOD(LEVEL+5,26)) || TO_CHAR(LEVEL*2)          AS apellido,
+    CASE MOD(LEVEL,5)
+        WHEN 0 THEN 'Santiago'
+        WHEN 1 THEN 'Valparaíso'
+        WHEN 2 THEN 'Puerto Montt'
+        WHEN 3 THEN 'Concepción'
+        ELSE       'Temuco'
+    END                                                       AS ciudad
+FROM DUAL
+CONNECT BY LEVEL <= 1000000;
+
+COMMIT;
+
+-- 1C) Insertar 500.000 productos
+INSERT INTO productos (id_producto, nombre, categoria, precio)
+SELECT
+    seq_producto.NEXTVAL,
+    'Producto_' || LEVEL                                   AS nombre,
+    CASE MOD(LEVEL,4)
+        WHEN 0 THEN 'Electrónica'
+        WHEN 1 THEN 'Ropa'
+        WHEN 2 THEN 'Hogar'
+        ELSE       'Alimentos'
+    END                                                       AS categoria,
+    ROUND(DBMS_RANDOM.VALUE(100,99999),2)                  AS precio
+FROM DUAL
+CONNECT BY LEVEL <= 500000;
+
+COMMIT;
+
+-- 1D) Insertar 2.000.000 de pedidos (apunta a clientes existentes)
+INSERT INTO pedidos (id_pedido, id_cliente, fecha, total)
+SELECT
+    seq_pedido.NEXTVAL,
+    -- id_cliente aleatorio entre los insertados (100 .. 100+999999)
+    TRUNC(DBMS_RANDOM.VALUE(100, 1000099))                AS id_cliente,
+    SYSDATE - TRUNC(DBMS_RANDOM.VALUE(0,1825))            AS fecha,
+    ROUND(DBMS_RANDOM.VALUE(1000,5000000),2)              AS total
+FROM DUAL
+CONNECT BY LEVEL <= 2000000;
+
+COMMIT;</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Explain Plan -->
+    <div id="modal-explain" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 animate-[fadeIn_0.2s_ease-out]">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur z-20">
+                <h3 class="text-2xl font-black text-slate-800"><i class="fa-solid fa-map-location-dot text-emerald-600 mr-2"></i> Diseccionando el EXPLAIN PLAN</h3>
+                <button onclick="document.getElementById('modal-explain').classList.add('hidden')" class="text-gray-400 hover:text-rose-500 transition-colors w-10 h-10 flex items-center justify-center rounded-full hover:bg-rose-50 bg-gray-50 border border-gray-200 shadow-sm">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-8 space-y-8">
+                
+                <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-200 text-center relative overflow-hidden">
+                    <p class="text-lg font-medium text-emerald-900 relative z-10">
+                        <strong>EXPLAIN PLAN</strong> no es magia. Es un comando real de Oracle que simula una consulta y te devuelve una tabla detallando los pasos exactos que el motor de la base de datos dará para encontrar tus datos.
+                    </p>
+                </div>
+
+                <div class="space-y-4">
+                    <h4 class="text-xl font-bold text-slate-800 flex items-center"><i class="fa-solid fa-keyboard text-emerald-500 mr-2"></i> ¿Cómo se usa en la vida real?</h4>
+                    <p class="text-gray-700 leading-relaxed text-sm">
+                        Para obtener este plan, debes usar dos comandos. Primero, le dices a Oracle "Explícame el plan para esta consulta". Segundo, consultas la tabla especial donde Oracle guardó la respuesta.
+                    </p>
+                    <div class="bg-gray-900 rounded-xl overflow-hidden shadow-inner p-4 text-sm font-mono text-emerald-400">
+                        <span class="text-gray-400">-- 1. Pide la explicación (pon EXPLAIN PLAN FOR antes de tu SELECT)</span><br>
+                        <span class="text-pink-400">EXPLAIN PLAN FOR</span><br>
+                        SELECT * FROM clientes WHERE apellido = 'Pérez';<br><br>
+                        <span class="text-gray-400">-- 2. Lee la respuesta generada</span><br>
+                        SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <h4 class="text-xl font-bold text-slate-800 flex items-center"><i class="fa-solid fa-table-list text-emerald-500 mr-2"></i> ¿Qué significan las columnas?</h4>
+                    <p class="text-gray-700 leading-relaxed text-sm">
+                        El resultado real tiene varias columnas, pero las tres más importantes para un desarrollador son:
+                    </p>
+                    <ul class="list-disc pl-6 text-gray-700 text-sm space-y-3">
+                        <li><strong>Operation (Operación):</strong> Es la acción técnica. Si ves <code>TABLE ACCESS FULL</code>, Oracle está sudando la gota gorda leyendo toda la tabla. Si ves <code>INDEX RANGE SCAN</code>, Oracle está usando tu índice felizmente.</li>
+                        <li><strong>Name (Nombre):</strong> Te dice qué objeto específico está tocando en ese paso. Puede ser el nombre de la tabla (<code>CLIENTES</code>) o el nombre de tu índice (<code>IDX_CLIENTES_APELLIDO</code>).</li>
+                        <li><strong>Cost (Costo):</strong> Es un número matemático interno. Mientras más bajo, mejor. Es una estimación de cuánto esfuerzo de CPU y disco gastará Oracle. ¡Con índices verás que el costo se desploma!</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lógica de Pestañas
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('active', 'text-emerald-700', 'bg-emerald-100', 'shadow-sm');
+                    b.classList.add('text-gray-500');
+                });
+                btn.classList.remove('text-gray-500');
+                btn.classList.add('active', 'text-emerald-700', 'bg-emerald-100', 'shadow-sm');
+                
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Easter Egg Logic
+        function launchEasterEgg() {
+            const rocket = document.getElementById('easter-rocket');
+            
+            // Pausar animación de rumble para el despegue
+            rocket.classList.remove('easter-rocket');
+
+            // Animar el despegue hacia arriba
+            rocket.style.transform = 'translateY(-1000px) scale(3)';
+            rocket.style.opacity = '0';
+            
+            // Efecto de sonido sintético (si el navegador lo permite)
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    const ctx = new AudioContext();
+                    
+                    // Sonido 1: Despegue (ruido de baja frecuencia subiendo)
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(50, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 1.2);
+                    gain.gain.setValueAtTime(0, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.2);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.2);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 1.2);
+                    
+                    // Sonido 2: Éxito "Woooah" (Acorde triunfal)
+                    setTimeout(() => {
+                        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                        notes.forEach((freq, i) => {
+                            const o = ctx.createOscillator();
+                            const g = ctx.createGain();
+                            o.type = 'sine';
+                            o.frequency.setValueAtTime(freq, ctx.currentTime + (i * 0.1));
+                            g.gain.setValueAtTime(0, ctx.currentTime);
+                            g.gain.setValueAtTime(0.15, ctx.currentTime + (i * 0.1));
+                            g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + (i * 0.1) + 1);
+                            o.connect(g);
+                            g.connect(ctx.destination);
+                            o.start(ctx.currentTime + (i * 0.1));
+                            o.stop(ctx.currentTime + (i * 0.1) + 1);
+                        });
+                    }, 1200);
+                }
+            } catch(e) { console.log('Audio not supported', e); }
+            
+            // Mostrar modal y resetear cohete
+            setTimeout(() => {
+                document.getElementById('modal-easter-egg').classList.remove('hidden');
+                
+                // Magia para devolver el cohete sin animarlo bajando
+                setTimeout(() => {
+                    rocket.style.transition = 'none';
+                    rocket.style.transform = 'translateY(0) scale(1)';
+                    rocket.style.opacity = '1';
+                    rocket.classList.add('easter-rocket');
+                    // Restaurar la transición después de un tick
+                    setTimeout(() => { rocket.style.transition = 'all 1s'; }, 50);
+                }, 500);
+            }, 1200);
+        }
+
+        // Configuración Kahoot 1 (Activación)
+        const qKahoot1 = [
+            {
+                q: "¿Qué es una Vista (View) en base de datos?",
+                opts: ["Un respaldo físico de los datos.", "Una tabla virtual basada en un SELECT.", "Una interfaz gráfica de usuario."],
+                ans: 1
+            },
+            {
+                q: "¿Para qué sirve la pseudocolumna NEXTVAL?",
+                opts: ["Para buscar el siguiente registro en un SELECT.", "Para crear una nueva tabla automáticamente.", "Para generar el siguiente número de una secuencia."],
+                ans: 2
+            },
+            {
+                q: "Lógica: Si tienes un diccionario gigante, ¿cómo encuentras la palabra 'Zanahoria' más rápido?",
+                opts: ["Leyendo desde la A hasta la Z.", "Cortando el diccionario a la mitad.", "Buscando en el índice alfabético la Z."],
+                ans: 2
+            }
+        ];
+
+        class KahootEngine {
+            constructor(id, questions) {
+                this.id = id;
+                this.questions = questions;
+                this.currentQ = 0;
+                this.score = 0;
+                this.timer = null;
+                this.timeLeft = 0;
+                this.colors = ['kahoot-red', 'kahoot-blue', 'kahoot-yellow', 'kahoot-green'];
+                this.icons = ['fa-triangle', 'fa-diamond', 'fa-circle', 'fa-square'];
+            }
+
+            showScreen(screenName) {
+                document.querySelectorAll(`#${this.id}-container .kahoot-screen`).forEach(s => s.classList.remove('active'));
+                document.getElementById(`${this.id}-${screenName}`).classList.add('active');
+            }
+
+            start() {
+                this.currentQ = 0;
+                this.score = 0;
+                this.showQuestion();
+            }
+
+            showQuestion() {
+                this.showScreen('question');
+                const q = this.questions[this.currentQ];
+                document.getElementById(`${this.id}-q-text`).innerText = q.q;
+                document.getElementById(`${this.id}-counter`).innerText = `Pregunta ${this.currentQ + 1} de ${this.questions.length}`;
+                
+                const optsContainer = document.getElementById(`${this.id}-options`);
+                optsContainer.innerHTML = '';
+                
+                q.opts.forEach((opt, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = `${this.colors[index]} p-6 rounded-xl font-bold text-xl md:text-2xl text-left shadow-sm kahoot-btn flex items-center gap-4`;
+                    btn.innerHTML = `<i class="fa-solid ${this.icons[index]} text-white/50 text-3xl"></i> <span>${opt}</span>`;
+                    btn.onclick = () => this.answer(index);
+                    optsContainer.appendChild(btn);
+                });
+
+                this.startTimer(15);
+            }
+
+            startTimer(seconds) {
+                this.timeLeft = seconds;
+                const bar = document.getElementById(`${this.id}-timer-bar`);
+                const text = document.getElementById(`${this.id}-timer-text`);
+                
+                bar.style.width = '100%';
+                bar.classList.remove('urgent');
+                text.innerText = this.timeLeft;
+
+                clearInterval(this.timer);
+                this.timer = setInterval(() => {
+                    this.timeLeft--;
+                    text.innerText = this.timeLeft;
+                    bar.style.width = `${(this.timeLeft / seconds) * 100}%`;
+                    
+                    if(this.timeLeft <= 5) bar.classList.add('urgent');
+                    
+                    if(this.timeLeft <= 0) {
+                        clearInterval(this.timer);
+                        this.answer(-1); // Timeout
+                    }
+                }, 1000);
+            }
+
+            answer(index) {
+                clearInterval(this.timer);
+                const q = this.questions[this.currentQ];
+                const isCorrect = index === q.ans;
+                
+                let points = 0;
+                if(isCorrect) {
+                    points = Math.max(500, Math.floor(1000 * (this.timeLeft / 15)));
+                    this.score += points;
+                }
+
+                this.showScreen('feedback');
+                const fbContainer = document.getElementById(`${this.id}-feedback`);
+                const fbTitle = document.getElementById(`${this.id}-fb-title`);
+                const fbIcon = document.getElementById(`${this.id}-fb-icon`);
+                const fbPoints = document.getElementById(`${this.id}-fb-points`);
+
+                if(isCorrect) {
+                    fbContainer.className = 'kahoot-screen active justify-center items-center flex-1 bg-green-500 text-white rounded-3xl';
+                    fbTitle.innerText = '¡Correcto!';
+                    fbIcon.innerHTML = '<i class="fa-solid fa-check"></i>';
+                    fbPoints.innerText = `+${points} puntos`;
+                } else {
+                    fbContainer.className = 'kahoot-screen active justify-center items-center flex-1 bg-red-500 text-white rounded-3xl';
+                    fbTitle.innerText = index === -1 ? '¡Tiempo agotado!' : 'Incorrecto';
+                    fbIcon.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                    fbPoints.innerText = 'La próxima será';
+                }
+            }
+
+            next() {
+                // Reset feedback bg
+                document.getElementById(`${this.id}-feedback`).className = 'kahoot-screen justify-center items-center flex-1';
+                
+                this.currentQ++;
+                if(this.currentQ < this.questions.length) {
+                    this.showQuestion();
+                } else {
+                    this.showScreen('end');
+                    document.getElementById(`${this.id}-final-score`).innerText = this.score;
+                }
+            }
+        }
+
+        const kahoot1 = new KahootEngine('k1', qKahoot1);
+    </script>
+</body>
+</html>

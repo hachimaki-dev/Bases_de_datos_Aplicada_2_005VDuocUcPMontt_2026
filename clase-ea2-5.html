@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 5 - Diario de Clases EA2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <style>
+        .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Kahoot Style Classes */
+        .kahoot-btn { transition: all 0.2s; }
+        .kahoot-btn:hover { transform: scale(1.02); filter: brightness(1.1); }
+        .kahoot-btn:active { transform: scale(0.95); }
+        .kahoot-red { background-color: #e21b3c; border-bottom: 4px solid #b0102b; color: white; }
+        .kahoot-blue { background-color: #1368ce; border-bottom: 4px solid #0c4d9a; color: white; }
+        .kahoot-yellow { background-color: #d89e00; border-bottom: 4px solid #a87b00; color: white; }
+        .kahoot-green { background-color: #26890c; border-bottom: 4px solid #1a6108; color: white; }
+        
+        .timer-bar-container { width: 100%; height: 20px; background-color: #e5e7eb; border-radius: 10px; overflow: hidden; }
+        .timer-bar { height: 100%; background-color: #3b82f6; transition: width 1s linear, background-color 0.5s; width: 100%; }
+        .timer-bar.urgent { background-color: #ef4444; animation: pulse-fast 0.5s infinite alternate; }
+        
+        @keyframes pulse-fast { from { opacity: 1; } to { opacity: 0.7; } }
+        
+        .kahoot-screen { display: none; }
+        .kahoot-screen.active { display: flex; flex-direction: column; }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen bg-blue-50/30 text-gray-800 pb-20">
+    <app-nav></app-nav>
+
+    <header class="max-w-5xl mx-auto px-6 text-center mb-10 pt-10">
+        <div class="inline-block bg-blue-100 px-6 py-2.5 rounded-full text-blue-700 font-bold text-base mb-6 border-2 border-blue-200 shadow-sm">
+            Unidad EA2 - Clase 5
+        </div>
+        <h1 class="text-5xl md:text-6xl font-black text-blue-700 mb-6 drop-shadow-sm leading-tight tracking-tight">Seguridad y Acceso:<br>Usuarios y Privilegios</h1>
+        <p class="text-xl md:text-2xl text-blue-900 bg-white inline-flex items-center gap-3 px-8 py-4 rounded-full shadow-md border-2 border-blue-100 mt-4 font-bold mx-auto justify-center">
+            Cómo proteger la información y delegar responsabilidades
+        </p>
+    </header>
+
+    <!-- Navegación de Pestañas (Tabs) -->
+    <nav class="max-w-4xl mx-auto px-4 mb-8 sticky top-4 z-40">
+        <ul class="flex flex-wrap justify-center gap-2 bg-white/90 backdrop-blur-md p-2 rounded-2xl shadow-md border border-gray-200">
+            <li><button data-tab="ticket-entrada" class="tab-btn active px-5 py-2.5 rounded-xl font-bold transition-all text-blue-700 bg-blue-100 shadow-sm"><i class="fa-solid fa-ticket mr-2"></i>Activación</button></li>
+            <li><button data-tab="contenido" class="tab-btn px-5 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-book-open mr-2"></i>Desarrollo</button></li>
+            <li><button data-tab="practica" class="tab-btn px-5 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-laptop-code mr-2"></i>Práctica</button></li>
+            <li><button data-tab="cierre" class="tab-btn px-5 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-flag-checkered mr-2"></i>Resumen</button></li>
+        </ul>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-6">
+        
+        <!-- ================= PESTAÑA 1: ACTIVACIÓN (KAHOOT) ================= -->
+        <div id="tab-ticket-entrada" class="tab-content active">
+            <div id="k1-container" class="bg-gray-100 rounded-3xl p-8 max-w-3xl mx-auto shadow-inner border-4 border-gray-200 text-center min-h-[500px] flex flex-col relative overflow-hidden">
+                
+                <!-- Pantalla Inicial -->
+                <div id="k1-start" class="kahoot-screen active h-full justify-center items-center flex-1">
+                    <i class="fa-solid fa-shield-halved text-6xl text-blue-500 mb-6 drop-shadow-md animate-bounce"></i>
+                    <h2 class="text-4xl font-black text-slate-800 mb-4">Ticket de Entrada</h2>
+                    <p class="text-xl font-medium text-gray-600 mb-8">Repaso de Índices y una pregunta lógica de seguridad. 3 Preguntas. ¡Adelante!</p>
+                    <button onclick="kahoot1.start()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-2xl py-4 px-12 rounded-xl shadow-[0_6px_0_#2563eb] active:shadow-[0_0px_0_#2563eb] active:translate-y-1.5 transition-all">¡Comenzar!</button>
+                </div>
+
+                <!-- Pantalla de Pregunta -->
+                <div id="k1-question" class="kahoot-screen flex-1">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="bg-white px-4 py-1 rounded-full font-bold text-gray-600 shadow-sm" id="k1-counter">Pregunta 1 de 3</span>
+                        <span class="bg-blue-100 text-blue-800 px-4 py-1 rounded-full font-black text-xl shadow-sm" id="k1-timer-text">15</span>
+                    </div>
+                    <div class="timer-bar-container mb-6 shadow-sm">
+                        <div id="k1-timer-bar" class="timer-bar"></div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-2xl shadow-sm mb-8 border border-gray-200">
+                        <h3 class="text-2xl md:text-3xl font-bold text-slate-800" id="k1-q-text">Pregunta...</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-auto" id="k1-options">
+                        <!-- Botones inyectados vía JS -->
+                    </div>
+                </div>
+
+                <!-- Pantalla de Feedback -->
+                <div id="k1-feedback" class="kahoot-screen justify-center items-center flex-1">
+                    <div id="k1-fb-icon" class="text-8xl mb-6"></div>
+                    <h2 id="k1-fb-title" class="text-5xl font-black mb-4"></h2>
+                    <p id="k1-fb-points" class="text-xl font-bold text-white bg-black/20 px-6 py-2 rounded-full mb-8"></p>
+                    <button onclick="kahoot1.next()" class="bg-white/20 hover:bg-white/30 text-white border-2 border-white font-bold text-xl py-3 px-10 rounded-xl transition-all">Siguiente</button>
+                </div>
+
+                <!-- Pantalla Final -->
+                <div id="k1-end" class="kahoot-screen justify-center items-center flex-1">
+                    <i class="fa-solid fa-trophy text-7xl text-yellow-500 mb-6 drop-shadow-md"></i>
+                    <h2 class="text-4xl font-black text-slate-800 mb-2">¡Completado!</h2>
+                    <p class="text-lg text-gray-600 mb-6 font-medium">Puntaje Total:</p>
+                    <div class="text-6xl font-black text-blue-600 mb-8" id="k1-final-score">0</div>
+                    <p class="text-gray-500 font-bold mb-4">Ya puedes pasar a la pestaña de Desarrollo.</p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 2: DESARROLLO (CONTENIDO) ================= -->
+        <div id="tab-contenido" class="tab-content">
+            
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 bg-slate-900 rounded-2xl p-6 shadow-lg border border-slate-700">
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-2"><i class="fa-solid fa-book-open text-blue-400 mr-2"></i> Teoría y Demostración</h2>
+                    <p class="text-slate-400 text-sm">Entiende quién se conecta, qué puede hacer y cómo administrar roles.</p>
+                </div>
+            </div>
+
+            <!-- DDL Script Inicial -->
+            <section class="bg-slate-800 p-8 rounded-3xl shadow-md mb-10 border border-slate-700 relative">
+                <div class="absolute top-0 right-8 transform -translate-y-1/2">
+                    <span class="bg-blue-500 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg border-2 border-slate-800">EJECUTA ESTO PRIMERO</span>
+                </div>
+                <div class="flex items-center gap-4 mb-6 mt-2">
+                    <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center shadow-[0_0_15px_#3b82f6]">
+                        <i class="fa-solid fa-database text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Preparación del Entorno</h2>
+                        <p class="text-slate-400 text-sm">Recrea las tablas de la clase pasada. Son nuestra base para probar la seguridad.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-900 rounded-2xl overflow-hidden border border-slate-700">
+                    <div class="bg-slate-950 px-4 py-2 flex justify-between items-center border-b border-slate-800">
+                        <span class="text-gray-400 text-xs font-mono">setup_tablas.sql</span>
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('scriptDDL1').innerText); this.innerHTML='<i class=\'fa-solid fa-check mr-1\'></i> Copiado!'; this.classList.add('text-blue-400'); setTimeout(() => { this.innerHTML='<i class=\'fa-regular fa-copy mr-1\'></i> Copiar'; this.classList.remove('text-blue-400'); }, 2000);" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm"><i class="fa-regular fa-copy mr-2"></i> Copiar Código</button>
+                    </div>
+                    <pre class="m-0 p-6"><code id="scriptDDL1" class="language-sql text-sm">-- Si las borraste, vuelve a crearlas. Si ya las tienes, puedes saltar este bloque.
+CREATE TABLE clientes (
+    id_cliente NUMBER PRIMARY KEY,
+    nombre VARCHAR2(50),
+    apellido VARCHAR2(50),
+    ciudad VARCHAR2(50)
+);
+
+CREATE TABLE pedidos (
+    id_pedido NUMBER PRIMARY KEY,
+    id_cliente NUMBER,
+    fecha DATE,
+    total NUMBER
+);
+
+INSERT INTO clientes VALUES (1, 'Juan', 'Pérez', 'Santiago');
+INSERT INTO pedidos VALUES (100, 1, SYSDATE, 50000);
+COMMIT;</code></pre>
+                </div>
+            </section>
+
+            <!-- Sección 1: El Problema -->
+            <section class="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm mb-10">
+                <h2 class="text-3xl font-bold text-blue-700 border-b-2 border-blue-100 pb-4 mb-6">
+                    <i class="fa-solid fa-user-astronaut text-blue-500 bg-blue-50 p-3 rounded-2xl mr-2"></i> Usuario vs. Tabla
+                </h2>
+                <div class="space-y-6">
+                    <p class="text-lg leading-relaxed text-gray-700">
+                        Muchos principiantes confunden una "Tabla de Usuarios" con un "Usuario de Base de Datos".
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                        <div class="border-2 border-blue-200 rounded-xl overflow-hidden bg-blue-50 p-6">
+                            <h3 class="font-bold text-blue-900 text-lg mb-2"><i class="fa-solid fa-table mr-2"></i>Tabla de Usuarios</h3>
+                            <p class="text-blue-800 text-sm">Es donde guardas el login y password de los clientes de tu app (ej. Netflix). Es solo data que tú analizas.</p>
+                        </div>
+                        <div class="border-2 border-blue-200 rounded-xl overflow-hidden bg-white p-6">
+                            <h3 class="font-bold text-blue-900 text-lg mb-2"><i class="fa-solid fa-server mr-2"></i>Usuario de BD</h3>
+                            <p class="text-gray-700 text-sm">Es la cuenta a nivel sistema que Oracle usa para saber <em>quién</em> está ejecutando un comando SQL y si tiene permiso para hacerlo.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección 2: Creando Usuarios y Permisos -->
+            <section class="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm mb-10">
+                <h2 class="text-3xl font-bold text-blue-700 border-b-2 border-blue-100 pb-4 mb-6">
+                    <i class="fa-solid fa-key text-blue-500 bg-blue-50 p-3 rounded-2xl mr-2"></i> El Sistema de Privilegios
+                </h2>
+                <div class="space-y-6">
+                    <p class="text-lg leading-relaxed text-gray-700">
+                        Un privilegio es un permiso para realizar una acción. En Oracle se dividen en dos categorías principales.
+                    </p>
+
+                    <div class="flex flex-col md:flex-row gap-6 mt-6">
+                        <div class="flex-1 bg-white border-2 border-slate-200 p-6 rounded-2xl shadow-sm">
+                            <h3 class="font-bold text-slate-800 text-lg mb-3 border-b pb-2"><i class="fa-solid fa-globe text-blue-500 mr-2"></i>Privilegios de Sistema</h3>
+                            <p class="text-gray-600 text-sm mb-3">Permiten hacer cosas a nivel motor de base de datos (crear sesión, crear tablas genéricas).</p>
+                        </div>
+                        <div class="flex-1 bg-white border-2 border-slate-200 p-6 rounded-2xl shadow-sm">
+                            <h3 class="font-bold text-slate-800 text-lg mb-3 border-b pb-2"><i class="fa-solid fa-table text-blue-500 mr-2"></i>Privilegios de Objeto</h3>
+                            <p class="text-gray-600 text-sm mb-3">Permiten interactuar con objetos concretos (hacer un SELECT o UPDATE a la tabla 'clientes').</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-inner mt-6">
+                        <pre><code class="language-sql">-- 1. Creamos al usuario (Requiere privilegios de Administrador)
+CREATE USER ana IDENTIFIED BY "Password_123";
+
+-- 2. Privilegios de Sistema: Le damos permiso para conectarse (Vital)
+GRANT CREATE SESSION TO ana;
+GRANT CREATE TABLE TO ana;
+
+-- 3. Privilegios de Objeto: Le damos permiso para ver la tabla clientes y agregar a ella
+GRANT SELECT, INSERT ON clientes TO ana;
+
+-- 4. Podemos quitarle un permiso en cualquier momento
+REVOKE INSERT ON clientes FROM ana;</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección 3: Roles -->
+            <section class="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm mb-10">
+                <h2 class="text-3xl font-bold text-blue-700 border-b-2 border-blue-100 pb-4 mb-6">
+                    <i class="fa-solid fa-users text-blue-500 bg-blue-50 p-3 rounded-2xl mr-2"></i> Empaquetando Permisos: Roles
+                </h2>
+                <div class="space-y-6">
+                    <p class="text-lg leading-relaxed text-gray-700">
+                        Si tienes 50 empleados de ventas, ¿vas a escribir 50 líneas de <code>GRANT SELECT ON...</code>? No. Para eso existen los <strong>Roles</strong>. Un rol es simplemente una mochila en la que metes permisos y luego le pasas la mochila al usuario.
+                    </p>
+                    
+                    <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-inner mt-4">
+                        <pre><code class="language-sql">-- 1. Crear el Rol
+CREATE ROLE rol_ventas;
+
+-- 2. Asignar privilegios al Rol (meter cosas en la mochila)
+GRANT SELECT ON clientes TO rol_ventas;
+GRANT SELECT ON pedidos TO rol_ventas;
+
+-- 3. Asignar el Rol al usuario (entregar la mochila a Ana)
+GRANT rol_ventas TO ana;</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- DDL Final para Desarrollo -->
+            <section class="bg-slate-800 p-8 rounded-3xl shadow-md border border-slate-700">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center">
+                        <i class="fa-solid fa-code-branch text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Prueba el Flujo Completo</h2>
+                        <p class="text-slate-400 text-sm">Copia este bloque completo en tu editor SQL y observa cómo el sistema te bloquea al intentar acceder a lo que no tienes permiso.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-900 rounded-2xl overflow-hidden border border-slate-700">
+                    <pre class="m-0 p-6"><code class="language-sql text-sm">-- Asegurate de tener permisos de administrador (como el usuario SYSTEM) para crear usuarios
+-- y haber creado las tablas de la preparación.
+
+-- 1. Creamos al usuario
+CREATE USER beto IDENTIFIED BY "beto123";
+GRANT CREATE SESSION TO beto;
+
+-- 2. Le damos permiso SOLO para la tabla de pedidos
+GRANT SELECT ON pedidos TO beto;
+
+-- 3. Pruébalo (Dependiendo de tu IDE, deberías abrir una nueva conexión usando el usuario beto)
+-- Si intentas esto conectado como beto:
+-- SELECT * FROM pedidos; -- EXITO!
+-- SELECT * FROM clientes; -- ERROR: La tabla o vista no existe (No tienes permisos)</code></pre>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= PESTAÑA 3: PRÁCTICA ================= -->
+        <div id="tab-practica" class="tab-content">
+            <h2 class="text-3xl font-bold text-slate-800 text-center mb-6"><i class="fa-solid fa-laptop-code text-slate-600 mr-2"></i> Ejercicio Corto: Auditor de Seguridad</h2>
+            
+            <div class="bg-white p-8 rounded-2xl border-2 border-gray-200 shadow-sm max-w-4xl mx-auto">
+                <div class="bg-blue-50 text-blue-800 p-4 rounded-xl mb-6 font-medium">
+                    <i class="fa-solid fa-user-tie mr-2"></i> Eres el DBA (Administrador de Base de Datos). Han contratado a un nuevo pasante llamado "Carlos". Escribe el código necesario para cumplir sus requerimientos sin darle acceso de más.
+                </div>
+
+                <div class="space-y-8">
+                    <!-- Ejercicio 1 -->
+                    <div>
+                        <h4 class="font-bold text-lg mb-2 text-slate-800">1. Crear la cuenta</h4>
+                        <p class="text-gray-600 text-sm mb-2">Crea al usuario <code>carlos</code> con la clave <code>pasante2026</code> y dale el privilegio mínimo para que pueda abrir el SQL Developer e iniciar sesión.</p>
+                        <div class="border border-gray-300 rounded-lg p-2 bg-gray-50 h-24">
+                            <textarea class="w-full h-full bg-transparent border-none outline-none resize-none font-mono text-sm text-blue-700" placeholder="Escribe tu código aquí..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Ejercicio 2 -->
+                    <div>
+                        <h4 class="font-bold text-lg mb-2 text-slate-800">2. Asignación de Permisos de Objeto</h4>
+                        <p class="text-gray-600 text-sm mb-2">Carlos necesita poder <strong>leer</strong> la tabla <code>clientes</code> y además necesita poder <strong>insertar y actualizar</strong> en la tabla <code>pedidos</code>. No debe poder borrar nada.</p>
+                        <div class="border border-gray-300 rounded-lg p-2 bg-gray-50 h-24">
+                            <textarea class="w-full h-full bg-transparent border-none outline-none resize-none font-mono text-sm text-blue-700" placeholder="Escribe tu código aquí..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA 4: CIERRE ================= -->
+        <div id="tab-cierre" class="tab-content">
+            <section class="bg-gradient-to-br from-blue-900 to-slate-900 p-10 rounded-3xl shadow-xl mb-10 text-center relative overflow-hidden">
+                <!-- Decoración -->
+                <div class="absolute -top-20 -right-20 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+                <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+                
+                <h2 class="text-4xl font-black text-white mb-8 relative z-10">Resumen de Seguridad 🔐</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10 max-w-4xl mx-auto">
+                    <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 text-left">
+                        <i class="fa-solid fa-users-gear text-4xl text-blue-400 mb-4"></i>
+                        <h3 class="text-xl font-bold text-white mb-2">Privilegios Segmentados</h3>
+                        <p class="text-blue-100 text-sm leading-relaxed">
+                            No todo usuario debe ser administrador. Dividir entre privilegios de sistema y privilegios de objeto es la base de un diseño seguro (Principio del Mínimo Privilegio).
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 text-left">
+                        <i class="fa-solid fa-box-open text-4xl text-blue-400 mb-4"></i>
+                        <h3 class="text-xl font-bold text-white mb-2">Roles Organizadores</h3>
+                        <p class="text-blue-100 text-sm leading-relaxed">
+                            Los Roles agrupan múltiples privilegios en un solo paquete. Si tienes 100 empleados en un área, creas 1 rol, no 100 grants individuales.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <script>
+        // Lógica de Pestañas
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('active', 'text-blue-700', 'bg-blue-100', 'shadow-sm');
+                    b.classList.add('text-gray-500');
+                });
+                btn.classList.remove('text-gray-500');
+                btn.classList.add('active', 'text-blue-700', 'bg-blue-100', 'shadow-sm');
+                
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Configuración Kahoot 1 (Activación)
+        const qKahoot1 = [
+            {
+                q: "¿Para qué sirven los Índices en Oracle?",
+                opts: ["Para acelerar las consultas SELECT evitando escanear toda la tabla.", "Para guardar un respaldo de las filas borradas.", "Para asegurar que una columna no tenga valores nulos."],
+                ans: 0
+            },
+            {
+                q: "¿Cuál es el costo principal de crear muchos índices?",
+                opts: ["Cobran más dinero por la licencia del software.", "Hacen que las consultas SELECT sean más lentas.", "Ocupan espacio y ralentizan los INSERT, UPDATE y DELETE."],
+                ans: 2
+            },
+            {
+                q: "Lógica: Si tienes un diario secreto, ¿a quién le darías la llave?",
+                opts: ["A nadie, prefiero que nadie lo lea nunca.", "A todo el que me la pida.", "Solo a quien estrictamente necesita y tiene permiso para leerlo."],
+                ans: 2
+            }
+        ];
+
+        class KahootEngine {
+            constructor(id, questions) {
+                this.id = id;
+                this.questions = questions;
+                this.currentQ = 0;
+                this.score = 0;
+                this.timer = null;
+                this.timeLeft = 0;
+                this.colors = ['kahoot-red', 'kahoot-blue', 'kahoot-yellow', 'kahoot-green'];
+                this.icons = ['fa-triangle', 'fa-diamond', 'fa-circle', 'fa-square'];
+            }
+
+            showScreen(screenName) {
+                document.querySelectorAll(`#${this.id}-container .kahoot-screen`).forEach(s => s.classList.remove('active'));
+                document.getElementById(`${this.id}-${screenName}`).classList.add('active');
+            }
+
+            start() {
+                this.currentQ = 0;
+                this.score = 0;
+                this.showQuestion();
+            }
+
+            showQuestion() {
+                this.showScreen('question');
+                const q = this.questions[this.currentQ];
+                document.getElementById(`${this.id}-q-text`).innerText = q.q;
+                document.getElementById(`${this.id}-counter`).innerText = `Pregunta ${this.currentQ + 1} de ${this.questions.length}`;
+                
+                const optsContainer = document.getElementById(`${this.id}-options`);
+                optsContainer.innerHTML = '';
+                
+                q.opts.forEach((opt, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = `${this.colors[index]} p-6 rounded-xl font-bold text-xl md:text-2xl text-left shadow-sm kahoot-btn flex items-center gap-4`;
+                    btn.innerHTML = `<i class="fa-solid ${this.icons[index]} text-white/50 text-3xl"></i> <span>${opt}</span>`;
+                    btn.onclick = () => this.answer(index);
+                    optsContainer.appendChild(btn);
+                });
+
+                this.startTimer(15);
+            }
+
+            startTimer(seconds) {
+                this.timeLeft = seconds;
+                const bar = document.getElementById(`${this.id}-timer-bar`);
+                const text = document.getElementById(`${this.id}-timer-text`);
+                
+                bar.style.width = '100%';
+                bar.classList.remove('urgent');
+                text.innerText = this.timeLeft;
+
+                clearInterval(this.timer);
+                this.timer = setInterval(() => {
+                    this.timeLeft--;
+                    text.innerText = this.timeLeft;
+                    bar.style.width = `${(this.timeLeft / seconds) * 100}%`;
+                    
+                    if(this.timeLeft <= 5) bar.classList.add('urgent');
+                    
+                    if(this.timeLeft <= 0) {
+                        clearInterval(this.timer);
+                        this.answer(-1); // Timeout
+                    }
+                }, 1000);
+            }
+
+            answer(index) {
+                clearInterval(this.timer);
+                const q = this.questions[this.currentQ];
+                const isCorrect = index === q.ans;
+                
+                let points = 0;
+                if(isCorrect) {
+                    points = Math.max(500, Math.floor(1000 * (this.timeLeft / 15)));
+                    this.score += points;
+                }
+
+                this.showScreen('feedback');
+                const fbContainer = document.getElementById(`${this.id}-feedback`);
+                const fbTitle = document.getElementById(`${this.id}-fb-title`);
+                const fbIcon = document.getElementById(`${this.id}-fb-icon`);
+                const fbPoints = document.getElementById(`${this.id}-fb-points`);
+
+                if(isCorrect) {
+                    fbContainer.className = 'kahoot-screen active justify-center items-center flex-1 bg-green-500 text-white rounded-3xl';
+                    fbTitle.innerText = '¡Correcto!';
+                    fbIcon.innerHTML = '<i class="fa-solid fa-check"></i>';
+                    fbPoints.innerText = `+${points} puntos`;
+                } else {
+                    fbContainer.className = 'kahoot-screen active justify-center items-center flex-1 bg-red-500 text-white rounded-3xl';
+                    fbTitle.innerText = index === -1 ? '¡Tiempo agotado!' : 'Incorrecto';
+                    fbIcon.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                    fbPoints.innerText = 'La próxima será';
+                }
+            }
+
+            next() {
+                // Reset feedback bg
+                document.getElementById(`${this.id}-feedback`).className = 'kahoot-screen justify-center items-center flex-1';
+                
+                this.currentQ++;
+                if(this.currentQ < this.questions.length) {
+                    this.showQuestion();
+                } else {
+                    this.showScreen('end');
+                    document.getElementById(`${this.id}-final-score`).innerText = this.score;
+                }
+            }
+        }
+
+        const kahoot1 = new KahootEngine('k1', qKahoot1);
+    </script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ Oracle SQL - Base de Conocimiento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos personalizados para el acordeón (details/summary) */
+        details > summary {
+            list-style: none;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        details[open] summary ~ * {
+            animation: slideDown 0.3s ease-in-out;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        details[open] summary .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen bg-slate-50 text-slate-800 pb-20">
+    <app-nav></app-nav>
+
+    <header class="max-w-4xl mx-auto px-6 text-center mb-12 pt-10">
+        <div class="inline-block bg-purple-100 px-6 py-2.5 rounded-full text-purple-700 font-bold text-base mb-6 border-2 border-purple-200 shadow-sm">
+            Base de Conocimiento
+        </div>
+        <h1 class="text-5xl md:text-6xl font-black text-slate-800 mb-6 tracking-tight">Preguntas Frecuentes <br><span class="text-purple-600">(FAQ) Oracle SQL</span></h1>
+        <p class="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
+            Las respuestas a todas esas dudas existenciales sobre rendimiento, índices, seguridad y diseño que surgen cuando estás aprendiendo a dominar la base de datos.
+        </p>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-6 space-y-8">
+
+        <!-- CATEGORÍA 1: ÍNDICES Y RENDIMIENTO -->
+        <section class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-emerald-500 p-6 flex items-center gap-4 text-white">
+                <i class="fa-solid fa-bolt text-3xl"></i>
+                <div>
+                    <h2 class="text-2xl font-black">Índices y Rendimiento</h2>
+                    <p class="text-emerald-100 text-sm">La magia detrás de las consultas rápidas.</p>
+                </div>
+            </div>
+            <div class="p-4 divide-y divide-slate-100">
+                
+                <details class="group">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-4 hover:bg-slate-50 rounded-lg transition-colors">
+                        <span class="text-lg text-slate-700">1. ¿Por qué no le ponemos índices a TODAS las columnas y listo?</span>
+                        <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-slate-400"></i></span>
+                    </summary>
+                    <div class="text-slate-600 mt-2 px-4 pb-4 leading-relaxed">
+                        <p>Porque la velocidad en lectura tiene un precio en escritura. Cada vez que haces un <code>INSERT</code>, <code>UPDATE</code> o <code>DELETE</code>, Oracle no solo debe modificar la tabla, sino también <strong>reorganizar todos los índices asociados</strong>. Si tienes 10 índices en una tabla, un simple INSERT es 11 veces más trabajo para el motor. ¡Usa índices solo en las columnas por las que realmente buscas información!</p>
+                    </div>
+                </details>
+
+                <details class="group">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-4 hover:bg-slate-50 rounded-lg transition-colors">
+                        <span class="text-lg text-slate-700">2. ¿Un índice SIEMPRE mejora el rendimiento?</span>
+                        <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-slate-400"></i></span>
+                    </summary>
+                    <div class="text-slate-600 mt-2 px-4 pb-4 leading-relaxed">
+                        <p><strong>No.</strong> Imagina que tienes un libro de 100 páginas y quieres buscar una palabra que aparece en 90 de esas páginas. Es más rápido simplemente leer el libro completo que estar yendo al índice alfabético, volver a la página, volver al índice... Si tu consulta va a devolver un gran porcentaje de las filas de la tabla (baja selectividad), Oracle decidirá ignorar el índice y hacer un <code>FULL TABLE SCAN</code> porque matemáticamente es más rápido.</p>
+                    </div>
+                </details>
+
+                <details class="group">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-4 hover:bg-slate-50 rounded-lg transition-colors">
+                        <span class="text-lg text-slate-700">3. ¿Qué tipo de columnas sí conviene indexar?</span>
+                        <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-slate-400"></i></span>
+                    </summary>
+                    <div class="text-slate-600 mt-2 px-4 pb-4 leading-relaxed">
+                        <ul class="list-disc pl-5 space-y-2">
+                            <li>Columnas que se usan constantemente en cláusulas <code>WHERE</code> (ej: rut, correo, fecha).</li>
+                            <li>Columnas que se usan para unir tablas en un <code>JOIN</code> (Llaves Foráneas).</li>
+                            <li>Columnas usadas frecuentemente en <code>ORDER BY</code>.</li>
+                            <li>Columnas con <strong>alta selectividad</strong> (es decir, tienen muchos valores distintos, de modo que buscar un valor específico devuelve muy poquitas filas).</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details class="group">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-4 hover:bg-slate-50 rounded-lg transition-colors">
+                        <span class="text-lg text-slate-700">4. ¿Qué son los índices compuestos?</span>
+                        <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-slate-400"></i></span>
+                    </summary>
+                    <div class="text-slate-600 mt-2 px-4 pb-4 leading-relaxed">
+                        <p>Son índices creados sobre <strong>dos o más columnas a la vez</strong> (ej: <code>CREATE INDEX idx_nombre_apellido ON clientes(nombre, apellido);</code>). Son súper útiles cuando tu aplicación casi siempre filtra usando ambas columnas al mismo tiempo. Ojo: el orden importa. Si tu índice es <code>(A, B)</code> y solo filtras por <code>B</code>, Oracle probablemente no pueda usar el índice eficientemente.</p>
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <!-- CATEGORÍA 2: EXPLAIN PLAN Y PRUEBAS -->
+        <section class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-indigo-500 p-6 flex items-center gap-4 text-white">
+                <i class="fa-solid fa-map-location-dot text-3xl"></i>
+                <div>
+                    <h2 class="text-2xl font-black">Explain Plan y Pruebas</h2>
+                    <p class="text-indigo-100 text-sm">Cómo saber qué está pensando la base de datos.</p>
+                </div>
+            </div>
+            <div class="p-4 divide-y divide-slate-100">
+                
+                <details class="group">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-4 hover:bg-slate-50 rounded-lg transition-colors">
+                        <span class="text-lg text-slate-700">5. ¿Qué es el EXPLAIN PLAN?</span>
+                        <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-slate-400"></i></span>
+                    </summary>
+                    <div class="text-slate-600 mt-2 px-4 pb-4 leading-relaxed">
+                        <p>Es como pedirle el itinerario de viaje al GPS de Oracle. Antes de ejecutar una consulta, Oracle analiza múltiples caminos posibles y elige el "más barato". El <code>EXPLAIN PLAN</code> te dibuja en pantalla esa decisión, mostrándote paso a paso las operaciones que hará, los índices que usará y el <strong>Costo</strong> matemático estimado.</p>
+                    </div>
+                </details>
+
+                <details class="group">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-4 hover:bg-slate-50 rounded-lg transition-colors">
+                        <span class="text-lg text-slate-700">6. Hice un índice pero el EXPLAIN PLAN sigue mostrando "FULL TABLE SCAN". ¿Por qué?</span>
+                        <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-slate-400"></i></span>
+                    </summary>
+                    <div class="text-slate-600 mt-2 px-4 pb-4 leading-relaxed">
+                        <p>Oracle evalúa los costos con IA matemática (el Optimizador). Si tu tabla tiene muy pocas filas (ej. 10 filas), leer la tabla entera es literalmente más rápido que ir a leer el índice y luego ir a la tabla. El índice empezará a brillar y a ser usado por Oracle cuando la tabla crezca a cientos o miles de registros.</p>
+                    </div>
+                </details>
+
+                <details class="group">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-4 hover:bg-slate-50 rounded-lg transition-colors">
+                        <span class="text-lg text-slate-700">7. ¿Por qué a veces una consulta rápida no significa que el diseño esté bien?</span>
+                        <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-slate-400"></i></span>
+                    </summary>
+                    <div class="text-slate-600 mt-2 px-4 pb-4 leading-relaxed">
+                        <p>Porque las bases de datos usan <strong>memoria caché</strong> (RAM). Si ejecutas una consulta lenta, Oracle guarda el resultado en la RAM. Si la ejecutas de nuevo, será instantánea, no porque el índice sea bueno, sino porque lo leyó de la memoria. Por eso es vital mirar el <code>Cost</code> en el Explain Plan, no solo el reloj de tiempo.</p>
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <!-- CATEGORÍA 3: DISEÑO E INTEGRIDAD -->
+        <section class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-rose-500 p-6 flex items-center gap-4 text-white">
+                <i class="fa-solid fa-key text-3xl"></i>
+                <div>
+                    <h2 class="text-2xl font-black">Diseño e Integridad</h2>
+                    <p class="text-rose-100 text-sm">Primary Keys, Foreign Keys, Identity y Secuencias.</p>
+                </div>
+            </div>
+            <div class="p-4 divide-y divide-slate-100">
+                
+                <details class="group">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-4 hover:bg-slate-50 rounded-lg transition-colors">
+                        <span class="text-lg text-slate-700">8. ¿La PRIMARY KEY es lo mismo que un Índice?</span>
+                        <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-slate-400"></i></span>
+                    </summary>
+                    <div class="text-slate-600 mt-2 px-4 pb-4 leading-relaxed">
+                        <p><strong>No conceptualmente, pero sí en la práctica.</strong> La Primary Key es una <em>regla de negocio</em> (Restricción) que dice "No puedes repetir esto y no puede ser nulo". Para poder hacer cumplir esta regla rápidamente, Oracle <strong>crea automáticamente un Índice Único</strong> por detrás. O sea, toda PK viene con un índice gratis.</p>
+                    </div>
+                </details>
+
+                <details class="group">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-4 hover:bg-slate-50 rounded-lg transition-colors">
+                        <span class="text-lg text-slate-700">9. ¿La FOREIGN KEY crea un índice automáticamente?</span>
+                        <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-slate-400"></i></span>
+                    </summary>
+                    <div class="text-slate-600 mt-2 px-4 pb-4 leading-relaxed">
+                        <p><strong>¡NO!</strong> Y este es uno de los mayores errores de principiantes. Las Foráneas no crean índices solos. Si haces un `DELETE` en la tabla padre (ej. borrar una categoría), Oracle debe revisar TODA la tabla hija (ej. productos) para asegurarse de que ningún producto esté usando esa categoría. Si la FK no tiene índice, Oracle hará un Full Table Scan, y si hay millones de productos, borrar una categoría tomará minutos. ¡Siempre indexa tus Foreign Keys!</p>
+                    </div>
+                </details>
+
+                <details class="group">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-4 hover:bg-slate-50 rounded-lg transition-colors">
+                        <span class="text-lg text-slate-700">10. Diferencia entre IDENTITY y SEQUENCE</span>
+                        <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-slate-400"></i></span>
+                    </summary>
+                    <div class="text-slate-600 mt-2 px-4 pb-4 leading-relaxed">
+                        <p>Ambos sirven para autoincrementar números (como el `AUTO_INCREMENT` de MySQL). <br><br>
+                        <strong>IDENTITY</strong> (disponible desde Oracle 12c) se asocia directamente a la columna al crear la tabla. Es más fácil y limpio.<br>
+                        <strong>SEQUENCE</strong> es un objeto separado de la tabla. Debes crearlo aparte y llamarlo con <code>seq.NEXTVAL</code>. Aunque es más "antiguo", se sigue usando mucho porque da mayor flexibilidad (una misma secuencia puede alimentar IDs a varias tablas distintas a la vez).</p>
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <!-- CATEGORÍA 4: SEGURIDAD -->
+        <section class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-blue-600 p-6 flex items-center gap-4 text-white">
+                <i class="fa-solid fa-shield-halved text-3xl"></i>
+                <div>
+                    <h2 class="text-2xl font-black">Seguridad y Privilegios</h2>
+                    <p class="text-blue-100 text-sm">Controlando quién puede hacer qué.</p>
+                </div>
+            </div>
+            <div class="p-4 divide-y divide-slate-100">
+                
+                <details class="group">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-4 hover:bg-slate-50 rounded-lg transition-colors">
+                        <span class="text-lg text-slate-700">11. Privilegios de Sistema vs. Privilegios de Objeto</span>
+                        <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-slate-400"></i></span>
+                    </summary>
+                    <div class="text-slate-600 mt-2 px-4 pb-4 leading-relaxed">
+                        <p><strong>De Sistema:</strong> Permisos para afectar la base de datos en general. Ejemplo: <code>CREATE SESSION</code> (poder conectarse) o <code>CREATE TABLE</code> (poder fabricar tablas propias).<br>
+                        <strong>De Objeto:</strong> Permisos para tocar cosas específicas que ya existen. Ejemplo: <code>SELECT ON ventas.clientes</code> (poder leer la tabla clientes del usuario 'ventas').</p>
+                    </div>
+                </details>
+
+                <details class="group">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-4 hover:bg-slate-50 rounded-lg transition-colors">
+                        <span class="text-lg text-slate-700">12. ¿Por qué usar ROLES en vez de asignar permisos directos?</span>
+                        <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-slate-400"></i></span>
+                    </summary>
+                    <div class="text-slate-600 mt-2 px-4 pb-4 leading-relaxed">
+                        <p>Por pura sanidad mental. En una empresa real tienes 500 empleados de ventas. Si les das permisos uno por uno y luego deciden que Ventas ya no puede hacer DELETE, tendrías que ejecutar 500 veces <code>REVOKE DELETE...</code>. Si usas un <strong>Rol</strong> (una "mochila" con permisos), simplemente le quitas el permiso a la mochila una sola vez, y los 500 usuarios pierden el permiso instantáneamente.</p>
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <!-- CATEGORÍA 5: EL MUNDO REAL -->
+        <section class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-amber-500 p-6 flex items-center gap-4 text-white">
+                <i class="fa-solid fa-briefcase text-3xl"></i>
+                <div>
+                    <h2 class="text-2xl font-black">El Mundo Laboral</h2>
+                    <p class="text-amber-100 text-sm">Aplicando todo esto en la industria.</p>
+                </div>
+            </div>
+            <div class="p-4 divide-y divide-slate-100">
+                
+                <details class="group">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-4 hover:bg-slate-50 rounded-lg transition-colors">
+                        <span class="text-lg text-slate-700">13. ¿Qué relación tiene todo esto con el trabajo real de un programador?</span>
+                        <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-slate-400"></i></span>
+                    </summary>
+                    <div class="text-slate-600 mt-2 px-4 pb-4 leading-relaxed">
+                        <p>Muchísima. Cuando programes un backend (Java, Node, Python) y tu API empiece a responder lento con el paso de los meses, no va a ser culpa de tu código, sino de la base de datos que está haciendo Full Table Scans. Saber leer un Explain Plan y colocar el índice correcto es una habilidad de <em>Senior</em> que diferencia a los programadores junior que "reinician el servidor a ver si se arregla".</p>
+                    </div>
+                </details>
+                
+                <details class="group">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-4 hover:bg-slate-50 rounded-lg transition-colors">
+                        <span class="text-lg text-slate-700">14. ¿Qué es mejor: crear un índice o reescribir la consulta SQL?</span>
+                        <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-slate-400"></i></span>
+                    </summary>
+                    <div class="text-slate-600 mt-2 px-4 pb-4 leading-relaxed">
+                        <p><strong>Siempre intenta mejorar la consulta primero.</strong> A veces la consulta está trayendo columnas innecesarias o usando lógicas súper rebuscadas. Si la consulta ya está limpia y estructurada, y aún así es lenta en tablas grandes, entonces entra a jugar el índice. Nunca uses índices para "parchar" malas consultas.</p>
+                    </div>
+                </details>
+
+            </div>
+        </section>
+        
+        <div class="text-center pt-8 pb-12">
+            <p class="text-slate-400 font-bold"><i class="fa-solid fa-code text-slate-300 mr-2"></i> Desarrollado para Bases de Datos Aplicada 2</p>
+        </div>
+
+    </main>
+</body>
+</html>

@@ -301,6 +301,72 @@ const appData = {
                 iconShadow: 'drop-shadow-[0_0_15px_rgba(99,102,241,0.6)]'
             },
             icon: 'fa-user-lock', iconContainer: 'bg-indigo-900/40 border-indigo-500/30', iconColor: 'text-indigo-400'
+        },
+        {
+            id: 'clase-ea2-4',
+            unit: 'EA2',
+            type: 'hero',
+            href: 'clase-ea2-4.html',
+            colSpan: 2,
+            date: '2026-05-06',
+            dateText: '6 May 2026',
+            tag: 'OPTIMIZACIÓN', tagIcon: 'fa-bolt text-emerald-300',
+            badge: 'Clase 4',
+            title: 'Rendimiento y Optimización:<br>El Poder de los Índices',
+            description: 'Descubre cómo evitar los escaneos completos de tabla (Full Table Scan) y haz que Oracle busque información a la velocidad de la luz mediante el uso de índices B-tree.',
+            btnText: 'Iniciar Clase 4', btnIcon: 'fa-play',
+            theme: {
+                outerBorder: 'border-emerald-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-emerald-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-emerald-500/20', circle2: 'bg-teal-500/20',
+                tagBox: 'bg-emerald-900/50 text-emerald-200 border-emerald-700 backdrop-blur-sm', tagText: 'text-emerald-200', badgeTheme: 'bg-emerald-600 text-white border-emerald-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-emerald-100', btn: 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 w-full justify-center text-white shadow-lg border border-emerald-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(16,185,129,0.6)]'
+            },
+            icon: 'fa-magnifying-glass-chart', iconContainer: 'bg-emerald-900/40 border-emerald-500/30', iconColor: 'text-emerald-400'
+        },
+        {
+            id: 'clase-ea2-5',
+            unit: 'EA2',
+            type: 'hero',
+            href: 'clase-ea2-5.html',
+            colSpan: 2,
+            date: '2026-05-09',
+            dateText: '9 May 2026',
+            tag: 'SEGURIDAD', tagIcon: 'fa-shield-halved text-blue-300',
+            badge: 'Clase 5',
+            title: 'Seguridad y Acceso:<br>Usuarios y Privilegios',
+            description: 'Implementa el Principio de Menor Privilegio. Aprende a crear usuarios, otorgar permisos de sistema y de objeto usando GRANT/REVOKE, y organiza el acceso mediante Roles.',
+            btnText: 'Iniciar Clase 5', btnIcon: 'fa-play',
+            theme: {
+                outerBorder: 'border-blue-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-blue-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-blue-500/20', circle2: 'bg-cyan-500/20',
+                tagBox: 'bg-blue-900/50 text-blue-200 border-blue-700 backdrop-blur-sm', tagText: 'text-blue-200', badgeTheme: 'bg-blue-600 text-white border-blue-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-blue-100', btn: 'bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 w-full justify-center text-white shadow-lg border border-blue-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(59,130,246,0.6)]'
+            },
+            icon: 'fa-users-gear', iconContainer: 'bg-blue-900/40 border-blue-500/30', iconColor: 'text-blue-400'
+        },
+        {
+            id: 'faq-ea2',
+            unit: 'RECURSO',
+            type: 'hero',
+            href: 'faq.html',
+            colSpan: 2,
+            date: 'Permanente',
+            dateText: 'Recurso Extra',
+            tag: 'WIKI', tagIcon: 'fa-book-bookmark text-purple-300',
+            badge: 'Extra',
+            title: 'Base de Conocimiento:<br>FAQ Oracle SQL',
+            description: 'Las respuestas definitivas a las dudas más comunes sobre índices, rendimiento, llaves, privilegios y el mundo laboral real. Ideal para prepararse antes de un examen.',
+            btnText: 'Abrir Base de Conocimiento', btnIcon: 'fa-book-open',
+            theme: {
+                outerBorder: 'border-purple-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-purple-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-purple-500/20', circle2: 'bg-fuchsia-500/20',
+                tagBox: 'bg-purple-900/50 text-purple-200 border-purple-700 backdrop-blur-sm', tagText: 'text-purple-200', badgeTheme: 'bg-purple-600 text-white border-purple-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-purple-100', btn: 'bg-gradient-to-r from-purple-500 to-fuchsia-600 hover:from-purple-600 hover:to-fuchsia-700 w-full justify-center text-white shadow-lg border border-purple-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(168,85,247,0.6)]'
+            },
+            icon: 'fa-circle-question', iconContainer: 'bg-purple-900/40 border-purple-500/30', iconColor: 'text-purple-400'
         }
     ]
 };
