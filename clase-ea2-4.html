@@ -215,10 +215,47 @@ CREATE TABLE pedidos (
     CONSTRAINT fk_ped_cli FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
 );
 
--- Insertamos algunos datos para probar
+-- Insertamos una buena cantidad de datos para probar los índices
 INSERT INTO clientes VALUES (1, 'Juan', 'Pérez', 'Santiago');
 INSERT INTO clientes VALUES (2, 'Ana', 'Gómez', 'Valparaíso');
+INSERT INTO clientes VALUES (3, 'Carlos', 'Ruiz', 'Concepción');
+INSERT INTO clientes VALUES (4, 'María', 'Soto', 'La Serena');
+INSERT INTO clientes VALUES (5, 'Pedro', 'Silva', 'Antofagasta');
+INSERT INTO clientes VALUES (6, 'Camila', 'Castro', 'Temuco');
+INSERT INTO clientes VALUES (7, 'Jorge', 'Morales', 'Iquique');
+INSERT INTO clientes VALUES (8, 'Valentina', 'Herrera', 'Rancagua');
+INSERT INTO clientes VALUES (9, 'Diego', 'Rojas', 'Talca');
 INSERT INTO clientes VALUES (10, 'Luis', 'Tapia', 'Puerto Montt');
+INSERT INTO clientes VALUES (11, 'Sofía', 'Muñoz', 'Santiago');
+INSERT INTO clientes VALUES (12, 'Matías', 'González', 'Viña del Mar');
+
+INSERT INTO productos VALUES (100, 'Televisor LED 50', 'Electrónica', 250000);
+INSERT INTO productos VALUES (101, 'Audífonos Bluetooth', 'Electrónica', 35000);
+INSERT INTO productos VALUES (102, 'Sillón Reclinable', 'Hogar', 120000);
+INSERT INTO productos VALUES (103, 'Smartphone Pro Max', 'Electrónica', 850000);
+INSERT INTO productos VALUES (104, 'Zapatillas Running', 'Deportes', 45000);
+INSERT INTO productos VALUES (105, 'Set de Mancuernas', 'Deportes', 25000);
+INSERT INTO productos VALUES (106, 'Juego de Loza 30 piezas', 'Hogar', 60000);
+INSERT INTO productos VALUES (107, 'Notebook Gamer', 'Electrónica', 1200000);
+INSERT INTO productos VALUES (108, 'Chaqueta de Invierno', 'Vestuario', 55000);
+INSERT INTO productos VALUES (109, 'Mochila Trekking', 'Deportes', 40000);
+INSERT INTO productos VALUES (110, 'Batidora de Pedestal', 'Hogar', 85000);
+
+INSERT INTO pedidos VALUES (1000, 10, SYSDATE, 285000);
+INSERT INTO pedidos VALUES (1001, 1, SYSDATE - 2, 35000);
+INSERT INTO pedidos VALUES (1002, 3, SYSDATE - 5, 120000);
+INSERT INTO pedidos VALUES (1003, 5, SYSDATE - 1, 850000);
+INSERT INTO pedidos VALUES (1004, 2, SYSDATE - 10, 45000);
+INSERT INTO pedidos VALUES (1005, 8, SYSDATE - 4, 85000);
+INSERT INTO pedidos VALUES (1006, 4, SYSDATE - 7, 25000);
+INSERT INTO pedidos VALUES (1007, 7, SYSDATE - 3, 1200000);
+INSERT INTO pedidos VALUES (1008, 6, SYSDATE - 12, 55000);
+INSERT INTO pedidos VALUES (1009, 9, SYSDATE - 8, 40000);
+INSERT INTO pedidos VALUES (1010, 11, SYSDATE - 15, 60000);
+INSERT INTO pedidos VALUES (1011, 12, SYSDATE - 6, 285000);
+INSERT INTO pedidos VALUES (1012, 1, SYSDATE - 20, 1200000);
+INSERT INTO pedidos VALUES (1013, 10, SYSDATE - 18, 55000);
+INSERT INTO pedidos VALUES (1014, 2, SYSDATE - 25, 40000);
 COMMIT;</code></pre>
                 </div>
             </section>
