@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taller Preparación EP2 · BDY1102</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: #181c27;
+            --surface2: #1e2333;
+            --border: #2a3050;
+            --accent: #4f8ef7;
+            --accent2: #7c5cbf;
+            --green: #2dd4a0;
+            --yellow: #f5c842;
+            --red: #f05e5e;
+            --text: #d8dde8;
+            --text-dim: #7a859e;
+            --text-bright: #eef1f8;
+            --code-bg: #11141e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Sora', sans-serif;
+            font-size: 15px;
+            line-height: 1.7;
+            padding: 0 0 80px;
+        }
+
+        /* Adjust Nav Styling to match Dark Theme on this page */
+        app-nav nav {
+            padding: 24px 0 0 0 !important;
+            max-width: 960px !important;
+            margin: 0 auto !important;
+        }
+        app-nav nav a {
+            background: var(--surface) !important;
+            border-color: var(--border) !important;
+            color: var(--text-bright) !important;
+        }
+        app-nav nav a:hover {
+            color: var(--accent) !important;
+            border-color: var(--accent) !important;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0d1b3e 0%, #16204a 60%, #1a1040 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 48px 0 36px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            margin-top: 16px;
+            border-radius: 24px;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 50%, rgba(79, 142, 247, .12) 0%, transparent 60%), radial-gradient(ellipse at 70% 50%, rgba(124, 92, 191, .10) 0%, transparent 60%);
+        }
+
+        .header-inner {
+            position: relative;
+            z-index: 1;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(79, 142, 247, .15);
+            border: 1px solid rgba(79, 142, 247, .35);
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: .12em;
+            padding: 4px 14px;
+            border-radius: 20px;
+            margin-bottom: 18px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-size: 2.1rem;
+            font-weight: 700;
+            color: var(--text-bright);
+            letter-spacing: -.02em;
+            margin-bottom: 8px;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 14px;
+            font-weight: 300;
+        }
+
+        .meta-row {
+            display: flex;
+            justify-content: center;
+            gap: 28px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .meta-pill {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 7px 16px;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        .meta-pill strong {
+            color: var(--text);
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .dot-green {
+            background: var(--green);
+            box-shadow: 0 0 6px var(--green);
+        }
+
+        .dot-yellow {
+            background: var(--yellow);
+            box-shadow: 0 0 6px var(--yellow);
+        }
+
+        .dot-blue {
+            background: var(--accent);
+            box-shadow: 0 0 6px var(--accent);
+        }
+
+        .notice-bar {
+            background: rgba(124, 92, 191, .12);
+            border-top: 2px solid var(--accent2);
+            border-bottom: 1px solid rgba(124, 92, 191, .25);
+            padding: 14px 32px;
+            text-align: center;
+            font-size: 13.5px;
+            color: var(--text-dim);
+            margin: 20px auto;
+            max-width: 960px;
+            border-radius: 12px;
+        }
+
+        .notice-bar strong {
+            color: var(--accent2);
+        }
+
+        .timeline-nav {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            padding: 12px 20px 28px;
+            overflow-x: auto;
+        }
+
+        .tl-item {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex-shrink: 0;
+        }
+
+        .tl-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .tl-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            color: var(--text-dim);
+            transition: all .2s;
+        }
+
+        .tl-node:hover .tl-circle {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .tl-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            white-space: nowrap;
+            text-align: center;
+            max-width: 80px;
+        }
+
+        .tl-line {
+            width: 40px;
+            height: 2px;
+            background: var(--border);
+            margin-top: -14px;
+        }
+
+        .tl-node.start .tl-circle {
+            border-color: var(--green);
+            color: var(--green);
+            background: rgba(45, 212, 160, .08);
+        }
+
+        .tl-node.b1 .tl-circle {
+            border-color: var(--yellow);
+            color: var(--yellow);
+            background: rgba(245, 200, 66, .08);
+        }
+
+        .tl-node.b2 .tl-circle {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(79, 142, 247, .08);
+        }
+
+        .tl-node.b3 .tl-circle {
+            border-color: var(--accent2);
+            color: var(--accent2);
+            background: rgba(124, 92, 191, .08);
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        section {
+            margin-bottom: 56px;
+            scroll-margin-top: 20px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .icon-green {
+            background: rgba(45, 212, 160, .12);
+            border: 1px solid rgba(45, 212, 160, .25);
+        }
+
+        .icon-yellow {
+            background: rgba(245, 200, 66, .12);
+            border: 1px solid rgba(245, 200, 66, .25);
+        }
+
+        .icon-blue {
+            background: rgba(79, 142, 247, .12);
+            border: 1px solid rgba(79, 142, 247, .25);
+        }
+
+        .icon-purple {
+            background: rgba(124, 92, 191, .12);
+            border: 1px solid rgba(124, 92, 191, .25);
+        }
+
+        .section-title-wrap {
+            flex: 1;
+        }
+
+        .section-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .c-green {
+            color: var(--green);
+        }
+
+        .c-yellow {
+            color: var(--yellow);
+        }
+
+        .c-blue {
+            color: var(--accent);
+        }
+
+        .c-purple {
+            color: var(--accent2);
+        }
+
+        .section-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-bright);
+            letter-spacing: -.015em;
+        }
+
+        .section-desc {
+            color: var(--text-dim);
+            font-size: 13.5px;
+            margin-top: 4px;
+        }
+
+        .time-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 3px 10px;
+            color: var(--text-dim);
+            white-space: nowrap;
+            margin-top: 6px;
+            display: inline-block;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px 26px;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-bright);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            letter-spacing: .05em;
+        }
+
+        .tag-green {
+            background: rgba(45, 212, 160, .15);
+            color: var(--green);
+        }
+
+        .tag-yellow {
+            background: rgba(245, 200, 66, .15);
+            color: var(--yellow);
+        }
+
+        .tag-blue {
+            background: rgba(79, 142, 247, .15);
+            color: var(--accent);
+        }
+
+        .tag-red {
+            background: rgba(240, 94, 94, .15);
+            color: var(--red);
+        }
+
+        .tag-purple {
+            background: rgba(124, 92, 191, .15);
+            color: var(--accent2);
+        }
+
+        .code-wrap {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 14px 0;
+        }
+
+        .code-bar {
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            padding: 9px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .code-lang {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .code-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        pre {
+            padding: 18px 20px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.65;
+        }
+
+        .kw {
+            color: #7c9ef5;
+            font-weight: 600;
+        }
+
+        .fn {
+            color: #4fc9c9;
+        }
+
+        .str {
+            color: #8ec96e;
+        }
+
+        .cmt {
+            color: #4a5568;
+            font-style: italic;
+        }
+
+        .num {
+            color: #f0a070;
+        }
+
+        .op {
+            color: #c9b8f5;
+        }
+
+        .tbl {
+            color: #f5c842;
+        }
+
+        .col {
+            color: #d8dde8;
+        }
+
+        .explain-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin: 14px 0;
+        }
+
+        .explain-box {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 18px;
+        }
+
+        .explain-box-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .08em;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .explain-box p {
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        .explain-box code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            background: rgba(255, 255, 255, .06);
+            border-radius: 4px;
+            padding: 1px 5px;
+            color: var(--accent);
+        }
+
+        .alert {
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin: 14px 0;
+            font-size: 13.5px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .alert-icon {
+            font-size: 16px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .alert-green {
+            background: rgba(45, 212, 160, .07);
+            border: 1px solid rgba(45, 212, 160, .2);
+            color: var(--text);
+        }
+
+        .alert-yellow {
+            background: rgba(245, 200, 66, .07);
+            border: 1px solid rgba(245, 200, 66, .2);
+            color: var(--text);
+        }
+
+        .alert-blue {
+            background: rgba(79, 142, 247, .07);
+            border: 1px solid rgba(79, 142, 247, .2);
+            color: var(--text);
+        }
+
+        .alert-red {
+            background: rgba(240, 94, 94, .07);
+            border: 1px solid rgba(240, 94, 94, .2);
+            color: var(--text);
+        }
+
+        .alert-purple {
+            background: rgba(124, 92, 191, .07);
+            border: 1px solid rgba(124, 92, 191, .2);
+            color: var(--text);
+        }
+
+        .alert strong {
+            color: var(--text-bright);
+        }
+
+        .exercise {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .exercise.ex-yellow {
+            border-color: rgba(245, 200, 66, .3);
+        }
+
+        .exercise.ex-blue {
+            border-color: rgba(79, 142, 247, .3);
+        }
+
+        .exercise.ex-purple {
+            border-color: rgba(124, 92, 191, .3);
+        }
+
+        .exercise-header {
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .exercise-header.h-yellow {
+            background: rgba(245, 200, 66, .05);
+        }
+
+        .exercise-header.h-blue {
+            background: rgba(79, 142, 247, .05);
+        }
+
+        .exercise-header.h-purple {
+            background: rgba(124, 92, 191, .05);
+        }
+
+        .exercise-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-bright);
+        }
+
+        .exercise-body {
+            padding: 18px 20px;
+        }
+
+        .exercise-body p {
+            font-size: 13.5px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+        }
+
+        details {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        summary {
+            cursor: pointer;
+            padding: 10px 16px;
+            font-size: 13px;
+            color: var(--text-dim);
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            user-select: none;
+        }
+
+        summary:hover {
+            color: var(--text);
+        }
+
+        summary::before {
+            content: '▶';
+            font-size: 10px;
+            transition: transform .2s;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        details .hint-body {
+            padding: 0 16px 14px;
+            border-top: 1px solid var(--border);
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 40px 0;
+        }
+
+        p code,
+        li code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12.5px;
+            background: rgba(255, 255, 255, .06);
+            border-radius: 4px;
+            padding: 1px 5px;
+            color: var(--accent);
+        }
+
+        .tbl-wrap {
+            overflow-x: auto;
+            margin: 14px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            background: var(--surface2);
+            color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(42, 48, 80, .5);
+            color: var(--text-dim);
+            vertical-align: top;
+        }
+
+        td strong {
+            color: var(--text-bright);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            padding: 8px 0;
+            font-size: 13.5px;
+            color: var(--text-dim);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            border-bottom: 1px solid rgba(42, 48, 80, .4);
+        }
+
+        .checklist li:last-child {
+            border-bottom: none;
+        }
+
+        /* Checkbox Styling */
+        .check-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .check-box {
+            width: 18px;
+            height: 18px;
+            border: 1.5px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        li.checked .check-box {
+            background: var(--green);
+            border-color: var(--green);
+            color: #000;
+        }
+        li.checked span {
+            text-decoration: line-through;
+            color: var(--text-dim);
+            opacity: 0.6;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media(max-width:768px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        ul.plain {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul.plain li::before {
+            content: '→ ';
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        ul.plain li {
+            margin-bottom: 4px;
+            font-size: 13.5px;
+            color: var(--text-dim);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .concept-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            margin: 3px;
+        }
+
+        .solved-label {
+            background: rgba(45, 212, 160, .1);
+            border: 1px solid rgba(45, 212, 160, .25);
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-size: 11px;
+            color: var(--green);
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        
+        /* Tailwind-like utility classes that we need */
+        .hover-lift {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- App Navigation (Back Link & Wiki) -->
+    <app-nav></app-nav>
+
+    <header class="max-w-5xl mx-auto px-6">
+        <div class="header-inner">
+            <div class="badge">BDY1102 · Preparación EP2</div>
+            <h1>Taller de <span>Práctica de SQL</span></h1>
+            <p class="subtitle">Mismos conceptos, escenarios distintos — Entrena tu lógica de forma ética y autónoma</p>
+            <div class="meta-row">
+                <div class="meta-pill"><span class="dot dot-green"></span><strong>Duración:</strong>&nbsp;2 horas</div>
+                <div class="meta-pill"><span class="dot dot-yellow"></span><strong>Motor:</strong>&nbsp;Oracle 19c+</div>
+                <div class="meta-pill"><span class="dot dot-blue"></span><strong>Esquema base:</strong>&nbsp;BDY1102_EV2_FC</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="notice-bar">
+        <strong>¿Cómo usar este taller?</strong> — Cada bloque primero <strong>enseña el concepto</strong> con un
+        ejemplo guiado, luego te pide resolver <strong>ejercicios autónomos progresivos</strong> sobre la base de datos, cuidando de usar escenarios diferentes a los de la evaluación real.
+    </div>
+
+    <!-- Timeline Navigation -->
+    <div class="timeline-nav">
+        <div class="tl-item">
+            <a href="#base" class="tl-node start">
+                <div class="tl-circle">R1</div>
+                <div class="tl-label c-green">Seguridad DCL</div>
+            </a>
+            <div class="tl-line"></div>
+        </div>
+        <div class="tl-item">
+            <a href="#bloque-a" class="tl-node b1">
+                <div class="tl-circle">A</div>
+                <div class="tl-label c-yellow">UPDATE + CASE</div>
+            </a>
+            <div class="tl-line"></div>
+        </div>
+        <div class="tl-item">
+            <a href="#bloque-b" class="tl-node b2">
+                <div class="tl-circle">B</div>
+                <div class="tl-label c-blue">Vistas e Historiales</div>
+            </a>
+            <div class="tl-line"></div>
+        </div>
+        <div class="tl-item">
+            <a href="#bloque-c" class="tl-node b3">
+                <div class="tl-circle">C</div>
+                <div class="tl-label c-purple">Planes e Índices</div>
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- ═══════════════════════════════════ -->
+        <!-- SECCIÓN: DCL SEGURIDAD             -->
+        <!-- ═══════════════════════════════════ -->
+        <section id="base">
+            <div class="section-header">
+                <div class="section-icon icon-green">🔐</div>
+                <div class="section-title-wrap">
+                    <div class="section-num c-green">Punto de partida · Requerimiento 1 resuelto</div>
+                    <div class="section-title">Perfilamiento de usuarios y asignación de permisos</div>
+                    <div class="section-desc">Script DCL completo. Configura tablespaces, roles, usuarios y accesos de lectura/escritura bajo el principio de menor privilegio.</div>
+                    <span class="time-tag">⏱ 10 min · Revisión y ejecución</span>
+                </div>
+            </div>
+
+            <div class="alert alert-yellow">
+                <span class="alert-icon">⚠️</span>
+                <div><strong>Importante:</strong> Ejecuta este script conectado como administrador (<code>SYSTEM</code>) para habilitar el entorno sobre el cual trabajarás los demás bloques del taller.</div>
+            </div>
+
+            <div class="card hover-lift">
+                <div class="card-title">Script completo del Requerimiento 1 <span class="solved-label">✓ SOLUCIÓN</span></div>
+                <div class="code-wrap">
+                    <div class="code-bar"><span class="code-lang">SQL · Sentencias DCL</span><span class="code-label">Ejecutar como: SYSTEM</span></div>
+                    <pre><span class="cmt">-- ① CREACIÓN DE TABLESPACES (Asignación física)</span>
+<span class="kw">CREATE TABLESPACE</span> <span class="tbl">TS_APRENDIENDO</span>
+  <span class="kw">DATAFILE</span> <span class="str">'ts_aprendiendo.dbf'</span> <span class="kw">SIZE</span> <span class="num">160</span><span class="kw">M AUTOEXTEND ON</span>;
+<span class="kw">CREATE TEMPORARY TABLESPACE</span> <span class="tbl">TS_TEMP_APRENDIENDO</span>
+  <span class="kw">TEMPFILE</span> <span class="str">'ts_temp_aprendiendo.dbf'</span> <span class="kw">SIZE</span> <span class="num">90</span><span class="kw">M</span>;
+<span class="kw">CREATE TABLESPACE</span> <span class="tbl">TS_REPORTE</span>
+  <span class="kw">DATAFILE</span> <span class="str">'ts_reporte.dbf'</span> <span class="kw">SIZE</span> <span class="num">40</span><span class="kw">M AUTOEXTEND ON</span>;
+<span class="kw">CREATE TEMPORARY TABLESPACE</span> <span class="tbl">TS_TEMP_REPORTE</span>
+  <span class="kw">TEMPFILE</span> <span class="str">'ts_temp_reporte.dbf'</span> <span class="kw">SIZE</span> <span class="num">40</span><span class="kw">M</span>;
+
+<span class="cmt">-- ② CREACIÓN Y CONFIGURACIÓN DE ROLES (Privilegios del Sistema)</span>
+<span class="kw">CREATE ROLE</span> <span class="tbl">ROL_ADMIN</span>;
+<span class="kw">GRANT</span> <span class="kw">CREATE SESSION</span>, <span class="kw">CREATE TABLE</span>, <span class="kw">CREATE SEQUENCE</span>,
+      <span class="kw">CREATE VIEW</span>, <span class="kw">CREATE ANY INDEX</span>, <span class="kw">CREATE PUBLIC SYNONYM</span>
+  <span class="kw">TO</span> <span class="tbl">ROL_ADMIN</span>;
+
+<span class="kw">CREATE ROLE</span> <span class="tbl">ROL_REPORTES</span>;
+<span class="kw">GRANT</span> <span class="kw">CREATE SESSION</span>, <span class="kw">CREATE SYNONYM</span> <span class="kw">TO</span> <span class="tbl">ROL_REPORTES</span>;
+
+<span class="cmt">-- ③ CREACIÓN DE USUARIOS ASOCIADOS A ROLES</span>
+<span class="kw">CREATE USER</span> <span class="tbl">APRENDIENDO_SQL</span> <span class="kw">IDENTIFIED BY</span> <span class="str">"Pass_1234"</span>
+  <span class="kw">DEFAULT TABLESPACE</span> <span class="tbl">TS_APRENDIENDO</span>
+  <span class="kw">TEMPORARY TABLESPACE</span> <span class="tbl">TS_TEMP_APRENDIENDO</span>
+  <span class="kw">QUOTA UNLIMITED ON</span> <span class="tbl">TS_APRENDIENDO</span>;
+<span class="kw">GRANT</span> <span class="tbl">ROL_ADMIN</span> <span class="kw">TO</span> <span class="tbl">APRENDIENDO_SQL</span>;
+
+<span class="kw">CREATE USER</span> <span class="tbl">REPORTE_SQL</span> <span class="kw">IDENTIFIED BY</span> <span class="str">"Pass_5678"</span>
+  <span class="kw">DEFAULT TABLESPACE</span> <span class="tbl">TS_REPORTE</span>
+  <span class="kw">TEMPORARY TABLESPACE</span> <span class="tbl">TS_TEMP_REPORTE</span>
+  <span class="kw">QUOTA UNLIMITED ON</span> <span class="tbl">TS_REPORTE</span>;
+<span class="kw">GRANT</span> <span class="tbl">ROL_REPORTES</span> <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;
+
+<span class="cmt">-- ④ PRIVILEGIOS DE OBJETO INDIVIDUALES (Para lectura de reportes)</span>
+<span class="kw">GRANT SELECT ON</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">EMPLEADO</span>               <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;
+<span class="kw">GRANT SELECT ON</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">PERSONA</span>                <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;
+<span class="kw">GRANT SELECT ON</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">DEPARTAMENTO</span>           <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;
+<span class="kw">GRANT SELECT ON</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">VACACIONES</span>             <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;
+<span class="kw">GRANT SELECT ON</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">PROYECTO</span>               <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;
+<span class="kw">GRANT SELECT ON</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">TIPO_EMPLEADO</span>          <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;
+<span class="kw">GRANT SELECT ON</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">TAREA</span>                  <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;
+<span class="kw">GRANT SELECT ON</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">LICENCIA_MEDICA</span>        <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;
+<span class="kw">GRANT SELECT ON</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">DIRECCION</span>              <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;
+<span class="kw">GRANT SELECT ON</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">CONTACTO_EMERGENCIA</span>    <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;
+<span class="kw">GRANT SELECT ON</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">ASISTENCIA</span>             <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;
+<span class="kw">GRANT SELECT ON</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">EMPLEADO_PROYECTO</span>      <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;
+<span class="kw">GRANT SELECT ON</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">DETALLE_SUELDO</span>         <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;
+
+<span class="cmt">-- GESTIÓN DE ACCESOS DE ESCRITURA EN CAPAS TRANSACCIONALES</span>
+<span class="kw">GRANT SELECT, INSERT, UPDATE, DELETE ON</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">EMPLEADO_CAPACITACION</span> <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;
+<span class="kw">GRANT SELECT, INSERT, UPDATE, DELETE ON</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">CAPACITACION</span>           <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;
+<span class="kw">GRANT SELECT, INSERT, UPDATE, DELETE ON</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">TELEFONO</span>               <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;
+<span class="kw">GRANT SELECT, INSERT, UPDATE, DELETE ON</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">CONTACTO_EMERGENCIA</span>    <span class="kw">TO</span> <span class="tbl">REPORTE_SQL</span>;</pre>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- BLOQUE A: UPDATE + CASE                            -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <section id="bloque-a">
+            <div class="section-header">
+                <div class="section-icon icon-yellow">🔄</div>
+                <div class="section-title-wrap">
+                    <div class="section-num c-yellow">Bloque A · Habilidad: Modificación Condicional DML</div>
+                    <div class="section-title">UPDATE Condicional mediante CASE y Redondeo</div>
+                    <div class="section-desc">Entrena la escritura de sentencias UPDATE masivas con cálculos de fechas, asignaciones de texto y operaciones matemáticas con redondeo.</div>
+                    <span class="time-tag">⏱ 30 minutos</span>
+                </div>
+            </div>
+
+            <!-- Concepto clave -->
+            <div class="card">
+                <div class="card-title">📘 Conceptos clave de este bloque</div>
+                <div class="explain-grid">
+                    <div class="explain-box">
+                        <div class="explain-box-title c-yellow">CASE en SET</div>
+                        <p>Evalúa condiciones una a una. Permite asignar valores distintos a registros según cumplan o no ciertos criterios en una sola consulta.</p>
+                    </div>
+                    <div class="explain-box">
+                        <div class="explain-box-title c-blue">Restar Fechas vs MONTHS_BETWEEN</div>
+                        <p>Restar fechas (<code>F1 - F2</code>) da la diferencia en <strong>días</strong>. <code>MONTHS_BETWEEN(F1, F2)</code> da la diferencia en <strong>meses completos y decimales</strong>.</p>
+                    </div>
+                    <div class="explain-box">
+                        <div class="explain-box-title c-green">Redondeo Matemático</div>
+                        <p>Usa <code>ROUND(valor, 0)</code> envolviendo todo el cálculo final para ajustar al entero más cercano y evitar problemas con tipos numéricos estrictos.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ejemplo guiado -->
+            <div class="card hover-lift">
+                <div class="card-title">🎯 Ejemplo guiado · Actualizar Calificaciones por Plazo de Aprobación <span class="tag tag-yellow">Lectura y Análisis</span></div>
+                <p style="font-size:13.5px;color:var(--text-dim);margin-bottom:12px;">
+                    Actualizar la columna <code>CALIFICACION</code> en <code>EMPLEADO_CAPACITACION</code> según el total de días transcurridos desde que se inscribió hasta que aprobó (<code>FECHA_APROBACION - FECHA_INSCRIPCION</code>):
+                </p>
+                <div class="tbl-wrap">
+                    <table>
+                        <tr>
+                            <th>Rango de Días transcurridos</th>
+                            <th>Calificación final</th>
+                        </tr>
+                        <tr>
+                            <td>Menos de 15 días</td>
+                            <td><strong>95</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Entre 15 y 30 días</td>
+                            <td><strong>80</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Entre 31 y 60 días</td>
+                            <td><strong>65</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Más de 60 días</td>
+                            <td><strong>50</strong></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="code-wrap">
+                    <div class="code-bar"><span class="code-lang">SQL · UPDATE con CASE de días</span><span class="code-label">Esquema: APRENDIENDO_SQL</span></div>
+                    <pre><span class="cmt">-- Aplicar el UPDATE masivo con base en la diferencia aritmética de fechas</span>
+<span class="kw">UPDATE</span> <span class="tbl">EMPLEADO_CAPACITACION</span>
+<span class="kw">SET</span> <span class="col">CALIFICACION</span> = <span class="kw">CASE</span>
+    <span class="kw">WHEN</span> (<span class="col">FECHA_APROBACION</span> - <span class="col">FECHA_INSCRIPCION</span>) &lt; <span class="num">15</span>              <span class="kw">THEN</span> <span class="num">95</span>
+    <span class="kw">WHEN</span> (<span class="col">FECHA_APROBACION</span> - <span class="col">FECHA_INSCRIPCION</span>) <span class="kw">BETWEEN</span> <span class="num">15</span> <span class="kw">AND</span> <span class="num">30</span>  <span class="kw">THEN</span> <span class="num">80</span>
+    <span class="kw">WHEN</span> (<span class="col">FECHA_APROBACION</span> - <span class="col">FECHA_INSCRIPCION</span>) <span class="kw">BETWEEN</span> <span class="num">31</span> <span class="kw">AND</span> <span class="num">60</span>  <span class="kw">THEN</span> <span class="num">65</span>
+    <span class="kw">ELSE</span> <span class="num">50</span>
+<span class="kw">END</span>
+<span class="kw">WHERE</span> <span class="col">ESTADO</span> = <span class="str">'APROBADO'</span>
+  <span class="kw">AND</span> <span class="col">FECHA_APROBACION</span> <span class="kw">IS NOT NULL</span>;
+<span class="kw">COMMIT</span>;</pre>
+                </div>
+            </div>
+
+            <!-- Ejercicio A.1 -->
+            <div class="exercise ex-yellow">
+                <div class="exercise-header h-yellow">
+                    <div class="exercise-title">🟢 Ejercicio A.1 · Control de Estado de Proyectos (Nivel Básico)</div>
+                    <span class="tag tag-yellow">Práctica</span>
+                </div>
+                <div class="exercise-body">
+                    <p>Actualiza la columna <code>ESTADO</code> de la tabla <code>PROYECTO</code> de acuerdo con las siguientes reglas:</p>
+                    <ul class="plain">
+                        <li>Si el proyecto tiene una fecha de término real registrada (<code>FECHA_FIN_REAL IS NOT NULL</code>), el estado debe ser <code>'FINALIZADO'</code>.</li>
+                        <li>Si no tiene término real pero la fecha estimada de término (<code>FECHA_FIN_ESTIMADA</code>) ya es anterior a hoy (<code>SYSDATE</code>), el estado debe ser <code>'ATRASADO'</code>.</li>
+                        <li>En cualquier otro caso, el estado debe ser <code>'ACTIVO'</code>.</li>
+                    </ul>
+                    <details>
+                        <summary>💡 Ver Pistas & Solución</summary>
+                        <div class="hint-body">
+                            <p style="margin-top:12px;font-size:13px;color:var(--text-dim);">Usa una sola sentencia UPDATE sobre la tabla <code>PROYECTO</code>. Compara las fechas usando <code>TRUNC(SYSDATE)</code> para ignorar la hora del sistema.</p>
+                            <div class="code-wrap">
+                                <pre><span class="kw">UPDATE</span> <span class="tbl">PROYECTO</span>
+<span class="kw">SET</span> <span class="col">ESTADO</span> = <span class="kw">CASE</span>
+               <span class="kw">WHEN</span> <span class="col">FECHA_FIN_REAL</span> <span class="kw">IS NOT NULL</span> <span class="kw">THEN</span> <span class="str">'FINALIZADO'</span>
+               <span class="kw">WHEN</span> <span class="col">FECHA_FIN_ESTIMADA</span> &lt; <span class="fn">TRUNC</span>(<span class="kw">SYSDATE</span>) <span class="kw">THEN</span> <span class="str">'ATRASADO'</span>
+               <span class="kw">ELSE</span> <span class="str">'ACTIVO'</span>
+             <span class="kw">END</span>;
+<span class="kw">COMMIT</span>;</pre>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <!-- Ejercicio A.2 -->
+            <div class="exercise ex-yellow">
+                <div class="exercise-header h-yellow">
+                    <div class="exercise-title">🟡 Ejercicio A.2 · Asignación de Horas por Rol en Proyectos (Nivel Intermedio)</div>
+                    <span class="tag tag-yellow">Práctica</span>
+                </div>
+                <div class="exercise-body">
+                    <p>La gerencia de operaciones definió una política de horas estándar en base a la columna <code>ROL_PROYECTO</code> de la tabla <code>EMPLEADO_PROYECTO</code>. Actualiza la columna <code>HORAS_SEMANALES</code> de acuerdo con las siguientes directrices:</p>
+                    <ul class="plain">
+                        <li>Si el rol contiene la palabra <code>'Líder'</code>, asignar <strong>40</strong> horas.</li>
+                        <li>Si el rol contiene la palabra <code>'Analista'</code>, asignar <strong>35</strong> horas.</li>
+                        <li>Si el rol contiene la palabra <code>'Programador'</code>, asignar <strong>30</strong> horas.</li>
+                        <li>Para cualquier otro rol, asignar <strong>20</strong> horas.</li>
+                        <li><em>Filtro crítico:</em> Solo actualizar registros vigentes (donde <code>FECHA_TERMINO IS NULL</code>).</li>
+                    </ul>
+                    <details>
+                        <summary>💡 Ver Pistas & Solución</summary>
+                        <div class="hint-body">
+                            <p style="margin-top:12px;font-size:13px;color:var(--text-dim);">Usa el operador <code>LIKE</code> para búsquedas parciales. Agrega el filtro en el <code>WHERE</code> del UPDATE para no modificar asignaciones antiguas finalizadas.</p>
+                            <div class="code-wrap">
+                                <pre><span class="kw">UPDATE</span> <span class="tbl">EMPLEADO_PROYECTO</span>
+<span class="kw">SET</span> <span class="col">HORAS_SEMANALES</span> = <span class="kw">CASE</span>
+                        <span class="kw">WHEN</span> <span class="col">ROL_PROYECTO</span> <span class="kw">LIKE</span> <span class="str">'%Líder%'</span> <span class="kw">THEN</span> <span class="num">40</span>
+                        <span class="kw">WHEN</span> <span class="col">ROL_PROYECTO</span> <span class="kw">LIKE</span> <span class="str">'%Analista%'</span> <span class="kw">THEN</span> <span class="num">35</span>
+                        <span class="kw">WHEN</span> <span class="col">ROL_PROYECTO</span> <span class="kw">LIKE</span> <span class="str">'%Programador%'</span> <span class="kw">THEN</span> <span class="num">30</span>
+                        <span class="kw">ELSE</span> <span class="num">20</span>
+                      <span class="kw">END</span>
+<span class="kw">WHERE</span> <span class="col">FECHA_TERMINO</span> <span class="kw">IS NULL</span>;
+<span class="kw">COMMIT</span>;</pre>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <!-- Ejercicio A.3 -->
+            <div class="exercise ex-yellow">
+                <div class="exercise-header h-yellow">
+                    <div class="exercise-title">🔴 Ejercicio A.3 · Reajuste de Presupuestos de Proyecto según Duración (Nivel Avanzado)</div>
+                    <span class="tag tag-red">Paralelo Examen</span>
+                </div>
+                <div class="exercise-body">
+                    <p>El departamento financiero requiere reajustar los presupuestos (columna <code>PRESUPUESTO</code> de la tabla <code>PROYECTO</code>) según la duración estimada del proyecto en meses completos (diferencia entre <code>FECHA_FIN_ESTIMADA</code> y <code>FECHA_INICIO</code>):</p>
+                    <ul class="plain">
+                        <li>Proyectos de **24 meses o más**: **+15%** en su presupuesto (multiplicar por 1.15).</li>
+                        <li>Proyectos de **entre 12 y 23 meses** completos: **+10%** (multiplicar por 1.10).</li>
+                        <li>Proyectos de **entre 6 y 11 meses** completos: **+5%** (multiplicar por 1.05).</li>
+                        <li>Proyectos de **menos de 6 meses**: **+2%** (multiplicar por 1.02).</li>
+                        <li><em>Requisito adicional:</em> Redondear el presupuesto final al entero más cercano usando <code>ROUND</code>.</li>
+                    </ul>
+                    <details>
+                        <summary>💡 Ver Pistas & Solución</summary>
+                        <div class="hint-body">
+                            <p style="margin-top:12px;font-size:13px;color:var(--text-dim);">Usa <code>TRUNC(MONTHS_BETWEEN(FECHA_FIN_ESTIMADA, FECHA_INICIO))</code> para obtener los meses transcurridos en formato entero. Envuelve el cálculo multiplicador con la función <code>ROUND(..., 0)</code>.</p>
+                            <div class="code-wrap">
+                                <pre><span class="kw">UPDATE</span> <span class="tbl">PROYECTO</span>
+<span class="kw">SET</span> <span class="col">PRESUPUESTO</span> = <span class="fn">ROUND</span>(
+  <span class="col">PRESUPUESTO</span> * (
+    <span class="num">1</span> + <span class="kw">CASE</span>
+      <span class="kw">WHEN</span> <span class="fn">TRUNC</span>(<span class="fn">MONTHS_BETWEEN</span>(<span class="col">FECHA_FIN_ESTIMADA</span>, <span class="col">FECHA_INICIO</span>)) &gt;= <span class="num">24</span> <span class="kw">THEN</span> <span class="num">0.15</span>
+      <span class="kw">WHEN</span> <span class="fn">TRUNC</span>(<span class="fn">MONTHS_BETWEEN</span>(<span class="col">FECHA_FIN_ESTIMADA</span>, <span class="col">FECHA_INICIO</span>)) <span class="kw">BETWEEN</span> <span class="num">12</span> <span class="kw">AND</span> <span class="num">23</span> <span class="kw">THEN</span> <span class="num">0.10</span>
+      <span class="kw">WHEN</span> <span class="fn">TRUNC</span>(<span class="fn">MONTHS_BETWEEN</span>(<span class="col">FECHA_FIN_ESTIMADA</span>, <span class="col">FECHA_INICIO</span>)) <span class="kw">BETWEEN</span> <span class="num">6</span> <span class="kw">AND</span> <span class="num">11</span> <span class="kw">THEN</span> <span class="num">0.05</span>
+      <span class="kw">ELSE</span> <span class="num">0.02</span>
+    <span class="kw">END</span>
+  ), <span class="num">0</span>
+);
+<span class="kw">COMMIT</span>;</pre>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- BLOQUE B: VISTAS Y FUNCIONES DE VENTANA            -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <section id="bloque-b">
+            <div class="section-header">
+                <div class="section-icon icon-blue">👁️</div>
+                <div class="section-title-wrap">
+                    <div class="section-num c-blue">Bloque B · Habilidad: Vistas con Lógica de Negocio Compleja</div>
+                    <div class="section-title">CREATE VIEW, LEFT JOIN y Funciones Analíticas</div>
+                    <div class="section-desc">Aprende a estructurar consultas complejas con múltiples JOINs, autofiltrados por año, sumatorias agregadas sin pérdida de detalle (OVER) y restricción de solo lectura.</div>
+                    <span class="time-tag">⏱ 40 minutos</span>
+                </div>
+            </div>
+
+            <!-- Concepto clave -->
+            <div class="card">
+                <div class="card-title">📘 Conceptos clave de este bloque</div>
+                <div class="explain-grid">
+                    <div class="explain-box">
+                        <div class="explain-box-title c-blue">LEFT JOIN estratégico</div>
+                        <p>Preserva todos los registros de la tabla izquierda (ej. todos los empleados de la nómina) incluso si no tienen registros de vacaciones en la tabla derecha en el año en curso.</p>
+                    </div>
+                    <div class="explain-box">
+                        <div class="explain-box-title c-yellow">SUM() / COUNT() OVER</div>
+                        <p>Calculan subtotales agregados sobre un subgrupo de filas (particionado por departamento, por ejemplo) sin colapsar el resultado, permitiendo comparar el detalle de la fila contra el total.</p>
+                    </div>
+                    <div class="explain-box">
+                        <div class="explain-box-title c-green">WITH READ ONLY</div>
+                        <p>Restricción DDL al final de la vista que bloquea cualquier operación DML de actualización (UPDATE/INSERT/DELETE) sobre ella por razones de seguridad de la información.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ejemplo guiado -->
+            <div class="card hover-lift">
+                <div class="card-title">🎯 Ejemplo guiado · Historial Acumulado de Vacaciones por Empleado <span class="tag tag-blue">Lectura y Análisis</span></div>
+                <p style="font-size:13.5px;color:var(--text-dim);margin-bottom:12px;">
+                    El área de personal requiere una vista detallada para auditar las vacaciones tomadas por empleado y el total acumulado de días que han gozado históricamente:
+                </p>
+                <div class="code-wrap">
+                    <div class="code-bar"><span class="code-lang">SQL · Vista analítica simple</span><span class="code-label">Crear en: REPORTE_SQL</span></div>
+                    <pre><span class="kw">CREATE OR REPLACE VIEW</span> <span class="tbl">REPORTE_SQL</span>.<span class="tbl">VIEW_VACACIONES_EMPLEADOS</span> <span class="kw">AS</span>
+<span class="kw">SELECT</span>
+    <span class="col">PE.APELLIDO_PAT</span> <span class="op">||</span> <span class="str">' '</span> <span class="op">||</span> <span class="col">PE.NOMBRES</span>              <span class="kw">AS</span> <span class="col">EMPLEADO</span>,
+    <span class="col">V.FECHA_INICIO</span>,
+    <span class="col">V.FECHA_FIN</span>,
+    <span class="col">V.DIAS_SOLICITADOS</span>,
+    <span class="col">V.ESTADO</span>,
+    <span class="fn">SUM</span>(<span class="col">V.DIAS_SOLICITADOS</span>) <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> <span class="col">V.CODIGO_EMPLEADO</span>) <span class="kw">AS</span> <span class="col">TOTAL_DIAS_EMPLEADO</span>
+FROM
+    <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">VACACIONES</span> V
+    <span class="kw">JOIN</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">EMPLEADO</span> E <span class="kw">ON</span> <span class="col">V.CODIGO_EMPLEADO</span> = <span class="col">E.CODIGO</span>
+    <span class="kw">JOIN</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">PERSONA</span> PE <span class="kw">ON</span> <span class="col">E.RUT_PERSONA</span> = <span class="col">PE.RUT</span>
+<span class="kw">ORDER BY</span> <span class="col">PE.APELLIDO_PAT</span>, <span class="col">V.FECHA_INICIO</span>
+<span class="kw">WITH READ ONLY</span>;</pre>
+                </div>
+            </div>
+
+            <!-- Ejercicio B.1 -->
+            <div class="exercise ex-blue">
+                <div class="exercise-header h-blue">
+                    <div class="exercise-title">🟢 Ejercicio B.1 · Vista de Contactos de Emergencia (Nivel Básico)</div>
+                    <span class="tag tag-blue">Práctica</span>
+                </div>
+                <div class="exercise-body">
+                    <p>El área de prevención de riesgos requiere una vista llamada <code>REPORTE_SQL.VIEW_CONTACTOS_EMPLEADOS</code> de solo lectura. Debe mostrar:</p>
+                    <ul class="plain">
+                        <li>RUT y nombre completo del empleado (formato: <code>APELLIDO_PAT APELLIDO_MAT, NOMBRES</code>).</li>
+                        <li>Nombre del contacto de emergencia.</li>
+                        <li>Parentesco registrado del contacto.</li>
+                        <li>Teléfono de contacto para emergencias.</li>
+                    </ul>
+                    <details>
+                        <summary>💡 Ver Pistas & Solución</summary>
+                        <div class="hint-body">
+                            <p style="margin-top:12px;font-size:13px;color:var(--text-dim);">Conecta las tablas <code>EMPLEADO</code>, <code>PERSONA</code> y <code>CONTACTO_EMERGENCIA</code>. No olvides agregar <code>WITH READ ONLY</code> al final de la definición DDL.</p>
+                            <div class="code-wrap">
+                                <pre><span class="kw">CREATE OR REPLACE VIEW</span> <span class="tbl">REPORTE_SQL</span>.<span class="tbl">VIEW_CONTACTOS_EMPLEADOS</span> <span class="kw">AS</span>
+<span class="kw">SELECT</span>
+    <span class="col">PE.RUT</span> <span class="kw">AS</span> <span class="col">RUT_EMPLEADO</span>,
+    <span class="col">PE.APELLIDO_PAT</span> <span class="op">||</span> <span class="str">' '</span> <span class="op">||</span> <span class="col">PE.APELLIDO_MAT</span> <span class="op">||</span> <span class="str">', '</span> <span class="op">||</span> <span class="col">PE.NOMBRES</span> <span class="kw">AS</span> <span class="col">NOMBRE_EMPLEADO</span>,
+    <span class="col">CE.NOMBRE_CONTACTO</span> <span class="kw">AS</span> <span class="col">CONTACTO_EMERGENCIA</span>,
+    <span class="col">CE.PARENTESCO</span>,
+    <span class="col">CE.TELEFONO</span> <span class="kw">AS</span> <span class="col">TELEFONO_EMERGENCIA</span>
+FROM
+    <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">EMPLEADO</span> E
+    <span class="kw">JOIN</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">PERSONA</span> PE <span class="kw">ON</span> <span class="col">E.RUT_PERSONA</span> = <span class="col">PE.RUT</span>
+    <span class="kw">JOIN</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">CONTACTO_EMERGENCIA</span> CE <span class="kw">ON</span> <span class="col">PE.RUT</span> = <span class="col">CE.RUT_PERSONA</span>
+<span class="kw">WITH READ ONLY</span>;</pre>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <!-- Ejercicio B.2 -->
+            <div class="exercise ex-blue">
+                <div class="exercise-header h-blue">
+                    <div class="exercise-title">🟡 Ejercicio B.2 · Vista Detallada de Capacitaciones Vigentes (Nivel Intermedio)</div>
+                    <span class="tag tag-blue">Práctica</span>
+                </div>
+                <div class="exercise-body">
+                    <p>Crea una vista llamada <code>REPORTE_SQL.VIEW_CAPACITACIONES_DETALLE</code> de solo lectura que muestre todas las capacitaciones activas o futuras (donde <code>FECHA_FIN >= SYSDATE</code>), incluyendo:</p>
+                    <ul class="plain">
+                        <li>Código y nombre de la capacitación, modalidad e instructor.</li>
+                        <li>Nombre del departamento organizador (desde la tabla <code>DEPARTAMENTO</code>).</li>
+                        <li>Nombre completo de cada empleado inscrito (formato: <code>APELLIDO_PAT NOMBRES</code>) si los hay.</li>
+                        <li>Calificación y estado del curso para ese empleado.</li>
+                        <li>Total de inscritos en cada curso (usando funciones de ventana).</li>
+                        <li><em>Regla crítica:</em> Mostrar la capacitación incluso si no tiene empleados inscritos aún.</li>
+                    </ul>
+                    <details>
+                        <summary>💡 Ver Pistas & Solución</summary>
+                        <div class="hint-body">
+                            <p style="margin-top:12px;font-size:13px;color:var(--text-dim);">Usa un <code>LEFT JOIN</code> desde <code>CAPACITACION</code> hacia <code>EMPLEADO_CAPACITACION</code> para preservar los cursos vacíos. Para contar a los inscritos en la ventana, usa <code>COUNT(EC.CODIGO_EMPLEADO) OVER (PARTITION BY C.CODIGO)</code>.</p>
+                            <div class="code-wrap">
+                                <pre><span class="kw">CREATE OR REPLACE VIEW</span> <span class="tbl">REPORTE_SQL</span>.<span class="tbl">VIEW_CAPACITACIONES_DETALLE</span> <span class="kw">AS</span>
+<span class="kw">SELECT</span>
+    <span class="col">C.CODIGO</span> <span class="kw">AS</span> <span class="col">CODIGO_CAPACITACION</span>,
+    <span class="col">C.NOMBRE</span> <span class="kw">AS</span> <span class="col">NOMBRE_CAPACITACION</span>,
+    <span class="col">C.MODALIDAD</span>,
+    <span class="col">C.INSTRUCTOR</span>,
+    <span class="col">DEP.NOMBRE</span> <span class="kw">AS</span> <span class="col">DEPARTAMENTO_ORGANIZADOR</span>,
+    <span class="col">PE.APELLIDO_PAT</span> <span class="op">||</span> <span class="str">' '</span> <span class="op">||</span> <span class="col">PE.NOMBRES</span> <span class="kw">AS</span> <span class="col">EMPLEADO_INSCRITO</span>,
+    <span class="col">EC.ESTADO</span> <span class="kw">AS</span> <span class="col">ESTADO_INSCRIPCION</span>,
+    <span class="col">EC.CALIFICACION</span>,
+    <span class="fn">COUNT</span>(<span class="col">EC.CODIGO_EMPLEADO</span>) <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> <span class="col">C.CODIGO</span>) <span class="kw">AS</span> <span class="col">TOTAL_INSCRITOS</span>
+FROM
+    <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">CAPACITACION</span> C
+    <span class="kw">JOIN</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">DEPARTAMENTO</span> DEP <span class="kw">ON</span> <span class="col">C.CODIGO_DEPARTAMENTO</span> = <span class="col">DEP.CODIGO</span>
+    <span class="kw">LEFT JOIN</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">EMPLEADO_CAPACITACION</span> EC <span class="kw">ON</span> <span class="col">C.CODIGO</span> = <span class="col">EC.CODIGO_CAPACITACION</span>
+    <span class="kw">LEFT JOIN</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">EMPLEADO</span> E <span class="kw">ON</span> <span class="col">EC.CODIGO_EMPLEADO</span> = <span class="col">E.CODIGO</span>
+    <span class="kw">LEFT JOIN</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">PERSONA</span> PE <span class="kw">ON</span> <span class="col">E.RUT_PERSONA</span> = <span class="col">PE.RUT</span>
+WHERE
+    <span class="col">C.FECHA_FIN</span> &gt;= <span class="fn">TRUNC</span>(<span class="kw">SYSDATE</span>)
+ORDER BY
+    <span class="col">C.NOMBRE</span>,
+    <span class="col">PE.APELLIDO_PAT</span>
+<span class="kw">WITH READ ONLY</span>;</pre>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <!-- Ejercicio B.3 -->
+            <div class="exercise ex-blue">
+                <div class="exercise-header h-blue">
+                    <div class="exercise-title">🔴 Ejercicio B.3 · Reporte Anual de Vacaciones Aprobadas por Departamento (Nivel Avanzado)</div>
+                    <span class="tag tag-red">Paralelo Examen</span>
+                </div>
+                <div class="exercise-body">
+                    <p>El área de Control de Gestión requiere auditar los días de vacaciones aprobados para todos los empleados de la empresa durante el año en curso. Crea una vista llamada <code>REPORTE_SQL.VIEW_RESUMEN_VACACIONES_APROBADAS</code> que cumpla con lo siguiente:</p>
+                    <ul class="plain">
+                        <li>Incluir a **todos los empleados** registrados en la empresa de forma obligatoria, incluso si no tienen solicitudes aprobadas este año (en cuyo caso los datos de vacaciones figurarán en blanco).</li>
+                        <li>Filtro del año actual: Solo considerar vacaciones en estado <code>'APROBADA'</code> que comiencen dentro del año en curso.</li>
+                        <li>Columnas: RUT del empleado, Nombre completo del empleado, Nombre del departamento (vía <code>TIPO_EMPLEADO</code> -> <code>DEPARTAMENTO</code>).</li>
+                        <li>Nombre del **Jefe que aprobó las vacaciones** (columna <code>CODIGO_EMPLEADO_APRUEBA</code> en la tabla <code>VACACIONES</code> relacionada con su respectiva persona. Requiere un self-join para obtener el nombre).</li>
+                        <li>Días tomados en esa solicitud individual.</li>
+                        <li>**Total acumulado de días de vacaciones aprobados en el departamento del empleado** en lo que va del año (usando función analítica).</li>
+                        <li>**Cantidad total de solicitudes de vacaciones aprobadas** que registra el empleado este año (usando función analítica).</li>
+                    </ul>
+                    <details>
+                        <summary>💡 Ver Pistas & Solución</summary>
+                        <div class="hint-body">
+                            <p style="margin-top:12px;font-size:13px;color:var(--text-dim);">Usa un filtro dinámico para el año actual: <code>V.FECHA_INICIO >= TRUNC(SYSDATE, 'YYYY')</code>. Emplea alias claros en el JOIN (por ejemplo, <code>E</code>/<code>PE</code> para el empleado, y <code>EAP</code>/<code>PAP</code> para el aprobador) para realizar el self-join.</p>
+                            <div class="code-wrap">
+                                <pre><span class="kw">CREATE OR REPLACE VIEW</span> <span class="tbl">REPORTE_SQL</span>.<span class="tbl">VIEW_RESUMEN_VACACIONES_APROBADAS</span> <span class="kw">AS</span>
+<span class="kw">SELECT</span>
+    <span class="col">PE.RUT</span> <span class="kw">AS</span> <span class="col">RUT_EMPLEADO</span>,
+    <span class="col">PE.APELLIDO_PAT</span> <span class="op">||</span> <span class="str">' '</span> <span class="op">||</span> <span class="col">PE.APELLIDO_MAT</span> <span class="op">||</span> <span class="str">', '</span> <span class="op">||</span> <span class="col">PE.NOMBRES</span> <span class="kw">AS</span> <span class="col">NOMBRE_EMPLEADO</span>,
+    <span class="col">DEP.NOMBRE</span> <span class="kw">AS</span> <span class="col">DEPARTAMENTO</span>,
+    <span class="col">PAP.APELLIDO_PAT</span> <span class="op">||</span> <span class="str">' '</span> <span class="op">||</span> <span class="col">PAP.APELLIDO_MAT</span> <span class="op">||</span> <span class="str">', '</span> <span class="op">||</span> <span class="col">PAP.NOMBRES</span> <span class="kw">AS</span> <span class="col">JEFE_APROBADOR</span>,
+    <span class="col">V.DIAS_SOLICITADOS</span>,
+    <span class="fn">SUM</span>(<span class="col">V.DIAS_SOLICITADOS</span>) <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> <span class="col">DEP.CODIGO</span>) <span class="kw">AS</span> <span class="col">TOTAL_DIAS_DEP_ANIO</span>,
+    <span class="fn">COUNT</span>(<span class="col">V.CODIGO</span>) <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> <span class="col">E.CODIGO</span>) <span class="kw">AS</span> <span class="col">CANTIDAD_SOLICITUDES_ANIO</span>
+FROM
+    <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">EMPLEADO</span> E
+    <span class="kw">JOIN</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">PERSONA</span> PE <span class="kw">ON</span> <span class="col">E.RUT_PERSONA</span> = <span class="col">PE.RUT</span>
+    <span class="kw">JOIN</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">TIPO_EMPLEADO</span> TE <span class="kw">ON</span> <span class="col">E.CODIGO_TIPO_EMPLEADO</span> = <span class="col">TE.CODIGO</span>
+    <span class="kw">JOIN</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">DEPARTAMENTO</span> DEP <span class="kw">ON</span> <span class="col">TE.CODIGO_DEPARTAMENTO</span> = <span class="col">DEP.CODIGO</span>
+    <span class="cmt">-- LEFT JOIN con condiciones compuestas para filtrar año y estado en la unión</span>
+    <span class="kw">LEFT JOIN</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">VACACIONES</span> V 
+        <span class="kw">ON</span> <span class="col">E.CODIGO</span> = <span class="col">V.CODIGO_EMPLEADO</span> 
+        <span class="kw">AND</span> <span class="col">V.ESTADO</span> = <span class="str">'APROBADA'</span>
+        <span class="kw">AND</span> <span class="col">V.FECHA_INICIO</span> &gt;= <span class="fn">TRUNC</span>(<span class="kw">SYSDATE</span>, <span class="str">'YYYY'</span>)
+    <span class="cmt">-- Obtención de la persona del Jefe Aprobador</span>
+    <span class="kw">LEFT JOIN</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">EMPLEADO</span> EAP <span class="kw">ON</span> <span class="col">V.CODIGO_EMPLEADO_APRUEBA</span> = <span class="col">EAP.CODIGO</span>
+    <span class="kw">LEFT JOIN</span> <span class="tbl">APRENDIENDO_SQL</span>.<span class="tbl">PERSONA</span> PAP <span class="kw">ON</span> <span class="col">EAP.RUT_PERSONA</span> = <span class="col">PAP.RUT</span>
+ORDER BY
+    <span class="col">DEP.NOMBRE</span>,
+    <span class="col">PE.APELLIDO_PAT</span>
+<span class="kw">WITH READ ONLY</span>;</pre>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- BLOQUE C: OPTIMIZACIÓN E ÍNDICES                   -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <section id="bloque-c">
+            <div class="section-header">
+                <div class="section-icon icon-purple">⚡</div>
+                <div class="section-title-wrap">
+                    <div class="section-num c-purple">Bloque C · Habilidad: Rendimiento y Planes de Ejecución</div>
+                    <div class="section-title">Análisis de Consultas con EXPLAIN PLAN y Optimización de Índices</div>
+                    <div class="section-desc">Aprende a interpretar los planes de ejecución generados por el motor de base de datos Oracle y a tomar decisiones para resolver escaneos de tabla secuenciales.</div>
+                    <span class="time-tag">⏱ 35 minutos</span>
+                </div>
+            </div>
+
+            <!-- Concepto clave -->
+            <div class="card">
+                <div class="card-title">📘 Diagnóstico de Planes de Ejecución</div>
+                <div class="tbl-wrap">
+                    <table>
+                        <tr>
+                            <th>Operación del Plan</th>
+                            <th>Significado en el Motor</th>
+                            <th>Calificación de Rendimiento</th>
+                        </tr>
+                        <tr>
+                            <td><code>TABLE ACCESS FULL</code></td>
+                            <td>Escanea el archivo de datos secuencialmente buscando coincidencias.</td>
+                            <td><strong style="color:var(--red)">Deficiente</strong> en tablas de gran volumen.</td>
+                        </tr>
+                        <tr>
+                            <td><code>INDEX RANGE SCAN</code></td>
+                            <td>Busca el rango de punteros en la estructura ordenada del índice.</td>
+                            <td><strong style="color:var(--green)">Óptimo</strong> para filtros por rangos o LIKE.</td>
+                        </tr>
+                        <tr>
+                            <td><code>INDEX UNIQUE SCAN</code></td>
+                            <td>Accede instantáneamente a un solo registro de la clave.</td>
+                            <td><strong style="color:var(--green)">Excelente</strong> (Claves PK o Unique).</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Ejemplo guiado -->
+            <div class="card hover-lift">
+                <div class="card-title">🎯 Ejemplo guiado · Diagnóstico por Fecha de Contratación <span class="tag tag-purple">Lectura y Análisis</span></div>
+                <p style="font-size:13.5px;color:var(--text-dim);margin-bottom:12px;">
+                    Analicemos el plan para buscar empleados antiguos:
+                </p>
+                <div class="code-wrap">
+                    <pre><span class="cmt">-- 1. Generar el Plan de Ejecución</span>
+<span class="kw">EXPLAIN PLAN FOR</span>
+<span class="kw">SELECT</span> <span class="col">P.NOMBRES</span>, <span class="col">E.FECHA_CONTRATO</span>
+<span class="kw">FROM</span> <span class="tbl">EMPLEADO</span> E
+<span class="kw">JOIN</span> <span class="tbl">PERSONA</span> P <span class="kw">ON</span> <span class="col">E.RUT_PERSONA</span> = <span class="col">P.RUT</span>
+<span class="kw">WHERE</span> <span class="col">E.FECHA_CONTRATO</span> &lt; <span class="fn">ADD_MONTHS</span>(<span class="kw">SYSDATE</span>, -<span class="num">60</span>);
+
+<span class="cmt">-- 2. Consultar el Plan</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">TABLE</span>(<span class="fn">DBMS_XPLAN.DISPLAY</span>());
+
+<span class="cmt">-- 3. Crear el Índice Simple</span>
+<span class="kw">CREATE INDEX</span> <span class="tbl">IDX_EMPLEADO_FCONTRATO</span> <span class="kw">ON</span> <span class="tbl">EMPLEADO</span>(<span class="col">FECHA_CONTRATO</span>);</pre>
+                </div>
+            </div>
+
+            <!-- Ejercicio C.1 -->
+            <div class="exercise ex-purple">
+                <div class="exercise-header h-purple">
+                    <div class="exercise-title">🟢 Ejercicio C.1 · Búsqueda por Claves Primarias (Nivel Básico)</div>
+                    <span class="tag tag-purple">Práctica</span>
+                </div>
+                <div class="exercise-body">
+                    <p>Evalúa el plan de ejecución de la siguiente consulta de búsqueda exacta por RUT:</p>
+                    <div class="code-wrap">
+                        <pre><span class="kw">SELECT</span> <span class="col">PE.RUT</span>, <span class="col">PE.NOMBRES</span>, <span class="col">DIR.CALLE</span>
+<span class="kw">FROM</span> <span class="tbl">PERSONA</span> PE
+<span class="kw">INNER JOIN</span> <span class="tbl">DIRECCION</span> DIR <span class="kw">ON</span> <span class="col">PE.RUT</span> = <span class="col">DIR.RUT_PERSONA</span>
+<span class="kw">WHERE</span> <span class="col">PE.RUT</span> = <span class="str">'17283940-5'</span>;</pre>
+                    </div>
+                    <p>¿Qué operaciones se realizan sobre las tablas y por qué no es necesario crear ningún índice adicional?</p>
+                    <details>
+                        <summary>💡 Ver Análisis & Solución</summary>
+                        <div class="hint-body">
+                            <p style="margin-top:12px;font-size:13px;color:var(--text-dim);">Al consultar por el RUT (que es Clave Primaria en <code>PERSONA</code>), Oracle ejecuta automáticamente un <code>INDEX UNIQUE SCAN</code> de máxima velocidad sobre el índice implícito de la PK. Dado que la llave de relación de <code>DIRECCION</code> también hereda la clave, no se necesita optimizar nada adicional; la base de datos ya opera con la velocidad teórica máxima.</p>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <!-- Ejercicio C.2 -->
+            <div class="exercise ex-purple">
+                <div class="exercise-header h-purple">
+                    <div class="exercise-title">🟡 Ejercicio C.2 · Optimización con Filtros Compuestos (AND) (Nivel Intermedio)</div>
+                    <span class="tag tag-purple">Práctica</span>
+                </div>
+                <div class="exercise-body">
+                    <p>El departamento de recursos humanos ejecuta de forma diaria la consulta de control de solicitudes pendientes ingresadas recientemente:</p>
+                    <div class="code-wrap">
+                        <pre><span class="kw">SELECT</span> <span class="col">E.RUT_PERSONA</span>, <span class="col">V.FECHA_INICIO</span>, <span class="col">V.ESTADO</span>
+<span class="kw">FROM</span> <span class="tbl">VACACIONES</span> V
+<span class="kw">INNER JOIN</span> <span class="tbl">EMPLEADO</span> E <span class="kw">ON</span> <span class="col">V.CODIGO_EMPLEADO</span> = <span class="col">E.CODIGO</span>
+<span class="kw">WHERE</span> <span class="col">V.ESTADO</span> = <span class="str">'SOLICITADA'</span> 
+  <span class="kw">AND</span> <span class="col">V.FECHA_SOLICITUD</span> &gt;= <span class="fn">TRUNC</span>(<span class="kw">SYSDATE</span>) - <span class="num">30</span>
+<span class="kw">ORDER BY</span> <span class="col">V.FECHA_SOLICITUD</span>;</pre>
+                    </div>
+                    <p>Genera el plan de ejecución, identifica el cuello de botella e implementa el índice compuesto ideal para resolverlo.</p>
+                    <details>
+                        <summary>💡 Ver Pistas & Solución</summary>
+                        <div class="hint-body">
+                            <p style="margin-top:12px;font-size:13px;color:var(--text-dim);">Cuando dos filtros van asociados por un <code>AND</code>, se crea un índice compuesto. Coloca primero la columna con comparación de igualdad exacta (<code>ESTADO</code>) y después la columna con filtro de rangos (<code>FECHA_SOLICITUD</code>).</p>
+                            <div class="code-wrap">
+                                <pre><span class="kw">CREATE INDEX</span> <span class="tbl">IDX_VACACIONES_EST_SOL</span> 
+  <span class="kw">ON</span> <span class="tbl">VACACIONES</span>(<span class="col">ESTADO</span>, <span class="col">FECHA_SOLICITUD</span>);</pre>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <!-- Ejercicio C.3 -->
+            <div class="exercise ex-purple">
+                <div class="exercise-header h-purple">
+                    <div class="exercise-title">🔴 Ejercicio C.3 · Optimización con Filtros Disyuntivos (OR) (Nivel Avanzado)</div>
+                    <span class="tag tag-red">Paralelo Examen</span>
+                </div>
+                <div class="exercise-body">
+                    <p>Para monitorear las inconsistencias en la entrada de los empleados, se corre diariamente la siguiente consulta filtrada con el operador <code>OR</code>:</p>
+                    <div class="code-wrap">
+                        <pre><span class="kw">SELECT</span> <span class="col">E.RUT_PERSONA</span>, <span class="col">A.FECHA</span>, <span class="col">A.TIPO_MARCACION</span>, <span class="col">A.OBSERVACION</span>
+<span class="kw">FROM</span> <span class="tbl">ASISTENCIA</span> A
+<span class="kw">INNER JOIN</span> <span class="tbl">EMPLEADO</span> E <span class="kw">ON</span> <span class="col">A.CODIGO_EMPLEADO</span> = <span class="col">E.CODIGO</span>
+<span class="kw">WHERE</span> <span class="col">A.TIPO_MARCACION</span> = <span class="str">'ATRASO'</span> 
+   <span class="kw">OR</span> <span class="col">A.OBSERVACION</span> = <span class="str">'SIN_JUSTIFICAR'</span>;</pre>
+                    </div>
+                    <p>Analiza por qué un índice compuesto no ayudaría al optimizador a evitar un escaneo completo de la tabla, y diseña la solución correcta.</p>
+                    <details>
+                        <summary>💡 Ver Pistas & Solución</summary>
+                        <div class="hint-body">
+                            <p style="margin-top:12px;font-size:13px;color:var(--text-dim);">Con un <code>OR</code>, el motor de base de datos debe poder evaluar ambas condiciones por separado. Por ello, se deben crear **dos índices simples separados**. El optimizador de Oracle es capaz de realizar lecturas independientes a ambos índices y combinarlos en memoria (operación <em>Bitmap OR Merge</em> o <em>Concatenation</em>).</p>
+                            <div class="code-wrap">
+                                <pre><span class="cmt">-- Crear dos índices simples en lugar de uno compuesto</span>
+<span class="kw">CREATE INDEX</span> <span class="tbl">IDX_ASISTENCIA_TIPO_M</span> <span class="kw">ON</span> <span class="tbl">ASISTENCIA</span>(<span class="col">TIPO_MARCACION</span>);
+<span class="kw">CREATE INDEX</span> <span class="tbl">IDX_ASISTENCIA_OBSERV</span> <span class="kw">ON</span> <span class="tbl">ASISTENCIA</span>(<span class="col">OBSERVACION</span>);</pre>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <!-- Ejercicio C.4 -->
+            <div class="exercise ex-purple">
+                <div class="exercise-header h-purple">
+                    <div class="exercise-title">🔴 Ejercicio C.4 · Optimización de Filtros por Rango de Fechas (Nivel Avanzado)</div>
+                    <span class="tag tag-red">Paralelo Examen</span>
+                </div>
+                <div class="exercise-body">
+                    <p>Se listan constantemente las licencias médicas tomadas en el año en curso mediante el siguiente fragmento SQL:</p>
+                    <div class="code-wrap">
+                        <pre><span class="kw">SELECT</span> <span class="col">E.RUT_PERSONA</span>, <span class="col">L.FECHA_INICIO</span>, <span class="col">L.ESTADO</span>
+<span class="kw">FROM</span> <span class="tbl">LICENCIA_MEDICA</span> L
+<span class="kw">INNER JOIN</span> <span class="tbl">EMPLEADO</span> E <span class="kw">ON</span> <span class="col">L.CODIGO_EMPLEADO</span> = <span class="col">E.CODIGO</span>
+<span class="kw">WHERE</span> <span class="col">L.FECHA_INICIO</span> <span class="kw">BETWEEN</span> <span class="fn">TRUNC</span>(<span class="kw">SYSDATE</span>, <span class="str">'YYYY'</span>) <span class="kw">AND</span> <span class="kw">SYSDATE</span>
+<span class="kw">ORDER BY</span> <span class="col">L.FECHA_INICIO</span>;</pre>
+                    </div>
+                    <p>Detecta el cuello de botella creado por la falta de índices y genera la estructura óptima para acelerar la consulta.</p>
+                    <details>
+                        <summary>💡 Ver Pistas & Solución</summary>
+                        <div class="hint-body">
+                            <p style="margin-top:12px;font-size:13px;color:var(--text-dim);">Aunque se aplica la función <code>TRUNC</code> en la condición del WHERE, esta se procesa sobre la constante de sistema <code>SYSDATE</code> y no sobre la columna de la tabla (<code>L.FECHA_INICIO</code>). Por lo tanto, un índice estándar sobre la columna de fecha sí será ocupado eficientemente.</p>
+                            <div class="code-wrap">
+                                <pre><span class="kw">CREATE INDEX</span> <span class="tbl">IDX_LICENCIA_MED_FINI</span> <span class="kw">ON</span> <span class="tbl">LICENCIA_MEDICA</span>(<span class="col">FECHA_INICIO</span>);</pre>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- 📋 Checklist Interactivo -->
+        <section>
+            <div class="card">
+                <div class="card-title" style="font-size:16px;margin-bottom:20px;">
+                    <span>📋 ¿Estoy listo para la EP2? · Mi Progreso</span>
+                    <span class="solved-label" id="progress-percent">0%</span>
+                </div>
+                <div class="two-col">
+                    <div>
+                        <p style="font-size:11px;color:var(--text-dim);margin-bottom:10px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.07em;">DCL · Seguridad</p>
+                        <ul class="checklist">
+                            <li id="chk-dcl1"><button class="check-btn" onclick="toggleCheck('chk-dcl1')"><div class="check-box"><i class="fa-solid fa-check"></i></div></button><span>Sé crear Tablespaces (datos y temporales)</span></li>
+                            <li id="chk-dcl2"><button class="check-btn" onclick="toggleCheck('chk-dcl2')"><div class="check-box"><i class="fa-solid fa-check"></i></div></button><span>Sé crear Roles de sistema y concederles permisos</span></li>
+                            <li id="chk-dcl3"><button class="check-btn" onclick="toggleCheck('chk-dcl3')"><div class="check-box"><i class="fa-solid fa-check"></i></div></button><span>Comprendo el principio de menor privilegio</span></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p style="font-size:11px;color:var(--text-dim);margin-bottom:10px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.07em;">DML · UPDATE condicional</p>
+                        <ul class="checklist">
+                            <li id="chk-dml1"><button class="check-btn" onclick="toggleCheck('chk-dml1')"><div class="check-box"><i class="fa-solid fa-check"></i></div></button><span>Domino el uso de UPDATE + CASE</span></li>
+                            <li id="chk-dml2"><button class="check-btn" onclick="toggleCheck('chk-dml2')"><div class="check-box"><i class="fa-solid fa-check"></i></div></button><span>Uso MONTHS_BETWEEN y TRUNC para duraciones</span></li>
+                            <li id="chk-dml3"><button class="check-btn" onclick="toggleCheck('chk-dml3')"><div class="check-box"><i class="fa-solid fa-check"></i></div></button><span>Aplico ROUND de forma correcta en cálculos</span></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p style="font-size:11px;color:var(--text-dim);margin-bottom:10px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.07em;">DDL · Vistas y Ventanas</p>
+                        <ul class="checklist">
+                            <li id="chk-ddl1"><button class="check-btn" onclick="toggleCheck('chk-ddl1')"><div class="check-box"><i class="fa-solid fa-check"></i></div></button><span>Sé crear vistas sobre otros esquemas</span></li>
+                            <li id="chk-ddl2"><button class="check-btn" onclick="toggleCheck('chk-ddl2')"><div class="check-box"><i class="fa-solid fa-check"></i></div></button><span>Domino LEFT JOIN para conservar filas vacías</span></li>
+                            <li id="chk-ddl3"><button class="check-btn" onclick="toggleCheck('chk-ddl3')"><div class="check-box"><i class="fa-solid fa-check"></i></div></button><span>Uso SUM/COUNT OVER (PARTITION BY) en reportes</span></li>
+                            <li id="chk-ddl4"><button class="check-btn" onclick="toggleCheck('chk-ddl4')"><div class="check-box"><i class="fa-solid fa-check"></i></div></button><span>Sé aplicar la restricción WITH READ ONLY</span></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p style="font-size:11px;color:var(--text-dim);margin-bottom:10px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.07em;">Rendimiento · Índices</p>
+                        <ul class="checklist">
+                            <li id="chk-opt1"><button class="check-btn" onclick="toggleCheck('chk-opt1')"><div class="check-box"><i class="fa-solid fa-check"></i></div></button><span>Sé leer un árbol EXPLAIN PLAN</span></li>
+                            <li id="chk-opt2"><button class="check-btn" onclick="toggleCheck('chk-opt2')"><div class="check-box"><i class="fa-solid fa-check"></i></div></button><span>Sé cuándo usar índice simple vs compuesto (AND)</span></li>
+                            <li id="chk-opt3"><button class="check-btn" onclick="toggleCheck('chk-opt3')"><div class="check-box"><i class="fa-solid fa-check"></i></div></button><span>Comprendo el efecto de OR (dos índices simples)</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Component Footer -->
+    <app-footer></app-footer>
+
+    <script src="js/components.js"></script>
+    <script>
+        // Smooth scrolling for anchors
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                const target = document.querySelector(a.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Interactive progress-saving checklist
+        const totalItems = 14;
+        let checkedCount = 0;
+
+        function loadProgress() {
+            checkedCount = 0;
+            const items = ['chk-dcl1', 'chk-dcl2', 'chk-dcl3', 'chk-dml1', 'chk-dml2', 'chk-dml3', 'chk-ddl1', 'chk-ddl2', 'chk-ddl3', 'chk-ddl4', 'chk-opt1', 'chk-opt2', 'chk-opt3'];
+            items.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const val = localStorage.getItem('ep2_taller_' + id);
+                    if (val === 'true') {
+                        el.classList.add('checked');
+                        checkedCount++;
+                    }
+                }
+            });
+            updateProgressBar();
+        }
+
+        function toggleCheck(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                if (el.classList.contains('checked')) {
+                    el.classList.remove('checked');
+                    localStorage.setItem('ep2_taller_' + id, 'false');
+                    checkedCount--;
+                } else {
+                    el.classList.add('checked');
+                    localStorage.setItem('ep2_taller_' + id, 'true');
+                    checkedCount++;
+                }
+                updateProgressBar();
+            }
+        }
+
+        function updateProgressBar() {
+            const pct = Math.round((checkedCount / totalItems) * 100);
+            document.getElementById('progress-percent').innerText = pct + '%';
+        }
+
+        // Initialize progress
+        window.addEventListener('DOMContentLoaded', loadProgress);
+    </script>
+</body>
+
+</html>

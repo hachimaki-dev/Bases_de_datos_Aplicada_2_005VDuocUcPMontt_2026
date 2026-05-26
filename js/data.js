@@ -6,6 +6,28 @@
 const appData = {
     entries: [
         {
+            id: 'taller-preparacion-ep2',
+            unit: 'EA2',
+            type: 'hero',
+            href: 'taller-preparacion-ep2.html',
+            colSpan: 2,
+            date: '2026-05-26',
+            dateText: '26 May 2026',
+            tag: 'PREPARACIÓN EP2', tagIcon: 'fa-graduation-cap text-yellow-300',
+            badge: 'Taller',
+            title: 'Taller de Práctica:<br>Preparación EP2',
+            description: 'Entrena tu lógica para la Evaluación Parcial 2 (EP2). Escenarios 100% éticos y distintos a la prueba que evalúan exactamente los mismos conceptos: DML con CASE, Vistas analíticas y optimización mediante índices.',
+            btnText: 'Abrir Taller Práctico', btnIcon: 'fa-laptop-code',
+            theme: {
+                outerBorder: 'border-yellow-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-yellow-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-yellow-500/20', circle2: 'bg-amber-500/20',
+                tagBox: 'bg-yellow-900/50 text-yellow-200 border-yellow-700 backdrop-blur-sm', tagText: 'text-yellow-200', badgeTheme: 'bg-yellow-600 text-white border-yellow-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-yellow-100', btn: 'bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 w-full justify-center text-white shadow-lg border border-yellow-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(234,179,8,0.6)]'
+            },
+            icon: 'fa-graduation-cap', iconContainer: 'bg-yellow-900/40 border-yellow-500/30', iconColor: 'text-yellow-400'
+        },
+        {
             id: 'clase-1',
             type: 'standard',
             href: 'clase-1.html',
