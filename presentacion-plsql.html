@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación interactiva - PL/SQL Continuación</title>
+    <!-- Configuración Centralizada -->
+    <script src="js/config.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <style>
+        body, html {
+            overflow: hidden !important;
+            height: 100% !important;
+            margin: 0 !important;
+            background-color: #0f172a !important; 
+            color: #f1f5f9 !important; 
+        }
+        
+        #app {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+        }
+        
+        pre[class*="language-"] {
+            margin: 0 !important;
+            padding: 2rem !important;
+            border-radius: 1.5rem !important;
+            font-size: 1.5rem !important; 
+            line-height: 1.4 !important;
+            max-height: 60vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+        }
+
+        .slide-element-title i { margin-right: 15px; }
+
+        /* Estilos resúmenes DUA */
+        details {
+            background-color: rgba(30, 41, 59, 0.8);
+            border: 2px solid rgba(71, 85, 105, 0.8);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            color: #cbd5e1;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        details[open] {
+            border-color: rgba(99, 102, 241, 0.6);
+            background-color: rgba(30, 41, 59, 0.95);
+        }
+        summary {
+            font-weight: bold;
+            color: #818cf8;
+            outline: none;
+            display: flex;
+            align-items: center;
+        }
+        summary::before {
+            content: "\f05a"; /* fa-info-circle */
+            font-family: "Font Awesome 6 Free";
+            margin-right: 10px;
+        }
+        details > div {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(71, 85, 105, 0.8);
+            line-height: 1.6;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: 0.3s;
+            z-index: 10;
+        }
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Scope visual helper animation */
+        .scope-box {
+            transition: all 0.3s ease;
+        }
+        .scope-box:hover {
+            box-shadow: 0 0 25px rgba(129, 140, 248, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app" tabindex="0" @keydown="handleKeydown" class="focus:outline-none">
+        
+        <!-- Header minimalista -->
+        <header class="p-6 flex justify-between items-center z-50 fixed top-0 w-full bg-slate-900/80 backdrop-blur-md border-b border-indigo-500/20 shadow-lg">
+            <a href="index.html" class="text-indigo-300 hover:text-white transition-colors flex items-center gap-2 font-bold text-lg">
+                <i class="fa-solid fa-arrow-left"></i> Volver al Diario
+            </a>
+            <div class="text-cyan-400 font-bold tracking-widest uppercase text-sm border border-cyan-500/30 px-4 py-1.5 rounded-full bg-cyan-900/30">
+                AULA INTERACTIVA PL/SQL: ESTRUCTURAS Y PUENTES
+            </div>
+            <div class="text-slate-300 font-bold text-xl px-4 py-1 rounded-lg bg-slate-800 border border-slate-700">
+                Diapositiva {{ currentIndex + 1 }} de {{ slides.length }}
+            </div>
+        </header>
+
+        <!-- Contenedor Principal de Slides -->
+        <main class="flex-grow flex flex-col items-center justify-center p-12 mt-20 mb-20 relative w-full h-full z-10 overflow-y-auto">
+            
+            <div class="w-full max-w-7xl mx-auto flex flex-col items-center justify-center pt-8">
+                
+                <!-- SLIDE TIPO TITLE -->
+                <div v-if="currentSlide.type === 'title'" class="text-center w-full fade-in">
+                    <i :class="['fa-solid text-9xl mb-12', currentSlide.icon || 'fa-code', currentSlide.iconColor || 'text-cyan-400']"></i>
+                    <h1 class="text-6xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-fuchsia-400 mb-8 drop-shadow-lg leading-tight">
+                        {{ currentSlide.title }}
+                    </h1>
+                    <p class="text-3xl text-slate-300 font-medium max-w-4xl mx-auto leading-[1.6] mt-10" v-html="currentSlide.subtitle"></p>
+                </div>
+                
+                <!-- SLIDE TIPO DB SCRIPT -->
+                <div v-else-if="currentSlide.type === 'db_setup'" class="w-full fade-in">
+                    <div class="text-center mb-8">
+                        <h2 class="text-5xl font-bold text-emerald-400 mb-4 flex items-center justify-center gap-4">
+                            <i class="fa-solid fa-database"></i> Base de Datos de Pruebas: Shop
+                        </h2>
+                        <p class="text-2xl text-slate-300 font-medium max-w-3xl mx-auto">Copia y ejecuta este script en tu cliente Oracle SQL Developer para crear las tablas con las que haremos los tests.</p>
+                    </div>
+                    <div class="w-full relative group">
+                        <div class="relative bg-[#1A1A1A] rounded-[2rem] border-2 border-slate-700 overflow-hidden shadow-2xl">
+                            <button @click="copyDbScript" class="copy-btn">
+                                <i class="fa-solid fa-copy mb-1"></i> {{ copyBtnText }}
+                            </button>
+                            <pre><code class="language-sql">{{ dbScript }}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SLIDE INTERACTIVO: UNIDADES LÉXICAS GAME -->
+                <div v-else-if="currentSlide.type === 'lexical_game'" class="w-full bg-slate-800/80 p-16 rounded-[3rem] border-2 border-slate-700 shadow-2xl backdrop-blur-md fade-in">
+                    <h2 class="text-5xl font-extrabold text-white mb-8 flex items-center gap-4 border-b border-slate-700 pb-6">
+                        <i class="fa-solid fa-magnifying-glass text-cyan-400"></i> Bug Hunt & Unidades Léxicas
+                    </h2>
+                    <p class="text-2xl text-slate-300 mb-10">Asigna cada elemento de código a su unidad léxica correcta en PL/SQL:</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div v-for="(item, idx) in lexicalItems" :key="idx" class="bg-slate-900/60 p-6 rounded-2xl border border-slate-700 flex items-center justify-between">
+                            <code class="text-3xl text-yellow-300 font-mono">{{ item.code }}</code>
+                            <select v-model="item.userSelection" class="bg-slate-800 text-white p-3 rounded-xl border border-slate-600 font-bold focus:border-cyan-500 cursor-pointer">
+                                <option value="" disabled>Selecciona tipo...</option>
+                                <option value="identificador">Identificador</option>
+                                <option value="delimitador">Delimitador</option>
+                                <option value="literal">Literal</option>
+                                <option value="comentario">Comentario</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-10 flex justify-between items-center bg-slate-950 p-6 rounded-2xl border border-slate-800">
+                        <p class="text-xl font-medium text-slate-400">Objetivo: Clasificar correctamente las 4 unidades léxicas.</p>
+                        <button @click="checkLexicalAnswers" class="bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-black px-8 py-3.5 rounded-full text-lg shadow-lg transition-transform hover:scale-105 active:scale-95">
+                            Validar Clasificación
+                        </button>
+                    </div>
+
+                    <transition name="fade">
+                        <div v-if="lexicalFeedback" class="mt-6 p-6 rounded-2xl font-bold text-center text-2xl border-2"
+                             :class="lexicalIsCorrect ? 'bg-emerald-950/50 text-emerald-300 border-emerald-500' : 'bg-rose-950/50 text-rose-300 border-rose-500'">
+                            {{ lexicalFeedback }}
+                        </div>
+                    </transition>
+                </div>
+
+                <!-- SLIDE INTERACTIVO: PRECEDENCIA GAME -->
+                <div v-else-if="currentSlide.type === 'precedence_game'" class="w-full bg-slate-800/80 p-16 rounded-[3rem] border-2 border-slate-700 shadow-2xl backdrop-blur-md fade-in text-left">
+                    <h2 class="text-5xl font-extrabold text-white mb-8 border-b border-slate-700 pb-6 flex items-center gap-4">
+                        <i class="fa-solid fa-calculator text-fuchsia-400"></i> Predecir Antes de Ejecutar
+                    </h2>
+                    <p class="text-2xl text-slate-300 mb-10">Calcula mentalmente qué valor tomará la variable en cada expresión según la precedencia:</p>
+
+                    <div class="space-y-8">
+                        <div v-for="(exp, idx) in precedenceExps" :key="idx" class="bg-slate-900/60 p-6 rounded-2xl border border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div class="flex-grow">
+                                <code class="text-3xl text-fuchsia-300 font-mono">{{ exp.code }}</code>
+                                <p class="text-lg text-slate-400 mt-2 font-medium">{{ exp.desc }}</p>
+                            </div>
+                            <div class="flex gap-4">
+                                <button v-for="opt in exp.options" :key="opt" 
+                                        @click="selectPrecedenceAnswer(idx, opt)"
+                                        class="px-6 py-3 rounded-xl font-bold border-2 transition-all hover:scale-105"
+                                        :class="getPrecedenceBtnClass(idx, opt)">
+                                    {{ opt }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <details class="mt-10">
+                        <summary>Ver Tabla de Precedencia (7 Niveles)</summary>
+                        <div class="grid grid-cols-2 gap-4 text-xl font-mono p-4">
+                            <div class="font-bold border-b border-slate-700 pb-2 text-indigo-400">Nivel de Operador</div>
+                            <div class="font-bold border-b border-slate-700 pb-2 text-indigo-400">Operadores</div>
+                            <div>1 (Máxima)</div><div><code>**</code> (Exponente), <code>NOT</code></div>
+                            <div>2</div><div><code>+</code>, <code>-</code> (Unitarios)</div>
+                            <div>3</div><div><code>*</code>, <code>/</code> (Multiplicación/División)</div>
+                            <div>4</div><div><code>+</code>, <code>-</code> (Suma/Resta), <code>||</code> (Concatenación)</div>
+                            <div>5</div><div>Comparaciones (<code>=</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>LIKE</code>, <code>IS NULL</code>)</div>
+                            <div>6</div><div><code>AND</code> (Conjunción lógica)</div>
+                            <div>7 (Mínima)</div><div><code>OR</code> (Disyunción lógica)</div>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- SLIDE TIPO CONTENT (Teoría / Explicación DUA) -->
+                <div v-else-if="currentSlide.type === 'content'" class="w-full bg-slate-800/80 p-16 rounded-[3rem] border-2 border-slate-700 shadow-2xl backdrop-blur-md fade-in">
+                    <div class="flex items-center mb-12 border-b-2 border-slate-700 pb-8">
+                        <div class="bg-indigo-500/20 p-6 rounded-3xl mr-8 border border-indigo-500/50">
+                            <i :class="['fa-solid text-7xl text-indigo-400', currentSlide.icon || 'fa-info-circle']"></i>
+                        </div>
+                        <h2 class="text-6xl font-extrabold text-white tracking-tight">{{ currentSlide.title }}</h2>
+                    </div>
+                    <div class="text-4xl text-slate-200 leading-[1.6] font-medium" v-html="currentSlide.html"></div>
+                    <details v-if="currentSlide.extraInfo">
+                        <summary>Contexto para ingenieros inquietos</summary>
+                        <div v-html="currentSlide.extraInfo"></div>
+                    </details>
+                </div>
+
+                <!-- SLIDE TIPO SCENARIO (Escenario de Negocio / Desafío) -->
+                <div v-else-if="currentSlide.type === 'scenario'" class="w-full bg-gradient-to-r from-slate-900 to-slate-800 p-16 rounded-[3rem] border-2 border-slate-600 shadow-2xl relative overflow-hidden fade-in">
+                    <div class="absolute -right-10 -top-10 text-[300px] text-white/5 opacity-20"><i class="fa-solid fa-envelope"></i></div>
+                    <div class="flex items-center mb-10 border-b-2 border-slate-700 pb-8 relative z-10">
+                        <div class="bg-rose-500/20 p-6 rounded-3xl mr-8 border border-rose-500/50">
+                            <i class="fa-solid fa-envelope-open-text text-7xl text-rose-400"></i>
+                        </div>
+                        <h2 class="text-5xl font-extrabold text-white tracking-tight">{{ currentSlide.title }}</h2>
+                    </div>
+                    <div class="bg-slate-950 p-12 rounded-3xl border-l-[12px] border-rose-500 shadow-inner relative z-10">
+                        <div class="text-4xl text-slate-300 leading-[1.7] font-medium italic" v-html="currentSlide.context"></div>
+                    </div>
+                </div>
+
+                <!-- SLIDE TIPO CODE (Para proyectar y programar) -->
+                <div v-else-if="currentSlide.type === 'code'" class="w-full fade-in">
+                    <div class="text-center mb-10">
+                        <h2 class="text-5xl font-bold text-emerald-400 mb-4 flex items-center justify-center gap-6 slide-element-title">
+                            <i class="fa-solid fa-laptop-code text-5xl"></i> Bloque Anónimo PL/SQL
+                        </h2>
+                        <p class="text-3xl text-slate-300 font-medium">{{ currentSlide.subtitle }}</p>
+                    </div>
+                    <div class="w-full relative group">
+                        <div class="absolute -inset-2 bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-500 rounded-[3rem] blur-xl opacity-30 group-hover:opacity-60 transition duration-500"></div>
+                        
+                        <div class="relative bg-[#1A1A1A] rounded-[2.5rem] border-2 border-slate-700 overflow-hidden shadow-2xl">
+                            <div class="px-8 py-4 bg-[#2D2D2D] flex gap-3 items-center justify-between">
+                                <div class="flex gap-4">
+                                    <div class="w-5 h-5 rounded-full bg-red-500"></div>
+                                    <div class="w-5 h-5 rounded-full bg-yellow-500"></div>
+                                    <div class="w-5 h-5 rounded-full bg-emerald-500"></div>
+                                </div>
+                                <div class="text-slate-400 font-mono text-xl tracking-widest">{{ currentSlide.title }}</div>
+                            </div>
+                            <pre><code class="language-sql">{{ currentSlide.sql }}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SLIDE TIPO EXERCISES -->
+                <div v-else-if="currentSlide.type === 'exercises'" class="w-full bg-slate-800/80 p-12 rounded-[3rem] border-2 border-slate-700 shadow-2xl backdrop-blur-md fade-in text-left">
+                    <h2 class="text-5xl font-extrabold text-white mb-8 flex items-center gap-4 border-b border-slate-700 pb-6">
+                        <i class="fa-solid fa-graduation-cap text-cyan-400"></i> {{ currentSlide.title }}
+                    </h2>
+                    <p class="text-2xl text-slate-300 mb-10">Resuelve estos desafíos prácticos basándote en la base de datos de pruebas:</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div v-for="(ex, index) in currentSlide.items" :key="index" class="bg-slate-900/60 p-8 rounded-2xl border border-slate-700 flex flex-col justify-between min-h-[350px]">
+                            <div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="bg-cyan-500/20 text-cyan-300 font-bold px-3 py-1 rounded-lg text-lg border border-cyan-500/30">Ejercicio {{ ex.num }}</span>
+                                </div>
+                                <h3 class="text-2xl font-bold text-white mb-4">{{ ex.title }}</h3>
+                                <p class="text-lg text-slate-300 leading-relaxed font-medium mb-6">{{ ex.desc }}</p>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <!-- Botón Pista -->
+                                <button @click="ex.showHint = !ex.showHint" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 px-4 rounded-xl border border-slate-600 transition flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-lightbulb text-yellow-400"></i> {{ ex.showHint ? 'Ocultar Pista' : 'Ver Pista' }}
+                                </button>
+                                <p v-if="ex.showHint" class="text-base text-yellow-300 bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/20 leading-relaxed font-medium">
+                                    {{ ex.hint }}
+                                </p>
+                                
+                                <!-- Botón Solución -->
+                                <button @click="toggleSolution(ex)" class="w-full bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-black py-2.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2 font-sans">
+                                    <i class="fa-solid fa-code"></i> {{ ex.showSolution ? 'Ocultar Código' : 'Ver Solución' }}
+                                </button>
+                                <div v-if="ex.showSolution" class="mt-4 overflow-hidden rounded-xl border border-slate-700 bg-[#1A1A1A] relative">
+                                    <pre class="!m-0 !p-4 !text-sm"><code class="language-sql">{{ ex.solution }}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SLIDE INTERACTIVO: SCOPE VISUALIZER -->
+                <div v-else-if="currentSlide.type === 'scope_visualizer'" class="w-full bg-slate-800/80 p-16 rounded-[3rem] border-2 border-slate-700 shadow-2xl backdrop-blur-md fade-in text-center">
+                    <h2 class="text-5xl font-extrabold text-white mb-8"><i class="fa-solid fa-eye text-cyan-400 mr-4"></i> Ámbito de Variables</h2>
+                    <p class="text-2xl text-slate-300 mb-10">Pasa el ratón por los bloques o haz clic en los botones para ver la visibilidad:</p>
+
+                    <div class="flex flex-col md:flex-row justify-center gap-10 mt-8">
+                        <!-- Visualizador del Ámbito -->
+                        <div class="w-full md:w-7/12 bg-slate-900/80 p-8 rounded-3xl border border-slate-700 flex flex-col items-center">
+                            
+                            <!-- Bloque Padre -->
+                            <div class="w-full p-6 bg-blue-900/30 border-2 border-blue-500 rounded-2xl relative scope-box"
+                                 @mouseenter="scopeHover = 'padre'" @mouseleave="scopeHover = ''">
+                                <div class="absolute top-2 left-4 text-xs font-bold text-blue-400 tracking-wide uppercase">Bloque Padre (Externo)</div>
+                                <div class="mt-4 flex flex-col gap-2 items-start">
+                                    <span class="px-3 py-1.5 rounded-lg text-sm font-mono border"
+                                          :class="scopeHover === 'padre' || scopeHover === 'hijo' ? 'bg-blue-600/30 border-blue-400 text-blue-300' : 'bg-slate-800 border-slate-600 text-slate-400'">
+                                        v_global: 'Soy Global' (Visible en Padre e Hijo)
+                                    </span>
+                                    <span class="px-3 py-1.5 rounded-lg text-sm font-mono border"
+                                          :class="scopeHover === 'padre' ? 'bg-blue-600/30 border-blue-400 text-blue-300' : (scopeHover === 'hijo' ? 'bg-amber-600/30 border-amber-400 text-amber-300 line-through opacity-55' : 'bg-slate-800 border-slate-600 text-slate-400')">
+                                        v_ambito: 'GLOBAL' (Sombreado en bloque hijo)
+                                    </span>
+                                </div>
+
+                                <!-- Bloque Hijo -->
+                                <div class="w-11/12 mx-auto mt-8 p-6 bg-purple-900/30 border-2 border-purple-500 rounded-xl relative scope-box"
+                                     @mouseenter.stop="scopeHover = 'hijo'" @mouseleave.stop="scopeHover = 'padre'">
+                                    <div class="absolute top-2 left-4 text-xs font-bold text-purple-400 tracking-wide uppercase">Bloque Hijo (Anidado)</div>
+                                    <div class="mt-4 flex flex-col gap-2 items-start">
+                                        <span class="px-3 py-1.5 rounded-lg text-sm font-mono border"
+                                              :class="scopeHover === 'hijo' ? 'bg-purple-600/30 border-purple-400 text-purple-300' : 'bg-slate-800 border-slate-600 text-slate-400'">
+                                            v_local: 'Soy Local' (Invisible en Padre)
+                                        </span>
+                                        <span class="px-3 py-1.5 rounded-lg text-sm font-mono border"
+                                              :class="scopeHover === 'hijo' ? 'bg-purple-600/30 border-purple-400 text-purple-300' : 'bg-slate-800 border-slate-600 text-slate-400'">
+                                            v_ambito: 'LOCAL' (Oculta la variable global)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel Informativo -->
+                        <div class="w-full md:w-5/12 flex flex-col justify-center text-left bg-slate-900/60 p-6 rounded-2xl border border-slate-700">
+                            <h3 class="text-3xl font-bold text-white mb-4"><i class="fa-solid fa-circle-question text-cyan-400 mr-2"></i> Reglas Prácticas</h3>
+                            <ul class="space-y-4 text-lg text-slate-300 font-medium list-disc list-inside">
+                                <li>El <strong>Hijo</strong> ve las variables declaradas en el <strong>Padre</strong>.</li>
+                                <li>El <strong>Padre</strong> no puede acceder a las variables locales del <strong>Hijo</strong>.</li>
+                                <li>Si declaran una variable con el **mismo nombre** (`v_ambito`), la local **sombra** (u oculta) a la global dentro del bloque hijo.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SLIDE TIPO CLOSING ACTIVITY (KAHOOT STYLE) -->
+                <div v-else-if="currentSlide.type === 'closing_activity'" class="w-full text-center fade-in">
+                    <h2 class="text-7xl font-extrabold text-white mb-12 drop-shadow-lg"><i class="fa-solid fa-gamepad mr-4 text-purple-400"></i> ¡Kahoot Time!</h2>
+                    
+                    <div class="bg-gray-100 p-12 rounded-[3rem] shadow-[0_0_50px_rgba(255,255,255,0.1)] max-w-5xl mx-auto flex flex-col items-center border-[12px] border-white">
+                        <p class="text-5xl text-slate-900 font-bold mb-12 leading-[1.4]" v-html="currentSlide.question"></p>
+                        
+                        <div class="grid grid-cols-2 gap-6 w-full">
+                            <button v-for="(opt, idx) in currentSlide.options" :key="idx"
+                                @click="selectKahootOption(idx)"
+                                :class="[
+                                    'p-8 rounded-2xl font-bold text-4xl flex items-center justify-start border-b-8 transition-all transform hover:scale-105 active:scale-95 shadow-xl',
+                                    opt.colorClass,
+                                    currentSlide.answered && currentSlide.selectedIdx === idx ? 'scale-105 ring-8 ring-indigo-500 z-10' : '',
+                                    currentSlide.answered && currentSlide.selectedIdx !== idx ? 'opacity-30 grayscale' : ''
+                                ]"
+                                :disabled="currentSlide.answered">
+                                <span class="bg-black/20 w-16 h-16 rounded-xl flex items-center justify-center mr-6 shadow-inner">
+                                    <i :class="['fa-solid text-4xl text-white drop-shadow-md', opt.shape]"></i>
+                                </span>
+                                <span class="text-white drop-shadow-md">{{ opt.text }}</span>
+                                <i v-if="currentSlide.answered && currentSlide.selectedIdx === idx && opt.isCorrect" class="fa-solid fa-check text-6xl ml-auto text-white drop-shadow-lg"></i>
+                                <i v-if="currentSlide.answered && currentSlide.selectedIdx === idx && !opt.isCorrect" class="fa-solid fa-xmark text-6xl ml-auto text-white drop-shadow-lg"></i>
+                            </button>
+                        </div>
+
+                        <div v-if="currentSlide.answered" class="mt-12 text-center w-full fade-in">
+                            <div v-if="currentSlide.options[currentSlide.selectedIdx].isCorrect" class="bg-emerald-100 border-4 border-emerald-500 rounded-3xl p-8 shadow-xl">
+                                <h3 class="text-6xl font-black text-emerald-600 animate-bounce">
+                                    ¡Respuesta Correcta! 🎉
+                                </h3>
+                                <p class="text-emerald-800 text-3xl mt-6 font-bold" v-html="currentSlide.explanation"></p>
+                            </div>
+                            <div v-else class="bg-rose-100 border-4 border-rose-500 rounded-3xl p-8 shadow-xl">
+                                <h3 class="text-5xl font-black text-rose-600 animate-pulse">
+                                    ¡Incorrecto! 😓
+                                </h3>
+                                <button @click="currentSlide.answered = false; currentSlide.selectedIdx = null" class="mt-8 bg-rose-600 text-white font-bold py-4 px-10 rounded-full text-2xl hover:bg-rose-700 transition">Intentar de nuevo</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <div class="fixed bottom-12 left-0 w-full flex justify-center gap-16 z-50 pointer-events-none">
+            <button @click="prev" :disabled="currentIndex === 0" class="pointer-events-auto w-24 h-24 rounded-full flex items-center justify-center bg-slate-800 text-white text-4xl shadow-[0_0_20px_rgba(0,0,0,0.5)] hover:bg-cyan-600 disabled:opacity-30 disabled:hover:bg-slate-800 transition-all border-4 border-slate-600 hover:scale-110 active:scale-95 focus:outline-none">
+                <i class="fa-solid fa-chevron-left ml-[-5px]"></i>
+            </button>
+            <button @click="next" :disabled="currentIndex === slides.length - 1" class="pointer-events-auto w-24 h-24 rounded-full flex items-center justify-center bg-slate-800 text-white text-4xl shadow-[0_0_20px_rgba(0,0,0,0.5)] hover:bg-cyan-600 disabled:opacity-30 disabled:hover:bg-slate-800 transition-all border-4 border-slate-600 hover:scale-110 active:scale-95 focus:outline-none">
+                <i class="fa-solid fa-chevron-right mr-[-5px]"></i>
+            </button>
+        </div>
+
+        <div class="fixed bottom-0 left-0 h-4 bg-slate-900 w-full z-50">
+            <div class="h-full bg-gradient-to-r from-cyan-400 via-indigo-500 to-fuchsia-500 transition-all duration-300" :style="{ width: progressPercentage + '%' }"></div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentIndex: 0,
+                    copyBtnText: 'Copiar Script',
+                    dbScript: `DROP TABLE detalles_pedidos CASCADE CONSTRAINTS PURGE;
+DROP TABLE pedidos CASCADE CONSTRAINTS PURGE;
+DROP TABLE productos CASCADE CONSTRAINTS PURGE;
+DROP TABLE clientes CASCADE CONSTRAINTS PURGE;
+
+CREATE TABLE clientes (
+    id_cliente NUMBER PRIMARY KEY,
+    nombre VARCHAR2(100) NOT NULL,
+    correo VARCHAR2(100) UNIQUE,
+    tipo_cliente VARCHAR2(20) DEFAULT 'REGULAR',
+    CHECK (tipo_cliente IN ('REGULAR', 'VIP', 'EMPRESA'))
+);
+
+CREATE TABLE productos (
+    id_producto NUMBER PRIMARY KEY,
+    nombre VARCHAR2(100) NOT NULL,
+    precio NUMBER(10,2) NOT NULL,
+    stock NUMBER NOT NULL,
+    CHECK (precio >= 0),
+    CHECK (stock >= 0)
+);
+
+CREATE TABLE pedidos (
+    id_pedido NUMBER PRIMARY KEY,
+    id_cliente NUMBER NOT NULL,
+    fecha DATE NOT NULL,
+    total NUMBER(10,2) DEFAULT 0,
+    estado VARCHAR2(20) DEFAULT 'PENDIENTE',
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),
+    CHECK (estado IN ('PENDIENTE', 'PROCESANDO', 'ENVIADO', 'ENTREGADO', 'CANCELADO')),
+    CHECK (total >= 0)
+);
+
+CREATE TABLE detalles_pedidos (
+    id_detalle NUMBER PRIMARY KEY,
+    id_pedido NUMBER NOT NULL,
+    id_producto NUMBER NOT NULL,
+    cantidad NUMBER NOT NULL,
+    precio_unitario NUMBER(10,2) NOT NULL,
+    FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido),
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
+    CHECK (cantidad > 0),
+    CHECK (precio_unitario >= 0)
+);
+
+INSERT INTO clientes VALUES (1, 'Ana Torres', 'ana.torres@tienda.com', 'VIP');
+INSERT INTO clientes VALUES (2, 'Luis Rojas', 'luis.rojas@tienda.com', 'REGULAR');
+INSERT INTO clientes VALUES (3, 'Mika Tanaka', 'mika.tanaka@tienda.com', 'REGULAR');
+INSERT INTO clientes VALUES (4, 'Kevin Diaz', 'kevin.diaz@tienda.com', 'EMPRESA');
+
+INSERT INTO productos VALUES (10, 'Mouse Gamer', 25000.00, 15);
+INSERT INTO productos VALUES (20, 'Teclado Mecánico', 45000.00, 3);
+INSERT INTO productos VALUES (30, 'Monitor 24"', 120000.00, 8);
+INSERT INTO productos VALUES (40, 'Audífonos Inalámbricos', 35000.00, 0);
+
+INSERT INTO pedidos VALUES (100, 1, DATE '2026-05-10', 95000.00, 'ENTREGADO');
+INSERT INTO pedidos VALUES (101, 2, DATE '2026-05-12', 25000.00, 'PROCESANDO');
+INSERT INTO pedidos VALUES (102, 3, DATE '2026-06-01', 0.00, 'PENDIENTE');
+
+INSERT INTO detalles_pedidos VALUES (1, 100, 10, 2, 25000.00);
+INSERT INTO detalles_pedidos VALUES (2, 100, 20, 1, 45000.00);
+INSERT INTO detalles_pedidos VALUES (3, 101, 10, 1, 25000.00);
+
+COMMIT;`,
+                    // Unidades léxicas
+                    lexicalItems: [
+                        { code: 'v_precio', userSelection: '', correct: 'identificador' },
+                        { code: ':=', userSelection: '', correct: 'delimitador' },
+                        { code: "'VIP'", userSelection: '', correct: 'literal' },
+                        { code: '-- Comentario', userSelection: '', correct: 'comentario' }
+                    ],
+                    lexicalFeedback: '',
+                    lexicalIsCorrect: false,
+
+                    // Precedencia
+                    precedenceExps: [
+                        { 
+                            code: 'v_total := 10 + 5 * 2;', 
+                            desc: '¿Qué valor tomará v_total? La multiplicación tiene prioridad.',
+                            options: ['30', '20', '15'],
+                            correct: '20',
+                            selected: null
+                        },
+                        { 
+                            code: 'v_cond := TRUE OR FALSE AND FALSE;', 
+                            desc: '¿Qué valor tomará v_cond? AND se evalúa antes de OR.',
+                            options: ['TRUE', 'FALSE', 'NULL'],
+                            correct: 'TRUE',
+                            selected: null
+                        },
+                        { 
+                            code: 'v_precio := (10 + 5) * 2;', 
+                            desc: '¿Qué valor tomará v_precio? Los paréntesis tienen máxima prioridad.',
+                            options: ['30', '20', '15'],
+                            correct: '30',
+                            selected: null
+                        }
+                    ],
+
+                    // Scope
+                    scopeHover: '',
+
+                    slides: [
+                        { 
+                            type: 'title', 
+                            title: 'Estructuras y Puentes en PL/SQL', 
+                            subtitle: 'Clase 3: Aprende a conectar tu lógica procedural con la base de datos.<br>SELECT INTO, Condicionales, Bucles y Ámbito de variables.<br><br>Presiona <kbd class="bg-slate-800 text-white border-b-4 border-slate-600 px-5 py-2 mx-2 rounded-xl shadow-lg">➡</kbd> para iniciar', 
+                            icon: 'fa-code-branch', 
+                            iconColor: 'text-cyan-400' 
+                        },
+                        { type: 'db_setup' },
+                        { type: 'lexical_game' },
+                        { type: 'precedence_game' },
+                        { 
+                            type: 'content', 
+                            title: 'SELECT INTO: El Gran Puente', 
+                            icon: 'fa-bridge', 
+                            html: `<p class="mb-6">Hasta ahora has asignado valores con <code>:=</code> en memoria RAM. Pero el verdadero poder de PL/SQL emerge al <strong>leer la Base de Datos desde tu código</strong>.</p>
+                                   <p class="mb-6">El comando <code>SELECT INTO</code> toma los valores de una consulta relacional y los deposita directamente en variables PL/SQL.</p>
+                                   <div class="bg-slate-900/60 p-6 rounded-2xl border border-slate-700 mb-6">
+                                       <span class="text-amber-400 font-bold block mb-2"><i class="fa-solid fa-triangle-exclamation"></i> 3 Reglas Críticas:</span>
+                                       <ul class="list-disc list-inside space-y-3 pl-4">
+                                           <li><strong>Exactamente 1 fila:</strong> Si el SELECT retorna 0 filas lanza <code>NO_DATA_FOUND</code>. Si retorna más de 1, lanza <code>TOO_MANY_ROWS</code>.</li>
+                                           <li><strong>Orden y Tipos:</strong> Las variables del <code>INTO</code> deben coincidir exactamente en cantidad, orden y tipo con las columnas del <code>SELECT</code>.</li>
+                                           <li><strong>No dual innecesario:</strong> Usa tablas reales directamente con WHERE único.</li>
+                                       </ul>
+                                   </div>`,
+                            extraInfo: 'Si necesitas consultar datos que no garantizan una única fila, deberás usar **Cursores**, que es el tema que trataremos en las próximas clases. Por ahora, garantiza que tu <code>WHERE</code> busque por Llave Primaria (PK).'
+                        },
+                        { 
+                            type: 'code', 
+                            title: 'SELECT INTO Básico', 
+                            subtitle: 'Consultando el nombre y el precio de un producto específico.', 
+                            sql: `DECLARE
+    v_nombre productos.nombre%TYPE;
+    v_precio productos.precio%TYPE;
+BEGIN
+    -- El WHERE garantiza que se retorne exactamente 1 registro
+    SELECT nombre, precio
+    INTO v_nombre, v_precio
+    FROM productos
+    WHERE id_producto = 10;
+    
+    DBMS_OUTPUT.PUT_LINE('Producto: ' || v_nombre);
+    DBMS_OUTPUT.PUT_LINE('Precio: $' || v_precio);
+END;
+/` 
+                        },
+                        {
+                            type: 'exercises',
+                            title: 'Ejercicios Prácticos: SELECT INTO',
+                            items: [
+                                {
+                                    num: '1',
+                                    title: 'Datos del Cliente (ID 1)',
+                                    desc: 'Crea un bloque anónimo que obtenga el nombre y el correo del cliente con ID 1 y los imprima en pantalla.',
+                                    hint: 'Recuerda declarar variables del mismo tipo usando %TYPE (ej. clientes.nombre%TYPE).',
+                                    solution: `DECLARE\n    v_nombre clientes.nombre%TYPE;\n    v_correo clientes.correo%TYPE;\nBEGIN\n    SELECT nombre, correo\n    INTO v_nombre, v_correo\n    FROM clientes\n    WHERE id_cliente = 1;\n    \n    DBMS_OUTPUT.PUT_LINE('Cliente: ' || v_nombre || ' | Correo: ' || v_correo);\nEND;\n/`,
+                                    showHint: false,
+                                    showSolution: false
+                                },
+                                {
+                                    num: '2',
+                                    title: 'Precio y Stock del Teclado',
+                                    desc: 'Crea un bloque anónimo que obtenga el precio y el stock del Teclado Mecánico (ID 20) y los imprima.',
+                                    hint: 'Asegúrate de filtrar en el WHERE por id_producto = 20.',
+                                    solution: `DECLARE\n    v_precio productos.precio%TYPE;\n    v_stock  productos.stock%TYPE;\nBEGIN\n    SELECT precio, stock\n    INTO v_precio, v_stock\n    FROM productos\n    WHERE id_producto = 20;\n    \n    DBMS_OUTPUT.PUT_LINE('Precio: $' || v_precio || ' | Stock: ' || v_stock);\nEND;\n/`,
+                                    showHint: false,
+                                    showSolution: false
+                                },
+                                {
+                                    num: '3',
+                                    title: 'Control de Excepciones',
+                                    desc: 'Intenta hacer un SELECT INTO de un cliente con ID 999 (inexistente). Observa qué error lanza Oracle.',
+                                    hint: 'Oracle lanzará un error ORA-01403. Es una excepción predefinida muy importante.',
+                                    solution: `DECLARE\n    v_nombre clientes.nombre%TYPE;\nBEGIN\n    SELECT nombre\n    INTO v_nombre\n    FROM clientes\n    WHERE id_cliente = 999; -- ORA-01403: No data found\nEND;\n/`,
+                                    showHint: false,
+                                    showSolution: false
+                                }
+                            ]
+                        },
+                        {
+                            type: 'scenario',
+                            title: 'Requerimiento de Bodega',
+                            context: '<span class="text-rose-400 font-bold not-italic">De: Supervisor de Inventario.</span><br><br>"Necesitamos un script que analice el stock del Teclado Mecánico en tiempo real. Si el stock es cero, avísanos como SIN STOCK. Si es menor a 5 unidades, márcalo como STOCK CRÍTICO. Si es menor a 10, STOCK BAJO, y si no, que diga STOCK OK. ¡Tenemos que evitar quiebres de inventario!"'
+                        },
+                        {
+                            type: 'content',
+                            title: 'Estructuras Condicionales (IF / ELSIF / ELSE)',
+                            icon: 'fa-diamond-turn-right',
+                            html: `<p class="mb-6">Ahora que puedes leer datos dinámicos de la BD, tu código puede tomar decisiones bifurcadas usando condicionales:</p>
+                                   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 font-mono text-lg bg-slate-900 p-6 rounded-2xl border border-slate-700">
+                                       <div class="p-4 bg-slate-800 rounded-xl">
+                                           <span class="text-pink-400 font-bold">IF</span> condicion <span class="text-pink-400 font-bold">THEN</span>
+                                           <p class="text-slate-400 text-sm mt-1">Acción si se cumple</p>
+                                       </div>
+                                       <div class="p-4 bg-slate-800 rounded-xl">
+                                           <span class="text-pink-400 font-bold">ELSIF</span> otra_cond <span class="text-pink-400 font-bold">THEN</span>
+                                           <p class="text-slate-400 text-sm mt-1">Evaluación alternativa</p>
+                                       </div>
+                                       <div class="p-4 bg-slate-800 rounded-xl">
+                                           <span class="text-pink-400 font-bold">ELSE</span>
+                                           <p class="text-slate-400 text-sm mt-1">Acción por defecto</p>
+                                       </div>
+                                   </div>
+                                   <p class="mt-6 text-xl text-slate-300">Es fundamental recordar que la estructura finaliza siempre con <code class="text-yellow-300 font-mono">END IF;</code> y que <em>ELSIF</em> se escribe sin la letra 'E' intermedia.</p>`
+                        },
+                        {
+                            type: 'code',
+                            title: 'Solución Condicional (Stock)',
+                            subtitle: 'Uso de SELECT INTO combinando IF, ELSIF y ELSE sobre productos.',
+                            sql: `DECLARE
+    v_nombre productos.nombre%TYPE;
+    v_stock  productos.stock%TYPE;
+BEGIN
+    -- Traer stock actual de la base de datos
+    SELECT nombre, stock
+    INTO v_nombre, v_stock
+    FROM productos
+    WHERE id_producto = 20; -- Teclado Mecánico
+    
+    -- Evaluar stock y alertar
+    IF v_stock = 0 THEN
+        DBMS_OUTPUT.PUT_LINE(v_nombre || ' [ID 20]: SIN STOCK ❌');
+    ELSIF v_stock < 5 THEN
+        DBMS_OUTPUT.PUT_LINE(v_nombre || ' [ID 20]: STOCK CRÍTICO ⚠️');
+    ELSIF v_stock < 10 THEN
+        DBMS_OUTPUT.PUT_LINE(v_nombre || ' [ID 20]: STOCK BAJO 🟡');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE(v_nombre || ' [ID 20]: STOCK OK ✅');
+    END IF;
+END;
+/`
+                        },
+                        {
+                            type: 'exercises',
+                            title: 'Ejercicios Prácticos: Condicionales (IF / ELSIF / ELSE)',
+                            items: [
+                                {
+                                    num: '4',
+                                    title: 'Clasificación de Clientes',
+                                    desc: 'Consulta el tipo del cliente con ID 1. Si es VIP imprime "Atención Premium", si es EMPRESA imprime "Facturación Especial", de lo contrario "Atención Estándar".',
+                                    hint: 'Usa ELSIF para evaluar las condiciones alternativas en el tipo_cliente.',
+                                    solution: `DECLARE\n    v_tipo clientes.tipo_cliente%TYPE;\nBEGIN\n    SELECT tipo_cliente\n    INTO v_tipo\n    FROM clientes\n    WHERE id_cliente = 1;\n    \n    IF v_tipo = 'VIP' THEN\n        DBMS_OUTPUT.PUT_LINE('Atención Premium');\n    ELSIF v_tipo = 'EMPRESA' THEN\n        DBMS_OUTPUT.PUT_LINE('Facturación Especial');\n    ELSE\n        DBMS_OUTPUT.PUT_LINE('Atención Estándar');\n    END IF;\nEND;\n/`,
+                                    showHint: false,
+                                    showSolution: false
+                                },
+                                {
+                                    num: '5',
+                                    title: 'Alerta Stock Mouse',
+                                    desc: 'Consulta el stock del Mouse Gamer (ID 10). Si es > 10 imprime "Stock Saludable", de 5 a 10 "Stock Moderado", y < 5 "Comprar Urgente".',
+                                    hint: 'Puedes usar comparaciones directas como v_stock > 10, v_stock >= 5, etc.',
+                                    solution: `DECLARE\n    v_stock productos.stock%TYPE;\nBEGIN\n    SELECT stock\n    INTO v_stock\n    FROM productos\n    WHERE id_producto = 10;\n    \n    IF v_stock > 10 THEN\n        DBMS_OUTPUT.PUT_LINE('Stock Saludable');\n    ELSIF v_stock >= 5 THEN\n        DBMS_OUTPUT.PUT_LINE('Stock Moderado');\n    ELSE\n        DBMS_OUTPUT.PUT_LINE('Comprar Urgente');\n    END IF;\nEND;\n/`,
+                                    showHint: false,
+                                    showSolution: false
+                                },
+                                {
+                                    num: '6',
+                                    title: 'Descuento de Pedidos',
+                                    desc: 'Consulta el total del pedido 100. Si supera los $80,000 aplica un 15% de descuento e imprime el nuevo total. Si no, imprime "Sin Descuento".',
+                                    hint: 'Multiplica el total por 0.85 para descontar el 15%.',
+                                    solution: `DECLARE\n    v_total pedidos.total%TYPE;\nBEGIN\n    SELECT total\n    INTO v_total\n    FROM pedidos\n    WHERE id_pedido = 100;\n    \n    IF v_total > 80000 THEN\n        DBMS_OUTPUT.PUT_LINE('Total con descuento: $' || (v_total * 0.85));\n    ELSE\n        DBMS_OUTPUT.PUT_LINE('Sin Descuento. Total: $' || v_total);\n    END IF;\nEND;\n/`,
+                                    showHint: false,
+                                    showSolution: false
+                                }
+                            ]
+                        },
+                        {
+                            type: 'content',
+                            title: 'Bucleos y Repetición (LOOP, WHILE, FOR)',
+                            icon: 'fa-arrows-spin',
+                            html: `<p class="mb-6">PL/SQL nos ofrece 3 sabores de bucles según la naturaleza del problema de negocio:</p>
+                                   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xl">
+                                       <div class="bg-slate-900/60 p-6 rounded-2xl border border-slate-700">
+                                           <strong class="text-cyan-400 block mb-2"><i class="fa-solid fa-rotate mr-2"></i> 1. LOOP Básico</strong>
+                                           Ejecuta indefinidamente hasta encontrar la cláusula <code class="text-yellow-300 font-mono">EXIT WHEN</code>. Ideal para flujos de salida manuales.
+                                       </div>
+                                       <div class="bg-slate-900/60 p-6 rounded-2xl border border-slate-700">
+                                           <strong class="text-cyan-400 block mb-2"><i class="fa-solid fa-circle-play mr-2"></i> 2. WHILE Loop</strong>
+                                           Repite la ejecución <em>mientras</em> se cumpla la condición. Evalúa al principio del ciclo.
+                                       </div>
+                                       <div class="bg-slate-900/60 p-6 rounded-2xl border border-slate-700">
+                                           <strong class="text-cyan-400 block mb-2"><i class="fa-solid fa-list-ol mr-2"></i> 3. FOR Loop</strong>
+                                           Se ejecuta un número <em>exacto y conocido</em> de veces. La variable de control se declara automáticamente.
+                                       </div>
+                                   </div>`,
+                            extraInfo: 'En un bucle <code>FOR i IN 1..5 LOOP</code>, la variable <code>i</code> es autogestionada por Oracle. No intentes declararla en la sección DECLARE ni modificar su valor con <code>:=</code> dentro del ciclo.'
+                        },
+                        {
+                            type: 'code',
+                            title: 'Simulación de Descuentos (FOR Loop)',
+                            subtitle: 'Ejemplo de FOR loop calculando porcentajes de descuento escalonados.',
+                            sql: `DECLARE
+    v_precio productos.precio%TYPE := 100000;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Simulación de precios con descuento:');
+    
+    -- El ciclo itera del 1 al 5 automáticamente
+    FOR i IN 1..5 LOOP
+        -- i representa el nivel de descuento (10%, 20%, 30%, 40%, 50%)
+        DBMS_OUTPUT.PUT_LINE('Nivel ' || i || ' (' || (i * 10) || '% desc): $' || (v_precio * (1 - i/10)));
+    END LOOP;
+END;
+/`
+                        },
+                        {
+                            type: 'exercises',
+                            title: 'Ejercicios Prácticos: Bucles (LOOP, WHILE, FOR)',
+                            items: [
+                                {
+                                    num: '7',
+                                    title: 'Tabla de Multiplicar',
+                                    desc: 'Usa un bucle FOR para imprimir la tabla de multiplicar del 5 (del 5x1 al 5x10).',
+                                    hint: 'Usa la sintaxis FOR i IN 1..10 LOOP e imprime la multiplicación de 5 * i.',
+                                    solution: `BEGIN\n    FOR i IN 1..10 LOOP\n        DBMS_OUTPUT.PUT_LINE('5 x ' || i || ' = ' || (5 * i));\n    END LOOP;\nEND;\n/`,
+                                    showHint: false,
+                                    showSolution: false
+                                },
+                                {
+                                    num: '8',
+                                    title: 'Cuenta Regresiva',
+                                    desc: 'Usa un bucle WHILE para hacer una cuenta regresiva del 10 al 1, e imprime "¡Despegue!" al finalizar.',
+                                    hint: 'Inicializa un contador en 10 y réstale 1 en cada iteración del bucle WHILE.',
+                                    solution: `DECLARE\n    v_cont NUMBER := 10;\nBEGIN\n    WHILE v_cont >= 1 LOOP\n        DBMS_OUTPUT.PUT_LINE(v_cont);\n        v_cont := v_cont - 1;\n    END LOOP;\n    DBMS_OUTPUT.PUT_LINE('¡Despegue! 🚀');\nEND;\n/`,
+                                    showHint: false,
+                                    showSolution: false
+                                },
+                                {
+                                    num: '9',
+                                    title: 'Sumatoria Acumulada',
+                                    desc: 'Usa un LOOP básico para sumar todos los números del 1 al 100 e imprimir la suma final en pantalla.',
+                                    hint: 'Recuerda utilizar EXIT WHEN para salir del bucle una vez que el contador llegue a 100.',
+                                    solution: `DECLARE\n    v_suma NUMBER := 0;\n    v_cont NUMBER := 1;\nBEGIN\n    LOOP\n        v_suma := v_suma + v_cont;\n        v_cont := v_cont + 1;\n        EXIT WHEN v_cont > 100;\n    END LOOP;\n    DBMS_OUTPUT.PUT_LINE('Suma total (1 al 100): ' || v_suma);\nEND;\n/`,
+                                    showHint: false,
+                                    showSolution: false
+                                }
+                            ]
+                        },
+                        { type: 'scope_visualizer' },
+                        {
+                            type: 'code',
+                            title: 'Bloque Anidado y Ámbito',
+                            subtitle: 'Demostración de shadowing y visibilidad local/global.',
+                            sql: `DECLARE
+    -- Variables globales (Bloque Padre)
+    v_global    VARCHAR2(50) := 'Soy Global';
+    v_conflicto VARCHAR2(50) := 'PADRE';
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Padre - v_global: ' || v_global);
+    
+    -- Bloque Hijo (Anidado)
+    DECLARE
+        v_local     VARCHAR2(50) := 'Soy Local';
+        v_conflicto VARCHAR2(50) := 'HIJO'; -- Sombreado
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('Hijo - v_global: ' || v_global); -- Visible
+        DBMS_OUTPUT.PUT_LINE('Hijo - v_local: ' || v_local);   -- Visible
+        DBMS_OUTPUT.PUT_LINE('Hijo - v_conflicto: ' || v_conflicto); -- Imprime 'HIJO'
+    END;
+    -- Fin del Bloque Hijo
+    
+    -- DBMS_OUTPUT.PUT_LINE('Padre - v_local: ' || v_local); -- ¡ERROR DE COMPILACIÓN!
+    DBMS_OUTPUT.PUT_LINE('Padre - v_conflicto: ' || v_conflicto); -- Imprime 'PADRE'
+END;
+/`
+                        },
+                        { 
+                          type: 'closing_activity', 
+                          question: 'Misión Crítica: ¿Qué excepción se levanta si una consulta SELECT INTO no retorna ningún registro de la base de datos?', 
+                          options: [
+                              { text: 'TOO_MANY_ROWS', colorClass: 'bg-[#e21b3c] border-[#b0102b]', shape: 'fa-play fa-rotate-270', isCorrect: false },
+                              { text: 'NO_DATA_FOUND', colorClass: 'bg-[#1368ce] border-[#0a4891]', shape: 'fa-square fa-rotate-45', isCorrect: true },
+                              { text: 'ZERO_DIVIDE', colorClass: 'bg-[#d89e00] border-[#9c7200]', shape: 'fa-circle', isCorrect: false },
+                              { text: 'CURSOR_ALREADY_OPEN', colorClass: 'bg-[#26890c] border-[#1b6108]', shape: 'fa-square', isCorrect: false }
+                          ],
+                          explanation: 'En Oracle PL/SQL, si un <code>SELECT INTO</code> no encuentra filas que coincidan con la condición, el motor aborta la ejecución normal y lanza la excepción predefinida <code>NO_DATA_FOUND</code>.',
+                          answered: false,
+                          selectedIdx: null 
+                        },
+                        { 
+                            type: 'title', 
+                            title: '¡Desafío Integrador Activado!', 
+                            subtitle: 'Resuelve el Ejercicio 10 de la guía:<br>1. Lee el cliente (SELECT INTO).<br>2. Simula 3 ítems del pedido con un ciclo FOR.<br>3. Aplica IF para otorgar descuentos según el total.<br>4. Un bloque hijo anidado debe validar el stock.<br><br>Sube tus scripts a GitHub en tu rama de trabajo 🚀', 
+                            icon: 'fa-graduation-cap', 
+                            iconColor: 'text-amber-400' 
+                        }
+                    ]
+                };
+            },
+            computed: {
+                currentSlide() {
+                    return this.slides[this.currentIndex];
+                },
+                progressPercentage() {
+                    return ((this.currentIndex + 1) / this.slides.length) * 100;
+                }
+            },
+            methods: {
+                selectKahootOption(idx) {
+                    this.currentSlide.answered = true;
+                    this.currentSlide.selectedIdx = idx;
+                },
+                next() {
+                    if (this.currentIndex < this.slides.length - 1) {
+                        this.currentIndex++;
+                        this.highlightCode();
+                    }
+                },
+                prev() {
+                    if (this.currentIndex > 0) {
+                        this.currentIndex--;
+                        this.highlightCode();
+                    }
+                },
+                handleKeydown(e) {
+                    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === ' ') this.next();
+                    else if (e.key === 'ArrowLeft' || e.key === 'a') this.prev();
+                },
+                highlightCode() {
+                    this.$nextTick(() => {
+                        Prism.highlightAll();
+                    });
+                },
+                copyDbScript() {
+                    navigator.clipboard.writeText(this.dbScript).then(() => {
+                        this.copyBtnText = '¡Copiado al Portapapeles!';
+                        setTimeout(() => this.copyBtnText = 'Copiar Script', 3000);
+                    });
+                },
+                checkLexicalAnswers() {
+                    let correctCount = 0;
+                    this.lexicalItems.forEach(item => {
+                        if (item.userSelection === item.correct) {
+                            correctCount++;
+                        }
+                    });
+
+                    if (correctCount === this.lexicalItems.length) {
+                        this.lexicalIsCorrect = true;
+                        this.lexicalFeedback = '¡Excelente! Clasificaste todas las unidades léxicas correctamente. 🎉';
+                    } else {
+                        this.lexicalIsCorrect = false;
+                        this.lexicalFeedback = `Tienes algunas clasificaciones incorrectas (${correctCount}/4). ¡Sigue intentando!`;
+                    }
+                },
+                selectPrecedenceAnswer(expIdx, opt) {
+                    const exp = this.precedenceExps[expIdx];
+                    exp.selected = opt;
+                },
+                getPrecedenceBtnClass(expIdx, opt) {
+                    const exp = this.precedenceExps[expIdx];
+                    if (exp.selected === null) {
+                        return 'bg-slate-800 border-slate-700 text-slate-300';
+                    }
+                    if (opt === exp.correct) {
+                        return 'bg-emerald-600/30 border-emerald-500 text-emerald-300';
+                    }
+                    if (exp.selected === opt) {
+                        return 'bg-rose-600/30 border-rose-500 text-rose-300';
+                    }
+                    return 'bg-slate-800 border-slate-700 text-slate-500 opacity-50';
+                },
+                toggleSolution(ex) {
+                    ex.showSolution = !ex.showSolution;
+                    this.highlightCode();
+                }
+            },
+            mounted() {
+                this.$el.focus();
+                this.highlightCode();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

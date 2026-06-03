@@ -6,6 +6,28 @@
 const appData = {
     entries: [
         {
+            id: 'presentacion-plsql',
+            unit: 'EA2',
+            type: 'hero',
+            href: 'presentacion-plsql.html',
+            colSpan: 2,
+            date: '2026-06-03',
+            dateText: '3 Jun 2026',
+            tag: 'AULA INTERACTIVA', tagIcon: 'fa-chalkboard-user text-yellow-300',
+            badge: 'Proyector PL/SQL',
+            title: 'Presentación: PL/SQL Avanzado y Control de Flujo',
+            description: 'Aprende a conectar la base de datos con tus variables usando SELECT INTO. Domina las estructuras IF, bucles (LOOP, WHILE, FOR), y el ámbito en bloques anidados.',
+            btnText: 'Iniciar Presentación PL/SQL', btnIcon: 'fa-desktop',
+            theme: {
+                outerBorder: 'border-cyan-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-indigo-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-cyan-500/20', circle2: 'bg-indigo-500/20',
+                tagBox: 'bg-cyan-900/50 text-cyan-200 border-cyan-700 backdrop-blur-sm', tagText: 'text-cyan-200', badgeTheme: 'bg-cyan-600 text-white border-cyan-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-indigo-200', btn: 'bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 w-full justify-center text-white shadow-lg border border-cyan-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(34,211,238,0.6)]'
+            },
+            icon: 'fa-chalkboard-user', iconContainer: 'bg-cyan-900/40 border-cyan-500/30', iconColor: 'text-cyan-400'
+        },
+        {
             id: 'taller-preparacion-ep2',
             unit: 'EA2',
             type: 'hero',

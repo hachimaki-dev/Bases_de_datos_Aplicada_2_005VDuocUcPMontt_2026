@@ -1,0 +1,367 @@
+
+<h2 class="sr-only">Diseño pedagógico: Clase 3 de PL/SQL — 90 minutos, temas avanzados con ejercicios progresivos</h2>
+<style>
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 16px}
+.card-sec{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 14px}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:500}
+.pill-p{background:var(--color-background-info);color:var(--color-text-info)}
+.pill-g{background:var(--color-background-success);color:var(--color-text-success)}
+.pill-a{background:var(--color-background-warning);color:var(--color-text-warning)}
+.pill-r{background:var(--color-background-danger);color:var(--color-text-danger)}
+.pill-n{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px}
+.tag-do{background:var(--color-background-success);color:var(--color-text-success)}
+.tag-exp{background:var(--color-background-info);color:var(--color-text-info)}
+.tag-nee{background:var(--color-background-warning);color:var(--color-text-warning)}
+.bloque-num{font-size:28px;font-weight:500;color:var(--color-text-tertiary);line-height:1}
+.section-label{font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--color-text-tertiary);margin-bottom:6px;display:block}
+.divider{border:none;border-top:0.5px solid var(--color-border-tertiary);margin:14px 0}
+.btn{background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:7px 14px;font-size:13px;cursor:pointer;color:var(--color-text-secondary)}
+.btn:hover{background:var(--color-background-secondary)}
+.tl-row{display:grid;grid-template-columns:60px 1fr;gap:12px;align-items:start}
+.tl-time{font-size:11px;font-weight:500;color:var(--color-text-tertiary);padding-top:2px;text-align:right}
+.tl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.tl-body{font-size:13px;color:var(--color-text-secondary);line-height:1.5}
+.tl-title{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px}
+.ex-num{font-size:11px;font-weight:500;font-family:var(--font-mono);color:var(--color-text-tertiary)}
+.ex-title{font-size:14px;font-weight:500;color:var(--color-text-primary);margin:3px 0}
+.ex-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.55}
+.bridge-box{border-left:3px solid;padding:10px 14px;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;background:var(--color-background-secondary)}
+</style>
+
+<div style="padding:1rem 0">
+
+<!-- HEADER -->
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem">
+  <div>
+    <div class="section-label">Clase 3 · Continuación</div>
+    <div style="font-size:22px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px">PL/SQL: léxica, operadores, anidado, ámbito, IF, bucles y SELECT INTO</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <span class="pill pill-p">90 minutos</span>
+      <span class="pill pill-n">Viene de bloques anónimos básicos</span>
+      <span class="pill pill-g">7 conceptos + 10 ejercicios</span>
+    </div>
+  </div>
+</div>
+
+<!-- IDEA CLAVE: EL PUENTE -->
+<div class="bridge-box" style="border-color:var(--color-border-info);margin-bottom:1.5rem">
+  <div style="font-size:13px;font-weight:500;color:var(--color-text-info);margin-bottom:4px">Idea central de esta clase: el puente entre SQL y PL/SQL</div>
+  <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.6">
+    Hasta ahora los estudiantes asignaron valores con <code style="font-size:12px">:=</code>. Hoy aprenden que la BD también puede ser fuente de datos para sus variables — via <code style="font-size:12px">SELECT INTO</code>. Ese momento de "puedo leer la BD desde PL/SQL" es el giro narrativo de la clase.
+  </div>
+</div>
+
+<!-- BLOQUES DE CONTENIDO -->
+<div class="section-label">Progresión de contenido — 7 bloques tipo lego</div>
+<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem">
+
+  <!-- B1 -->
+  <div class="card" style="border-left:3px solid var(--color-border-info)">
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <div class="bloque-num">1</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px">Repaso activo + unidades léxicas completas</div>
+        <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:6px">Bug hunt de 3 minutos (código de clase pasada con errores). Luego completar el cuadro de las 4 unidades: identificadores, delimitadores, literales, comentarios. No es teoría nueva — es <em>afianzar</em> lo que ya saben con vocabulario formal.</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="tag tag-do">Bug hunt en parejas</span>
+          <span class="tag tag-exp">Clasificar en tabla</span>
+          <span class="pill pill-n" style="font-size:11px">10 min</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B2 -->
+  <div class="card" style="border-left:3px solid var(--color-border-info)">
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <div class="bloque-num">2</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px">Operadores y precedencia — predecir antes de ejecutar</div>
+        <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:6px">3 expresiones en el pizarrón. Estudiantes escriben resultado esperado → ejecutan → comparan. La tabla de precedencia <em>emerge</em> del contraste, no se dicta. Regla de oro: cuando tengas duda, usa paréntesis.</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="tag tag-do">Predicción individual</span>
+          <span class="tag tag-exp">Tabla de 7 niveles impresa</span>
+          <span class="pill pill-n" style="font-size:11px">10 min</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B3 -->
+  <div class="card" style="border-left:3px solid var(--color-border-success)">
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <div class="bloque-num">3</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px">SELECT INTO — el gran puente</div>
+        <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:6px">Explicar por qué aparece: cuando haces un SELECT en PL/SQL, el resultado no va a la pantalla — va a una variable. Oracle necesita saber <em>dónde guardar</em> cada columna. <code style="font-size:12px">SELECT col INTO var FROM tabla WHERE ...</code>. Reglas: 1 fila exacta. Excepciones: NO_DATA_FOUND y TOO_MANY_ROWS.</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="tag tag-do">Demo en vivo con MercadoShop</span>
+          <span class="tag tag-exp">Diagrama flujo dato→variable</span>
+          <span class="pill pill-a" style="font-size:11px">Concepto nuevo central</span>
+          <span class="pill pill-n" style="font-size:11px">15 min</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B4 -->
+  <div class="card" style="border-left:3px solid var(--color-border-success)">
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <div class="bloque-num">4</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px">Estructuras condicionales — IF / ELSIF / ELSE</div>
+        <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:6px">Ahora que podemos leer datos de la BD, podemos tomar decisiones sobre ellos. Escenario: si el stock de un producto es menor a 5, imprimir alerta. Esta es exactamente la pregunta del inicio de la clase anterior — ahora la podemos responder.</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="tag tag-do">Resolver la pregunta del día 1</span>
+          <span class="tag tag-exp">Diagrama de flujo IF/ELSIF</span>
+          <span class="pill pill-n" style="font-size:11px">12 min</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B5 -->
+  <div class="card" style="border-left:3px solid var(--color-border-warning)">
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <div class="bloque-num">5</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px">Bucles — LOOP, WHILE, FOR</div>
+        <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:6px">Empezar con LOOP básico (con EXIT), luego WHILE, luego FOR. No enseñar los tres en abstracto — cada uno tiene un caso natural: LOOP para "repetir hasta que algo cambie", WHILE para "mientras se cumpla una condición", FOR para "N veces exactas".</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="tag tag-do">Un ejemplo contextual por tipo</span>
+          <span class="tag tag-nee">Tabla comparativa impresa</span>
+          <span class="pill pill-n" style="font-size:11px">12 min</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B6 -->
+  <div class="card" style="border-left:3px solid var(--color-border-warning)">
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <div class="bloque-num">6</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px">Bloques anidados + ámbito de variables</div>
+        <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:6px">Padre ve al hijo, hijo no ve al padre. Diagrama visual de cajas. Regla práctica: si una variable solo se usa en un subproceso, declárala en el bloque hijo. Esto no es teoría — es diseño de código limpio.</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="tag tag-exp">Diagrama de cajas en pizarrón</span>
+          <span class="tag tag-do">Probar con variable de mismo nombre</span>
+          <span class="pill pill-n" style="font-size:11px">10 min</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B7 -->
+  <div class="card" style="border-left:3px solid var(--color-border-danger)">
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <div class="bloque-num">7</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px">Banco de ejercicios + desafío integrador (EJ 10)</div>
+        <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:6px">Ejercicios 1–9 inmediatos tras cada bloque. El ejercicio 10 integra todo: leer datos de la BD, tomar decisiones, usar un bucle, usar bloques anidados. Es el cierre de la clase.</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="tag tag-do">Práctica inmediata por bloque</span>
+          <span class="tag tag-exp">EJ-10 como reto final</span>
+          <span class="pill pill-r" style="font-size:11px">Desafío</span>
+          <span class="pill pill-n" style="font-size:11px">21 min</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TIMELINE -->
+<div class="section-label">Timeline — 90 minutos</div>
+<div class="card" style="margin-bottom:1.5rem">
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div class="tl-row">
+      <div class="tl-time">0–10</div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div class="tl-dot" style="background:var(--color-text-info)"></div>
+        <div><div class="tl-title">Bug hunt + unidades léxicas</div><div class="tl-body">Repaso activo, sin conferencia. Ejercicio 1 inmediato.</div></div>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-time">10–20</div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div class="tl-dot" style="background:var(--color-text-info)"></div>
+        <div><div class="tl-title">Operadores + precedencia</div><div class="tl-body">Predecir → ejecutar → comparar. Ejercicio 2.</div></div>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-time">20–35</div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div class="tl-dot" style="background:var(--color-text-success)"></div>
+        <div><div class="tl-title">SELECT INTO — el puente</div><div class="tl-body">Demo en vivo + explicar las reglas. Ejercicios 3 y 4.</div></div>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-time">35–47</div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div class="tl-dot" style="background:var(--color-text-success)"></div>
+        <div><div class="tl-title">IF / ELSIF / ELSE</div><div class="tl-body">Resolver la pregunta del día 1. Ejercicio 5.</div></div>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-time">47–59</div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div class="tl-dot" style="background:var(--color-text-warning)"></div>
+        <div><div class="tl-title">Bucles</div><div class="tl-body">LOOP → WHILE → FOR. Un ejemplo real por tipo. Ejercicios 6 y 7.</div></div>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-time">59–69</div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div class="tl-dot" style="background:var(--color-text-warning)"></div>
+        <div><div class="tl-title">Bloques anidados + ámbito</div><div class="tl-body">Diagrama de cajas. Ejercicios 8 y 9.</div></div>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-time">69–85</div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div class="tl-dot" style="background:var(--color-text-danger)"></div>
+        <div><div class="tl-title">Desafío integrador — Ejercicio 10</div><div class="tl-body">Todo junto: SELECT INTO + IF + LOOP + anidado.</div></div>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-time">85–90</div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div class="tl-dot" style="background:var(--color-text-tertiary)"></div>
+        <div><div class="tl-title">Cierre metacognitivo</div><div class="tl-body">¿Qué fue lo más sorprendente hoy? Ticket de salida.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EJERCICIOS -->
+<div class="section-label">Los 10 ejercicios — progresión y qué practica cada uno</div>
+<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem">
+
+  <div class="grid2">
+    <div class="card-sec">
+      <div class="ex-num">EJ-01 · Léxicas</div>
+      <div class="ex-title">Colorear el código</div>
+      <div class="ex-desc">Dado un bloque de 10 líneas, identificar y marcar cada unidad léxica por tipo.</div>
+      <div style="margin-top:6px"><span class="tag tag-exp">Clasificación</span></div>
+    </div>
+    <div class="card-sec">
+      <div class="ex-num">EJ-02 · Operadores</div>
+      <div class="ex-title">Predecir y corregir</div>
+      <div class="ex-desc">5 expresiones con operadores mixtos. Escribir resultado antes de ejecutar. Reescribir con paréntesis explícitos.</div>
+      <div style="margin-top:6px"><span class="tag tag-do">Ejecución</span></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card-sec">
+      <div class="ex-num">EJ-03 · SELECT INTO básico</div>
+      <div class="ex-title">Leer un producto</div>
+      <div class="ex-desc">SELECT nombre, precio INTO v_nom, v_prec FROM productos WHERE producto_id = 1. Imprimir la etiqueta.</div>
+      <div style="margin-top:6px"><span class="tag tag-do">BD real</span></div>
+    </div>
+    <div class="card-sec">
+      <div class="ex-num">EJ-04 · SELECT INTO + cálculo</div>
+      <div class="ex-title">Precio con descuento</div>
+      <div class="ex-desc">Leer precio de la BD, calcular 15% de descuento en una variable, imprimir precio original y precio final.</div>
+      <div style="margin-top:6px"><span class="tag tag-do">BD + cálculo</span></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card-sec">
+      <div class="ex-num">EJ-05 · IF / ELSIF</div>
+      <div class="ex-title">Alerta de stock</div>
+      <div class="ex-desc">Leer stock de un producto. Si &lt; 5 → "CRÍTICO", si &lt; 10 → "BAJO", si no → "OK". Imprimir nombre + estado.</div>
+      <div style="margin-top:6px"><span class="tag tag-do">SELECT INTO + IF</span></div>
+    </div>
+    <div class="card-sec">
+      <div class="ex-num">EJ-06 · LOOP básico</div>
+      <div class="ex-title">Contador de intentos</div>
+      <div class="ex-desc">Usar LOOP para simular numeración de 1 a 5. EXIT WHEN v_contador > 5. Imprimir cada valor.</div>
+      <div style="margin-top:6px"><span class="tag tag-exp">Concepto puro</span></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card-sec">
+      <div class="ex-num">EJ-07 · FOR loop</div>
+      <div class="ex-title">Simular descuentos escalonados</div>
+      <div class="ex-desc">FOR i IN 1..5 LOOP: imprimir precio * (1 - i/10) para ver descuentos del 10% al 50%.</div>
+      <div style="margin-top:6px"><span class="tag tag-do">FOR + cálculo</span></div>
+    </div>
+    <div class="card-sec">
+      <div class="ex-num">EJ-08 · Anidado</div>
+      <div class="ex-title">Pedido con ítem</div>
+      <div class="ex-desc">Bloque padre lee datos de un pedido. Hijo calcula subtotal de un ítem. Padre acumula e imprime total.</div>
+      <div style="margin-top:6px"><span class="tag tag-do">Anidado + SELECT INTO</span></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card-sec">
+      <div class="ex-num">EJ-09 · Ámbito</div>
+      <div class="ex-title">Variable con mismo nombre</div>
+      <div class="ex-desc">Padre e hijo declaran v_nombre. ¿Cuál imprime cada bloque? Predecir, luego ejecutar y explicar el resultado.</div>
+      <div style="margin-top:6px"><span class="tag tag-exp">Scope visual</span></div>
+    </div>
+    <div class="card" style="border:2px solid var(--color-border-danger);background:var(--color-background-danger)">
+      <div class="ex-num" style="color:var(--color-text-danger)">EJ-10 · DESAFÍO INTEGRADOR</div>
+      <div class="ex-title" style="font-size:15px">Resumen de pedido completo</div>
+      <div class="ex-desc">Leer usuario (SELECT INTO), usar FOR para simular 3 ítems del pedido, aplicar IF para descuento según total, bloque hijo valida stock. Imprimir resumen final con nombre de usuario, total y descuento aplicado.</div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <span class="tag" style="background:var(--color-background-danger);color:var(--color-text-danger)">SELECT INTO</span>
+        <span class="tag" style="background:var(--color-background-danger);color:var(--color-text-danger)">IF</span>
+        <span class="tag" style="background:var(--color-background-danger);color:var(--color-text-danger)">FOR</span>
+        <span class="tag" style="background:var(--color-background-danger);color:var(--color-text-danger)">Anidado</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SELECT INTO EXPLICACIÓN PEDAGÓGICA -->
+<div class="section-label">Cómo explicar SELECT INTO (el puente)</div>
+<div class="card" style="margin-bottom:1.5rem">
+  <div style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px">La pregunta que lo abre todo</div>
+  <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.65;margin-bottom:12px">
+    Preguntar: <em>"Ya declaramos variables. Ya les asignamos valores con <code>:=</code>. ¿Pero qué pasa si el valor que necesito está en la base de datos, no en mi cabeza?"</em> Esperar respuestas. Luego: así es como Oracle lo resuelve.
+  </div>
+  <div class="divider"></div>
+  <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px">Tres reglas que SÍ hay que memorizar</div>
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <div class="card-sec" style="display:flex;gap:10px;align-items:flex-start">
+      <span style="font-size:18px;font-weight:500;color:var(--color-text-info);min-width:20px">1</span>
+      <div class="ex-desc"><strong style="font-weight:500">Exactamente una fila.</strong> Si el SELECT devuelve 0 filas → <code>NO_DATA_FOUND</code>. Si devuelve 2 o más → <code>TOO_MANY_ROWS</code>. El WHERE debe garantizar unicidad.</div>
+    </div>
+    <div class="card-sec" style="display:flex;gap:10px;align-items:flex-start">
+      <span style="font-size:18px;font-weight:500;color:var(--color-text-info);min-width:20px">2</span>
+      <div class="ex-desc"><strong style="font-weight:500">Columnas y variables deben coincidir en orden y tipo.</strong> Si el SELECT tiene 3 columnas, necesito 3 variables separadas por comas en el INTO.</div>
+    </div>
+    <div class="card-sec" style="display:flex;gap:10px;align-items:flex-start">
+      <span style="font-size:18px;font-weight:500;color:var(--color-text-info);min-width:20px">3</span>
+      <div class="ex-desc"><strong style="font-weight:500">No hay <code>FROM dual</code> con tablas reales.</strong> Mencionar que <code>SELECT SYSDATE INTO v_fecha FROM dual</code> sí funciona — DUAL es una tabla especial de Oracle para expresiones sin tabla real.</div>
+    </div>
+  </div>
+</div>
+
+<!-- NEE -->
+<div class="card-sec" style="border-left:3px solid var(--color-border-warning);border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;margin-bottom:1rem">
+  <div style="font-size:13px;font-weight:500;color:var(--color-text-warning);margin-bottom:6px">Estrategias NEE para esta clase</div>
+  <div style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--color-text-secondary)">
+    <div>Entregar tabla comparativa de bucles impresa (LOOP vs WHILE vs FOR — cuándo usar cada uno).</div>
+    <div>Los ejercicios 1–9 tienen versión extendida con pasos intermedios explícitos para quien lo necesite.</div>
+    <div>El EJ-10 puede hacerse por partes: primero solo el SELECT INTO, luego agregar el IF, luego el bucle.</div>
+    <div>Trabajo en pareja durante EJ-05 al EJ-09. El EJ-10 puede ser individual o en pareja según ritmo.</div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+  <button class="btn" onclick="sendPrompt('Genera el PPT completo de la clase 3 de PL/SQL con todos los temas, ejemplos de código, ejercicios del 1 al 10 y el desafío integrador ↗')">Generar el PPT completo ↗</button>
+  <button class="btn" onclick="sendPrompt('Dame el código de los 10 ejercicios con solución para la clase 3 de PL/SQL ↗')">Ver soluciones de los 10 ejercicios ↗</button>
+  <button class="btn" onclick="sendPrompt('Explícame cómo enseñar SELECT INTO paso a paso con ejemplos y errores comunes ↗')">Cómo enseñar SELECT INTO ↗</button>
+</div>
+
+</div>
