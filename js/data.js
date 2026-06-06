@@ -6,6 +6,28 @@
 const appData = {
     entries: [
         {
+            id: 'desafio-plsql',
+            unit: 'EA2',
+            type: 'hero',
+            href: 'desafio-plsql.html',
+            colSpan: 2,
+            date: '2026-06-06',
+            dateText: '6 Jun 2026',
+            tag: 'DESAFÍO', tagIcon: 'fa-fire text-orange-300',
+            badge: 'Desafío 20',
+            title: 'Desafío 20: MercadoShop<br>PL/SQL desde Cero',
+            description: '10 ejercicios progresivos de PL/SQL usando una tienda de tecnología. Variables, SELECT INTO, IF/ELSIF, bucles FOR y LOOP, bloques anidados, y un desafío integrador final. ¡Concéntrate y demuestra lo que sabes!',
+            btnText: 'Iniciar Desafío', btnIcon: 'fa-terminal',
+            theme: {
+                outerBorder: 'border-orange-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-orange-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-orange-500/20', circle2: 'bg-red-500/20',
+                tagBox: 'bg-orange-900/50 text-orange-200 border-orange-700 backdrop-blur-sm', tagText: 'text-orange-200', badgeTheme: 'bg-orange-600 text-white border-orange-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-orange-100', btn: 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 w-full justify-center text-white shadow-lg border border-orange-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(249,115,22,0.6)]'
+            },
+            icon: 'fa-fire-flame-curved', iconContainer: 'bg-orange-900/40 border-orange-500/30', iconColor: 'text-orange-400'
+        },
+        {
             id: 'presentacion-plsql',
             unit: 'EA2',
             type: 'hero',
