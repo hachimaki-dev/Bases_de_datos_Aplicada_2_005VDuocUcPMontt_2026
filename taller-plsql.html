@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taller de Práctica PL/SQL - Diario de Clases</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <style>
+        .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .toggle-section { transition: all 0.3s ease-out; max-height: 0; opacity: 0; overflow: hidden; }
+        .toggle-section.show { max-height: 1200px; opacity: 1; margin-top: 1rem; }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen bg-slate-50 text-slate-800 pb-20">
+    <app-nav></app-nav>
+
+    <header class="max-w-5xl mx-auto px-6 text-center mb-10 pt-6">
+        <div class="inline-block bg-emerald-100 px-6 py-2.5 rounded-full text-emerald-700 font-bold text-base mb-6 border-2 border-emerald-200 shadow-sm">
+            Unidad EA2 - Taller Práctico
+        </div>
+        <h1 class="text-5xl md:text-6xl font-black text-emerald-700 mb-6 drop-shadow-sm leading-tight tracking-tight">Guía de Desafíos PL/SQL:<br>Ciclos y DML Progresivo</h1>
+        <p class="text-xl md:text-2xl text-emerald-900 bg-white inline-flex items-center gap-3 px-8 py-4 rounded-full shadow-md border-2 border-emerald-100 mt-4 font-bold mx-auto justify-center">
+            <i class="fa-solid fa-store text-emerald-500"></i> Base de Datos: Tienda
+        </p>
+    </header>
+
+    <!-- Navegación de Pestañas (Tabs) -->
+    <nav class="max-w-5xl mx-auto px-4 mb-8 sticky top-4 z-40">
+        <ul class="flex flex-wrap justify-center gap-2 bg-white/90 backdrop-blur-md p-2 rounded-2xl shadow-md border border-slate-200">
+            <li><button data-tab="setup" class="tab-btn active px-4 py-2.5 rounded-xl font-bold transition-all text-emerald-700 bg-emerald-100 shadow-sm"><i class="fa-solid fa-database mr-2"></i>1. Setup BD</button></li>
+            <li><button data-tab="modulo1" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-rotate mr-2"></i>2. Módulo 1 (Ciclos)</button></li>
+            <li><button data-tab="modulo2" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-code mr-2"></i>3. Módulo 2 (DML+Loops)</button></li>
+            <li><button data-tab="modulo3" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-star mr-2"></i>4. Módulo 3 (Integrador)</button></li>
+            <li><button data-tab="modulo4" class="tab-btn px-4 py-2.5 rounded-xl font-bold transition-all text-gray-500 hover:bg-gray-100"><i class="fa-solid fa-lightbulb mr-2"></i>5. Módulo 4 (Lógicos)</button></li>
+        </ul>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-6">
+
+        <!-- ================= TAB: SETUP ================= -->
+        <div id="tab-setup" class="tab-content active">
+            <section class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm mb-10">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.4)]">
+                        <i class="fa-solid fa-database text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Preparación del Entorno (Tienda)</h2>
+                        <p class="text-slate-500 text-sm">Copia y ejecuta este script en tu cliente Oracle SQL Developer (o Live SQL) para montar las tablas de pruebas.</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
+                    <div class="bg-slate-950 px-4 py-2 flex justify-between items-center border-b border-slate-800">
+                        <span class="text-gray-400 text-xs font-mono">bd_tienda_plsql.sql</span>
+                        <button id="btnCopy" class="text-slate-400 hover:text-white transition-colors bg-slate-850 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm">
+                            <i class="fa-regular fa-copy mr-2"></i> Copiar Código
+                        </button>
+                    </div>
+                    <pre class="m-0 p-6"><code id="scriptDB" class="language-sql text-sm">DROP TABLE detalles_pedidos CASCADE CONSTRAINTS PURGE;
+DROP TABLE pedidos CASCADE CONSTRAINTS PURGE;
+DROP TABLE productos CASCADE CONSTRAINTS PURGE;
+DROP TABLE clientes CASCADE CONSTRAINTS PURGE;
+
+CREATE TABLE clientes (
+    id_cliente NUMBER PRIMARY KEY,
+    nombre VARCHAR2(100) NOT NULL,
+    correo VARCHAR2(100) UNIQUE,
+    tipo_cliente VARCHAR2(20) DEFAULT 'REGULAR',
+    CHECK (tipo_cliente IN ('REGULAR', 'VIP', 'EMPRESA'))
+);
+
+CREATE TABLE productos (
+    id_producto NUMBER PRIMARY KEY,
+    nombre VARCHAR2(100) NOT NULL,
+    precio NUMBER(10,2) NOT NULL,
+    stock NUMBER NOT NULL,
+    CHECK (precio >= 0),
+    CHECK (stock >= 0)
+);
+
+CREATE TABLE pedidos (
+    id_pedido NUMBER PRIMARY KEY,
+    id_cliente NUMBER NOT NULL,
+    fecha DATE NOT NULL,
+    total NUMBER(10,2) DEFAULT 0,
+    estado VARCHAR2(20) DEFAULT 'PENDIENTE',
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),
+    CHECK (estado IN ('PENDIENTE', 'PROCESANDO', 'ENVIADO', 'ENTREGADO', 'CANCELADO')),
+    CHECK (total >= 0)
+);
+
+CREATE TABLE detalles_pedidos (
+    id_detalle NUMBER PRIMARY KEY,
+    id_pedido NUMBER NOT NULL,
+    id_producto NUMBER NOT NULL,
+    cantidad NUMBER NOT NULL,
+    precio_unitario NUMBER(10,2) NOT NULL,
+    FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido),
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
+    CHECK (cantidad > 0),
+    CHECK (precio_unitario >= 0)
+);
+
+INSERT INTO clientes VALUES (1, 'Ana Torres', 'ana.torres@tienda.com', 'VIP');
+INSERT INTO clientes VALUES (2, 'Luis Rojas', 'luis.rojas@tienda.com', 'REGULAR');
+INSERT INTO clientes VALUES (3, 'Mika Tanaka', 'mika.tanaka@tienda.com', 'REGULAR');
+INSERT INTO clientes VALUES (4, 'Kevin Diaz', 'kevin.diaz@tienda.com', 'EMPRESA');
+
+INSERT INTO productos VALUES (10, 'Mouse Gamer', 25000.00, 15);
+INSERT INTO productos VALUES (20, 'Teclado Mecánico', 45000.00, 3);
+INSERT INTO productos VALUES (30, 'Monitor 24"', 120000.00, 8);
+INSERT INTO productos VALUES (40, 'Audífonos Inalámbricos', 35000.00, 0);
+
+INSERT INTO pedidos VALUES (100, 1, DATE '2026-05-10', 95000.00, 'ENTREGADO');
+INSERT INTO pedidos VALUES (101, 2, DATE '2026-05-12', 25000.00, 'PROCESANDO');
+INSERT INTO pedidos VALUES (102, 3, DATE '2026-06-01', 0.00, 'PENDIENTE');
+
+INSERT INTO detalles_pedidos VALUES (1, 100, 10, 2, 25000.00);
+INSERT INTO detalles_pedidos VALUES (2, 100, 20, 1, 45000.00);
+INSERT INTO detalles_pedidos VALUES (3, 101, 10, 1, 25000.00);
+
+COMMIT;</code></pre>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= TAB: MODULO 1 ================= -->
+        <div id="tab-modulo1" class="tab-content">
+            <section class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm mb-10">
+                <h2 class="text-3xl font-black text-emerald-700 mb-6 border-b-2 border-emerald-100 pb-4">
+                    Módulo 1: Los 3 Ciclos Básicos (FOR, FOR REVERSE, WHILE)
+                </h2>
+                <p class="text-lg text-slate-600 mb-8 leading-relaxed">
+                    Antes de meter las manos en las modificaciones de datos (DML), aprenderemos a usar ciclos para automatizar iteraciones lógicas básicas.
+                </p>
+
+                <!-- Conceptos clave -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                    <div class="bg-slate-50 border-2 border-emerald-100 rounded-2xl p-6">
+                        <span class="badge-blue mb-3">FOR</span>
+                        <h4 class="font-bold text-slate-800 mb-2">Iteraciones Determinadas</h4>
+                        <p class="text-slate-600 text-sm">Se utiliza cuando sabemos **exactamente cuántas veces** queremos repetir un código (ej. del 1 al 10). La variable se incrementa automáticamente.</p>
+                    </div>
+                    <div class="bg-slate-50 border-2 border-emerald-100 rounded-2xl p-6">
+                        <span class="badge-pink mb-3">FOR REVERSE</span>
+                        <h4 class="font-bold text-slate-800 mb-2">Cuenta Regresiva</h4>
+                        <p class="text-slate-600 text-sm">Hace lo mismo que el FOR, pero decrementa la variable desde el límite superior al inferior (ej. cuenta atrás de stock).</p>
+                    </div>
+                    <div class="bg-slate-50 border-2 border-emerald-100 rounded-2xl p-6">
+                        <span class="badge-purple mb-3">WHILE</span>
+                        <h4 class="font-bold text-slate-800 mb-2">Control por Condición</h4>
+                        <p class="text-slate-600 text-sm">Se repite **mientras una condición de negocio sea verdadera**. Requiere modificar la variable manualmente para evitar bucles infinitos.</p>
+                    </div>
+                </div>
+
+                <!-- Ejercicio 1.1 -->
+                <div class="border-t border-slate-200 pt-8 mb-10">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="bg-emerald-600 text-white font-mono text-sm px-2.5 py-1 rounded-lg">Ejercicio 1.1</span>
+                        <h3 class="text-xl font-bold text-slate-800">Simulación de Cuotas Mensuales (Ciclo FOR)</h3>
+                    </div>
+                    <p class="text-slate-600 mb-4 font-semibold text-sm">
+                        <i class="fa-solid fa-bullseye text-emerald-600 mr-1"></i> OBJETIVO: Consultar el total del pedido 100 y usar un ciclo FOR (de 3 a 6) para imprimir el valor que pagaría el cliente si decidiera dividir la compra en 3, 4, 5 o 6 cuotas mensuales.
+                    </p>
+                    
+                    <div class="flex gap-4">
+                        <button onclick="toggleVisibility('pista-1-1')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl text-sm transition-all"><i class="fa-regular fa-lightbulb mr-2"></i>Ver Pista</button>
+                        <button onclick="toggleVisibility('solucion-1-1')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all"><i class="fa-solid fa-code mr-2"></i>Ver Solución</button>
+                    </div>
+
+                    <div id="pista-1-1" class="toggle-section bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-xl">
+                        <p class="text-sm text-amber-900 font-medium">
+                            <strong>Pista:</strong> Declara variables para almacenar el total y el valor de la cuota. Obtén el total del pedido 100 ($95.000) con <code>SELECT total INTO ...</code> y luego usa <code>FOR i IN 3..6 LOOP</code> para dividir el total en cuotas.
+                        </p>
+                    </div>
+
+                    <div id="solucion-1-1" class="toggle-section bg-slate-900 rounded-2xl overflow-hidden">
+                        <pre class="m-0 p-4"><code class="language-sql">DECLARE
+    v_total pedidos.total%TYPE;
+    v_cuota NUMBER(10,2);
+BEGIN
+    -- Obtenemos el total del pedido 100
+    SELECT total INTO v_total 
+    FROM pedidos 
+    WHERE id_pedido = 100;
+    
+    -- Imprimimos la simulación de cuotas
+    FOR i IN 3..6 LOOP
+        v_cuota := v_total / i;
+        DBMS_OUTPUT.PUT_LINE('Alternativa ' || i || ' cuotas: $' || ROUND(v_cuota, 0) || ' mensual.');
+    END LOOP;
+END;
+/</code></pre>
+                    </div>
+                </div>
+
+                <!-- Ejercicio 1.2 -->
+                <div class="border-t border-slate-200 pt-8 mb-10">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="bg-emerald-600 text-white font-mono text-sm px-2.5 py-1 rounded-lg">Ejercicio 1.2</span>
+                        <h3 class="text-xl font-bold text-slate-800">Etiquetado Inverso de Bultos (Ciclo FOR REVERSE)</h3>
+                    </div>
+                    <p class="text-slate-600 mb-4 font-semibold text-sm">
+                        <i class="fa-solid fa-bullseye text-emerald-600 mr-1"></i> OBJETIVO: Consultar el stock del "Teclado Mecánico" (ID 20) y simular la impresión de etiquetas para su despacho en orden inverso (Bulto 3, Bulto 2, Bulto 1).
+                    </p>
+                    
+                    <div class="flex gap-4">
+                        <button onclick="toggleVisibility('pista-1-2')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl text-sm transition-all"><i class="fa-regular fa-lightbulb mr-2"></i>Ver Pista</button>
+                        <button onclick="toggleVisibility('solucion-1-2')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all"><i class="fa-solid fa-code mr-2"></i>Ver Solución</button>
+                    </div>
+
+                    <div id="pista-1-2" class="toggle-section bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-xl">
+                        <p class="text-sm text-amber-900 font-medium">
+                            <strong>Pista:</strong> La sintaxis de reverse es <code>FOR i IN REVERSE 1..v_stock LOOP</code>. Esto te permite procesar o contar hacia atrás elementos que salen de bodega.
+                        </p>
+                    </div>
+
+                    <div id="solucion-1-2" class="toggle-section bg-slate-900 rounded-2xl overflow-hidden">
+                        <pre class="m-0 p-4"><code class="language-sql">DECLARE
+    v_stock productos.stock%TYPE;
+BEGIN
+    SELECT stock INTO v_stock 
+    FROM productos 
+    WHERE id_producto = 20; -- Retorna stock = 3
+    
+    -- Cuenta regresiva: 3, 2, 1
+    FOR i IN REVERSE 1..v_stock LOOP
+        DBMS_OUTPUT.PUT_LINE('Imprimiendo etiqueta para bulto N° ' || i || ' de ' || v_stock);
+    END LOOP;
+END;
+/</code></pre>
+                    </div>
+                </div>
+
+                <!-- Ejercicio 1.3 -->
+                <div class="border-t border-slate-200 pt-8">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="bg-emerald-600 text-white font-mono text-sm px-2.5 py-1 rounded-lg">Ejercicio 1.3</span>
+                        <h3 class="text-xl font-bold text-slate-800">Simulación de Liquidación por Caducidad (Ciclo WHILE)</h3>
+                    </div>
+                    <p class="text-slate-600 mb-4 font-semibold text-sm">
+                        <i class="fa-solid fa-bullseye text-emerald-600 mr-1"></i> OBJETIVO: El "Teclado Mecánico" (ID 20) no se vende. Consultar su precio ($45000) e imprimir cómo bajará su precio en un ciclo WHILE simulando una rebaja de $5000 por mes hasta llegar a un costo base de $25000.
+                    </p>
+                    
+                    <div class="flex gap-4">
+                        <button onclick="toggleVisibility('pista-1-3')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl text-sm transition-all"><i class="fa-regular fa-lightbulb mr-2"></i>Ver Pista</button>
+                        <button onclick="toggleVisibility('solucion-1-3')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all"><i class="fa-solid fa-code mr-2"></i>Ver Solución</button>
+                    </div>
+
+                    <div id="pista-1-3" class="toggle-section bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-xl">
+                        <p class="text-sm text-amber-900 font-medium">
+                            <strong>Pista:</strong> Define variables para manejar el precio y un contador de meses. La condición del bucle será <code>WHILE v_precio > 25000 LOOP</code>. Recuerda restar 5000 en cada iteración para evitar bucles infinitos.
+                        </p>
+                    </div>
+
+                    <div id="solucion-1-3" class="toggle-section bg-slate-900 rounded-2xl overflow-hidden">
+                        <pre class="m-0 p-4"><code class="language-sql">DECLARE
+    v_precio productos.precio%TYPE;
+    v_mes NUMBER := 1;
+BEGIN
+    SELECT precio INTO v_precio 
+    FROM productos 
+    WHERE id_producto = 20;
+    
+    -- Rebajamos el precio hasta el costo base permitido
+    WHILE v_precio > 25000 LOOP
+        v_precio := v_precio - 5000;
+        DBMS_OUTPUT.PUT_LINE('Mes ' || v_mes || ' de liquidación: Nuevo precio $' || v_precio);
+        v_mes := v_mes + 1;
+    END LOOP;
+END;
+/</code></pre>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= TAB: MODULO 2 ================= -->
+        <div id="tab-modulo2" class="tab-content">
+            <section class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm mb-10">
+                <h2 class="text-3xl font-black text-emerald-700 mb-6 border-b-2 border-emerald-100 pb-4">
+                    Módulo 2: DML Progresivo Combinado con los Ciclos
+                </h2>
+                <p class="text-lg text-slate-600 mb-8 leading-relaxed">
+                    Aprenderemos a combinar las operaciones de modificación de datos (INSERT, UPDATE, DELETE) con el control de flujo.
+                    <strong>Regla de Oro:</strong> Usaremos IDs >= 200 para las inserciones en este taller para evitar colisiones con los datos existentes.
+                </p>
+
+                <!-- INSERTION SECTION -->
+                <div class="bg-slate-50 border-2 border-teal-100 rounded-2xl p-6 mb-8">
+                    <h3 class="text-2xl font-bold text-teal-800 mb-4"><i class="fa-solid fa-plus-circle mr-2"></i> Operaciones: INSERT</h3>
+                    
+                    <!-- Ex 2.1 -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 mb-6">
+                        <h4 class="font-bold text-slate-700 mb-2"><span class="badge-blue mr-2">Fase A</span>INSERT sin ciclos (Individual)</h4>
+                        <p class="text-sm text-slate-600 mb-4"><strong>Objetivo:</strong> Registrar un nuevo cliente regular en la BD con ID 200, nombre 'Carlos Varas' y correo 'carlos.varas@tienda.com'. Imprimir un mensaje de confirmación.</p>
+                        <button onclick="toggleVisibility('sol-2-1')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all"><i class="fa-solid fa-code mr-1"></i> Ver Código y Verificación</button>
+                        
+                        <div id="sol-2-1" class="toggle-section space-y-4">
+                            <div class="bg-slate-900 rounded-xl overflow-hidden">
+                                <pre class="m-0 p-4"><code class="language-sql">BEGIN
+    INSERT INTO clientes (id_cliente, nombre, correo, tipo_cliente)
+    VALUES (200, 'Carlos Varas', 'carlos.varas@tienda.com', 'REGULAR');
+    
+    DBMS_OUTPUT.PUT_LINE('Cliente con ID 200 insertado correctamente.');
+END;
+/</code></pre>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
+                                <span class="font-bold text-emerald-800 text-sm block mb-1"><i class="fa-solid fa-magnifying-glass mr-1"></i> Verificación con SELECT:</span>
+                                <code class="text-xs font-mono text-emerald-900">SELECT * FROM clientes WHERE id_cliente = 200;</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ex 2.2 -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 mb-6">
+                        <h4 class="font-bold text-slate-700 mb-2"><span class="badge-green mr-2">Fase B</span>INSERT dentro de FOR (Masivo)</h4>
+                        <p class="text-sm text-slate-600 mb-4"><strong>Objetivo:</strong> Registrar 3 nuevos productos de prueba en la base de datos con IDs del 201 al 203, llamados 'Producto Demo 1', 'Producto Demo 2', y 'Producto Demo 3', con precio de 5000 y stock de 10.</p>
+                        <button onclick="toggleVisibility('sol-2-2')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all"><i class="fa-solid fa-code mr-1"></i> Ver Código y Verificación</button>
+                        
+                        <div id="sol-2-2" class="toggle-section space-y-4">
+                            <div class="bg-slate-900 rounded-xl overflow-hidden">
+                                <pre class="m-0 p-4"><code class="language-sql">DECLARE
+    v_id_prod NUMBER;
+    v_nombre VARCHAR2(100);
+    v_contador NUMBER := 0;
+BEGIN
+    FOR i IN 1..3 LOOP
+        v_id_prod := 200 + i;
+        v_nombre := 'Producto Demo ' || i;
+        
+        INSERT INTO productos (id_producto, nombre, precio, stock)
+        VALUES (v_id_prod, v_nombre, 5000, 10);
+        
+        v_contador := v_contador + 1;
+    END LOOP;
+    DBMS_OUTPUT.PUT_LINE('Total productos creados con FOR: ' || v_contador);
+END;
+/</code></pre>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
+                                <span class="font-bold text-emerald-800 text-sm block mb-1"><i class="fa-solid fa-magnifying-glass mr-1"></i> Verificación con SELECT:</span>
+                                <code class="text-xs font-mono text-emerald-900">SELECT * FROM productos WHERE id_producto BETWEEN 201 AND 203;</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ex 2.3 -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200">
+                        <h4 class="font-bold text-slate-700 mb-2"><span class="badge-purple mr-2">Fase C</span>INSERT dentro de WHILE (Simulación de cola)</h4>
+                        <p class="text-sm text-slate-600 mb-4"><strong>Objetivo:</strong> Registrar 3 pedidos simulados para el cliente 1 con IDs desde 204 al 206 usando un ciclo WHILE controlado por contador.</p>
+                        <button onclick="toggleVisibility('sol-2-3')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all"><i class="fa-solid fa-code mr-1"></i> Ver Código y Verificación</button>
+                        
+                        <div id="sol-2-3" class="toggle-section space-y-4">
+                            <div class="bg-slate-900 rounded-xl overflow-hidden">
+                                <pre class="m-0 p-4"><code class="language-sql">DECLARE
+    v_id_ped NUMBER := 204;
+    v_insertados NUMBER := 0;
+BEGIN
+    WHILE v_id_ped <= 206 LOOP
+        INSERT INTO pedidos (id_pedido, id_cliente, fecha, total, estado)
+        VALUES (v_id_ped, 1, SYSDATE, 0.00, 'PENDIENTE');
+        
+        v_insertados := v_insertados + 1;
+        v_id_ped := v_id_ped + 1;
+    END LOOP;
+    DBMS_OUTPUT.PUT_LINE('Pedidos insertados con WHILE: ' || v_insertados);
+END;
+/</code></pre>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
+                                <span class="font-bold text-emerald-800 text-sm block mb-1"><i class="fa-solid fa-magnifying-glass mr-1"></i> Verificación con SELECT:</span>
+                                <code class="text-xs font-mono text-emerald-900">SELECT * FROM pedidos WHERE id_pedido BETWEEN 204 AND 206;</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UPDATE SECTION -->
+                <div class="bg-slate-50 border-2 border-blue-100 rounded-2xl p-6 mb-8">
+                    <h3 class="text-2xl font-bold text-blue-800 mb-4"><i class="fa-solid fa-pen-to-square mr-2"></i> Operaciones: UPDATE</h3>
+                    
+                    <!-- Ex 2.4 -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 mb-6">
+                        <h4 class="font-bold text-slate-700 mb-2"><span class="badge-blue mr-2">Fase A</span>UPDATE sin ciclos (Individual)</h4>
+                        <p class="text-sm text-slate-600 mb-4"><strong>Objetivo:</strong> Aplicar un 10% de descuento promocional al "Monitor 24\"" (ID 30) en la tabla productos e imprimir confirmación.</p>
+                        <button onclick="toggleVisibility('sol-2-4')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all"><i class="fa-solid fa-code mr-1"></i> Ver Código y Verificación</button>
+                        
+                        <div id="sol-2-4" class="toggle-section space-y-4">
+                            <div class="bg-slate-900 rounded-xl overflow-hidden">
+                                <pre class="m-0 p-4"><code class="language-sql">BEGIN
+    UPDATE productos
+    SET precio = precio * 0.90
+    WHERE id_producto = 30;
+    
+    DBMS_OUTPUT.PUT_LINE('Producto rebajado exitosamente.');
+END;
+/</code></pre>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
+                                <span class="font-bold text-emerald-800 text-sm block mb-1"><i class="fa-solid fa-magnifying-glass mr-1"></i> Verificación con SELECT:</span>
+                                <code class="text-xs font-mono text-emerald-900">SELECT * FROM productos WHERE id_producto = 30;</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ex 2.5 -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 mb-6">
+                        <h4 class="font-bold text-slate-700 mb-2"><span class="badge-green mr-2">Fase B</span>UPDATE dentro de FOR (Procesamiento por ID)</h4>
+                        <p class="text-sm text-slate-600 mb-4"><strong>Objetivo:</strong> Simular un reabastecimiento crítico. Aumentar en 2 unidades el stock para productos entre ID 10 al 40 (avanzando de 10 en 10) que tengan stock menor o igual a 5.</p>
+                        <button onclick="toggleVisibility('sol-2-5')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all"><i class="fa-solid fa-code mr-1"></i> Ver Código y Verificación</button>
+                        
+                        <div id="sol-2-5" class="toggle-section space-y-4">
+                            <div class="bg-slate-900 rounded-xl overflow-hidden">
+                                <pre class="m-0 p-4"><code class="language-sql">DECLARE
+    v_id_prod NUMBER;
+    v_reabastecidos NUMBER := 0;
+BEGIN
+    FOR i IN 1..4 LOOP
+        v_id_prod := i * 10; -- Genera 10, 20, 30, 40
+        
+        UPDATE productos
+        SET stock = stock + 2
+        WHERE id_producto = v_id_prod AND stock <= 5;
+        
+        DBMS_OUTPUT.PUT_LINE('Revisado producto ID ' || v_id_prod || ' para posible reabastecimiento.');
+        v_reabastecidos := v_reabastecidos + 1;
+    END LOOP;
+    DBMS_OUTPUT.PUT_LINE('Total iteraciones de reabastecimiento: ' || v_reabastecidos);
+END;
+/</code></pre>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
+                                <span class="font-bold text-emerald-800 text-sm block mb-1"><i class="fa-solid fa-magnifying-glass mr-1"></i> Verificación con SELECT:</span>
+                                <code class="text-xs font-mono text-emerald-900">SELECT * FROM productos WHERE id_producto IN (10, 20, 30, 40);</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ex 2.6 -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200">
+                        <h4 class="font-bold text-slate-700 mb-2"><span class="badge-purple mr-2">Fase C</span>UPDATE dentro de WHILE (Cambio de estado)</h4>
+                        <p class="text-sm text-slate-600 mb-4"><strong>Objetivo:</strong> Subir gradualmente a un cliente de regular a empresa. Consultar el estado del cliente ID 2. Usar un bucle WHILE que corra hasta que sea 'EMPRESA', ascendiendo a 'VIP' y luego a 'EMPRESA' con UPDATEs y recargando la variable de control.</p>
+                        <button onclick="toggleVisibility('sol-2-6')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all"><i class="fa-solid fa-code mr-1"></i> Ver Código y Verificación</button>
+                        
+                        <div id="sol-2-6" class="toggle-section space-y-4">
+                            <div class="bg-slate-900 rounded-xl overflow-hidden">
+                                <pre class="m-0 p-4"><code class="language-sql">DECLARE
+    v_tipo clientes.tipo_cliente%TYPE;
+BEGIN
+    -- Obtenemos el tipo inicial (REGULAR)
+    SELECT tipo_cliente INTO v_tipo FROM clientes WHERE id_cliente = 2;
+    
+    WHILE v_tipo <> 'EMPRESA' LOOP
+        IF v_tipo = 'REGULAR' THEN
+            UPDATE clientes SET tipo_cliente = 'VIP' WHERE id_cliente = 2;
+            DBMS_OUTPUT.PUT_LINE('Ascendido a VIP.');
+        ELSIF v_tipo = 'VIP' THEN
+            UPDATE clientes SET tipo_cliente = 'EMPRESA' WHERE id_cliente = 2;
+            DBMS_OUTPUT.PUT_LINE('Ascendido a EMPRESA.');
+        END IF;
+        
+        -- Volvemos a leer la BD para actualizar la variable del bucle
+        SELECT tipo_cliente INTO v_tipo FROM clientes WHERE id_cliente = 2;
+    END LOOP;
+END;
+/</code></pre>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
+                                <span class="font-bold text-emerald-800 text-sm block mb-1"><i class="fa-solid fa-magnifying-glass mr-1"></i> Verificación con SELECT:</span>
+                                <code class="text-xs font-mono text-emerald-900">SELECT * FROM clientes WHERE id_cliente = 2;</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DELETE SECTION -->
+                <div class="bg-slate-50 border-2 border-rose-100 rounded-2xl p-6">
+                    <h3 class="text-2xl font-bold text-rose-800 mb-4"><i class="fa-solid fa-trash-alt mr-2"></i> Operaciones: DELETE</h3>
+                    
+                    <!-- Ex 2.7 -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 mb-6">
+                        <h4 class="font-bold text-slate-700 mb-2"><span class="badge-blue mr-2">Fase A</span>DELETE sin ciclos (Individual)</h4>
+                        <p class="text-sm text-slate-600 mb-4"><strong>Objetivo:</strong> Eliminar el detalle de pedido con ID 3 (que corresponde al pedido 101) para preparar su modificación posterior. Confirmar eliminación con mensaje en pantalla.</p>
+                        <button onclick="toggleVisibility('sol-2-7')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all"><i class="fa-solid fa-code mr-1"></i> Ver Código y Verificación</button>
+                        
+                        <div id="sol-2-7" class="toggle-section space-y-4">
+                            <div class="bg-slate-900 rounded-xl overflow-hidden">
+                                <pre class="m-0 p-4"><code class="language-sql">BEGIN
+    DELETE FROM detalles_pedidos
+    WHERE id_detalle = 3;
+    
+    DBMS_OUTPUT.PUT_LINE('Fila eliminada de detalles exitosamente.');
+END;
+/</code></pre>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
+                                <span class="font-bold text-emerald-800 text-sm block mb-1"><i class="fa-solid fa-magnifying-glass mr-1"></i> Verificación con SELECT:</span>
+                                <code class="text-xs font-mono text-emerald-900">SELECT * FROM detalles_pedidos WHERE id_detalle = 3; -- Retorna 0 filas</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ex 2.8 -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 mb-6">
+                        <h4 class="font-bold text-slate-700 mb-2"><span class="badge-green mr-2">Fase B</span>DELETE dentro de FOR (Limpieza de lote)</h4>
+                        <p class="text-sm text-slate-600 mb-4"><strong>Objetivo:</strong> Eliminar del inventario de forma segura los productos demostrativos creados (IDs 201 al 203) usando un bucle FOR.</p>
+                        <button onclick="toggleVisibility('sol-2-8')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all"><i class="fa-solid fa-code mr-1"></i> Ver Código y Verificación</button>
+                        
+                        <div id="sol-2-8" class="toggle-section space-y-4">
+                            <div class="bg-slate-900 rounded-xl overflow-hidden">
+                                <pre class="m-0 p-4"><code class="language-sql">DECLARE
+    v_borrados NUMBER := 0;
+BEGIN
+    FOR i IN 201..203 LOOP
+        DELETE FROM productos
+        WHERE id_producto = i;
+        
+        v_borrados := v_borrados + 1;
+    END LOOP;
+    DBMS_OUTPUT.PUT_LINE('Productos borrados por lote: ' || v_borrados);
+END;
+/</code></pre>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
+                                <span class="font-bold text-emerald-800 text-sm block mb-1"><i class="fa-solid fa-magnifying-glass mr-1"></i> Verificación con SELECT:</span>
+                                <code class="text-xs font-mono text-emerald-900">SELECT * FROM productos WHERE id_producto BETWEEN 201 AND 203;</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ex 2.9 -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200">
+                        <h4 class="font-bold text-slate-700 mb-2"><span class="badge-purple mr-2">Fase C</span>DELETE dentro de WHILE (Descolamiento selectivo)</h4>
+                        <p class="text-sm text-slate-600 mb-4"><strong>Objetivo:</strong> Eliminar los pedidos de prueba creados (IDs 204 al 206) utilizando un ciclo WHILE controlado por contador.</p>
+                        <button onclick="toggleVisibility('sol-2-9')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all"><i class="fa-solid fa-code mr-1"></i> Ver Código y Verificación</button>
+                        
+                        <div id="sol-2-9" class="toggle-section space-y-4">
+                            <div class="bg-slate-900 rounded-xl overflow-hidden">
+                                <pre class="m-0 p-4"><code class="language-sql">DECLARE
+    v_id_ped NUMBER := 204;
+    v_eliminados NUMBER := 0;
+BEGIN
+    WHILE v_id_ped <= 206 LOOP
+        DELETE FROM pedidos
+        WHERE id_pedido = v_id_ped;
+        
+        v_eliminados := v_eliminados + 1;
+        v_id_ped := v_id_ped + 1;
+    END LOOP;
+    DBMS_OUTPUT.PUT_LINE('Pedidos de prueba eliminados: ' || v_eliminados);
+END;
+/</code></pre>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
+                                <span class="font-bold text-emerald-800 text-sm block mb-1"><i class="fa-solid fa-magnifying-glass mr-1"></i> Verificación con SELECT:</span>
+                                <code class="text-xs font-mono text-emerald-900">SELECT * FROM pedidos WHERE id_pedido BETWEEN 204 AND 206;</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= TAB: MODULO 3 ================= -->
+        <div id="tab-modulo3" class="tab-content">
+            <section class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm mb-10">
+                <h2 class="text-3xl font-black text-emerald-700 mb-6 border-b-2 border-emerald-100 pb-4">
+                    Módulo 3: Ejercicio Integrador (Desafío Combinado)
+                </h2>
+                
+                <div class="bg-slate-900 text-slate-100 p-6 rounded-2xl border border-slate-700 mb-8">
+                    <h3 class="text-2xl font-bold text-emerald-400 mb-3"><i class="fa-solid fa-business-time mr-2"></i> Escenario de Negocio</h3>
+                    <p class="text-slate-300 leading-relaxed text-sm mb-4">
+                        La gerencia de la Tienda necesita realizar un proceso diario automático:
+                    </p>
+                    <ol class="list-decimal pl-5 text-sm text-slate-300 space-y-2">
+                        <li>**Reabastecimiento condicional**: Consultar el stock actual de un producto crítico ("Mouse Gamer", ID 10) usando <code>SELECT INTO</code>. Si el stock es inferior a 20, sumarle 5 unidades. De lo contrario, restarle 2 unidades por regularización de mermas (UPDATE).</li>
+                        <li>**Campaña de Logística**: Para registrar logs de la actividad, se registrarán en la tabla <code>clientes</code> 3 usuarios ficticios de auditoría (IDs del 210 al 212) con nombre 'Audit_USER_X' y correo 'auditX@tienda.com' usando un bucle <code>FOR</code> (INSERT).</li>
+                        <li>**Limpieza de registros obsoletos**: Eliminar el cliente con ID 200 (si quedó de pruebas anteriores) para evitar acumulación (DELETE).</li>
+                    </ol>
+                </div>
+
+                <!-- Detalle Desafío -->
+                <div class="border-t border-slate-200 pt-6">
+                    <div class="flex gap-4 mb-6">
+                        <button onclick="toggleVisibility('pista-3')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl text-sm transition-all"><i class="fa-regular fa-lightbulb mr-2"></i>Ver Pistas del Desafío</button>
+                        <button onclick="toggleVisibility('solucion-3')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all"><i class="fa-solid fa-code mr-2"></i>Ver Solución Integrada</button>
+                    </div>
+
+                    <div id="pista-3" class="toggle-section bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-xl space-y-2">
+                        <p class="text-sm text-amber-900 font-medium">
+                            <strong>1.</strong> Recuerda usar <code>SELECT stock INTO v_stock FROM productos WHERE id_producto = 10;</code> para obtener el stock inicial.
+                        </p>
+                        <p class="text-sm text-amber-900 font-medium">
+                            <strong>2.</strong> Usa una estructura <code>IF v_stock < 20 THEN ... ELSE ... END IF;</code> para aplicar el UPDATE correspondiente.
+                        </p>
+                        <p class="text-sm text-amber-900 font-medium">
+                            <strong>3.</strong> En el bucle de logs, usa <code>FOR i IN 210..212 LOOP</code> y concatena el iterador `i` en las cadenas de inserción.
+                        </p>
+                    </div>
+
+                    <div id="solucion-3" class="toggle-section space-y-4">
+                        <div class="bg-slate-900 rounded-2xl overflow-hidden">
+                            <pre class="m-0 p-4"><code class="language-sql">DECLARE
+    v_stock productos.stock%TYPE;
+    v_afectados NUMBER := 0;
+BEGIN
+    -- 1. Consultar el stock actual del Mouse Gamer
+    SELECT stock INTO v_stock 
+    FROM productos 
+    WHERE id_producto = 10;
+    
+    -- 2. Decisión lógica del DML 1 (UPDATE)
+    IF v_stock < 20 THEN
+        UPDATE productos 
+        SET stock = stock + 5 
+        WHERE id_producto = 10;
+        DBMS_OUTPUT.PUT_LINE('Stock crítico: Reabastecidas 5 unidades.');
+    ELSE
+        UPDATE productos 
+        SET stock = stock - 2 
+        WHERE id_producto = 10;
+        DBMS_OUTPUT.PUT_LINE('Stock abundante: Ajustadas 2 unidades por merma.');
+    END IF;
+    
+    -- 3. Bucle FOR del DML 2 (INSERT masivo de Auditorías)
+    FOR i IN 210..212 LOOP
+        INSERT INTO clientes (id_cliente, nombre, correo, tipo_cliente)
+        VALUES (i, 'Audit_USER_' || (i - 209), 'audit' || (i - 209) || '@tienda.com', 'REGULAR');
+        
+        v_afectados := v_afectados + 1;
+    END LOOP;
+    DBMS_OUTPUT.PUT_LINE('Logs creados en clientes: ' || v_afectados);
+    
+    -- 4. DML 3 (DELETE de limpieza)
+    DELETE FROM clientes 
+    WHERE id_cliente = 200;
+    
+    DBMS_OUTPUT.PUT_LINE('Proceso de limpieza de cliente 200 ejecutado.');
+    
+    COMMIT;
+END;
+/</code></pre>
+                        </div>
+                        <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
+                            <span class="font-bold text-emerald-800 text-sm block mb-1"><i class="fa-solid fa-magnifying-glass mr-1"></i> Consultas de Verificación:</span>
+                            <pre class="text-xs font-mono text-emerald-900 m-0">SELECT * FROM productos WHERE id_producto = 10;
+SELECT * FROM clientes WHERE id_cliente BETWEEN 210 AND 212;
+SELECT * FROM clientes WHERE id_cliente = 200;</pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= TAB: MODULO 4 ================= -->
+        <div id="tab-modulo4" class="tab-content">
+            <section class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm mb-10">
+                <h2 class="text-3xl font-black text-emerald-700 mb-6 border-b-2 border-emerald-100 pb-4">
+                    Módulo 4: Desafíos Lógicos (Reglas de Negocio en Parejas)
+                </h2>
+                <p class="text-lg text-slate-600 mb-8 leading-relaxed">
+                    **Sin código resuelto de ayuda.** Analiza los requerimientos de negocio, identifica las tablas involucradas, y diseña tu propio bloque PL/SQL cumpliendo las restricciones dadas.
+                </p>
+
+                <!-- Desafíos -->
+                <div class="space-y-8">
+                    <!-- Reto 1 -->
+                    <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 relative">
+                        <span class="absolute top-4 right-4 badge-pink">Dificultad: Inicial</span>
+                        <h3 class="font-bold text-xl text-slate-800 mb-3">Reto 1: Control de stock mínimo y alertas de compras</h3>
+                        <p class="text-sm text-slate-600 mb-4">
+                            <strong>Regla de negocio:</strong> Si un producto tiene stock igual a 0, se debe intentar reabastecer a un stock mínimo de 10 unidades. Si el precio unitario del producto es mayor a 50.000, solo reabastecer 5 unidades por costo financiero.
+                        </p>
+                        <div class="bg-white p-4 rounded-xl border border-slate-100 text-xs mb-4">
+                            <strong>Tablas/Columnas:</strong> <code class="bg-slate-100 px-1 rounded text-red-500">productos</code> (<code class="text-slate-700">id_producto, stock, precio</code>).
+                        </div>
+                        <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl">
+                            <h5 class="text-sm font-bold text-emerald-800 mb-1">Preguntas de Discusión en Parejas:</h5>
+                            <ol class="list-decimal pl-4 text-xs text-emerald-900 space-y-1">
+                                <li>¿Por qué es importante evaluar el precio antes de modificar el stock en compras de alto valor?</li>
+                                <li>¿Cómo estructurarías el condicional <code>IF</code> para evitar reabastecer productos que ya tienen stock suficiente?</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Reto 2 -->
+                    <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 relative">
+                        <span class="absolute top-4 right-4 badge-pink">Dificultad: Inicial</span>
+                        <h3 class="font-bold text-xl text-slate-800 mb-3">Reto 2: Penalización automática de pedidos cancelados</h3>
+                        <p class="text-sm text-slate-600 mb-4">
+                            <strong>Regla de negocio:</strong> Cuando un pedido cambia a estado <code>'CANCELADO'</code>, se debe reducir el precio de venta total a 0. Además, si el cliente asociado es <code>'VIP'</code>, su categoría debe bajar a <code>'REGULAR'</code>.
+                        </p>
+                        <div class="bg-white p-4 rounded-xl border border-slate-100 text-xs mb-4">
+                            <strong>Tablas/Columnas:</strong> 
+                            <code class="bg-slate-100 px-1 rounded text-red-500">pedidos</code> (<code class="text-slate-700">id_pedido, estado, total, id_cliente</code>), 
+                            <code class="bg-slate-100 px-1 rounded text-red-500">clientes</code> (<code class="text-slate-700">id_cliente, tipo_cliente</code>).
+                        </div>
+                        <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl">
+                            <h5 class="text-sm font-bold text-emerald-800 mb-1">Preguntas de Discusión en Parejas:</h5>
+                            <ol class="list-decimal pl-4 text-xs text-emerald-900 space-y-1">
+                                <li>¿Qué DMLs se requieren y en qué orden lógico deben ejecutarse para no violar la integridad referencial?</li>
+                                <li>¿Cómo verificarías con una sentencia <code>SELECT</code> posterior si efectivamente se penalizó al cliente y se redujo su total a 0?</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Reto 3 -->
+                    <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 relative">
+                        <span class="absolute top-4 right-4 badge-blue">Dificultad: Intermedia</span>
+                        <h3 class="font-bold text-xl text-slate-800 mb-3">Reto 3: Reabastecimiento masivo inverso</h3>
+                        <p class="text-sm text-slate-600 mb-4">
+                            <strong>Regla de negocio:</strong> Por motivos de auditoría de inventario, se requiere recorrer los productos con IDs del 40 al 10 de forma descendente (40, 30, 20, 10). Si el precio es superior a 30.000, se debe restar 1 unidad al stock (reducción por merma teórica).
+                        </p>
+                        <div class="bg-white p-4 rounded-xl border border-slate-100 text-xs mb-4">
+                            <strong>Tablas/Columnas:</strong> <code class="bg-slate-100 px-1 rounded text-red-500">productos</code> (<code class="text-slate-700">id_producto, precio, stock</code>).
+                        </div>
+                        <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl">
+                            <h5 class="text-sm font-bold text-emerald-800 mb-1">Preguntas de Discusión en Parejas:</h5>
+                            <ol class="list-decimal pl-4 text-xs text-emerald-900 space-y-1">
+                                <li>¿Por qué es conveniente usar un ciclo <code>FOR REVERSE</code> en este escenario en lugar de un <code>WHILE</code>?</li>
+                                <li>¿Qué pasa si el stock original del producto es 0 y se le resta 1? ¿Cómo evitarías valores negativos en la base de datos?</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Reto 4 -->
+                    <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 relative">
+                        <span class="absolute top-4 right-4 badge-blue">Dificultad: Intermedia</span>
+                        <h3 class="font-bold text-xl text-slate-800 mb-3">Reto 4: Depuración de Clientes Inactivos sin Pedidos</h3>
+                        <p class="text-sm text-slate-600 mb-4">
+                            <strong>Regla de negocio:</strong> Se requiere eliminar de la base de datos a los clientes que no registren ningún pedido en el sistema para liberar espacio de almacenamiento.
+                        </p>
+                        <div class="bg-white p-4 rounded-xl border border-slate-100 text-xs mb-4">
+                            <strong>Tablas/Columnas:</strong> 
+                            <code class="bg-slate-100 px-1 rounded text-red-500">clientes</code> (<code class="text-slate-700">id_cliente</code>), 
+                            <code class="bg-slate-100 px-1 rounded text-red-500">pedidos</code> (<code class="text-slate-700">id_cliente</code>).
+                        </div>
+                        <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl">
+                            <h5 class="text-sm font-bold text-emerald-800 mb-1">Preguntas de Discusión en Parejas:</h5>
+                            <ol class="list-decimal pl-4 text-xs text-emerald-900 space-y-1">
+                                <li>¿Cómo se puede comprobar si un cliente tiene pedidos antes de eliminarlo usando subconsultas en la cláusula <code>WHERE</code> del <code>DELETE</code>?</li>
+                                <li>¿Qué excepción podría arrojarse si intentas eliminar un cliente que sí tiene pedidos asociados debido a restricciones de clave foránea?</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Reto 5 -->
+                    <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 relative">
+                        <span class="absolute top-4 right-4 badge-purple">Dificultad: Avanzada</span>
+                        <h3 class="font-bold text-xl text-slate-800 mb-3">Reto 5: Simulación de ventas con WHILE</h3>
+                        <p class="text-sm text-slate-600 mb-4">
+                            <strong>Regla de negocio:</strong> Se quiere simular la compra consecutiva de un producto de alta demanda (Mouse Gamer, ID 10) de una sola unidad por pedido. El bucle WHILE debe continuar simulando compras (restando 1 al stock y creando un detalle con cantidad 1) mientras el stock sea mayor a 5.
+                        </p>
+                        <div class="bg-white p-4 rounded-xl border border-slate-100 text-xs mb-4">
+                            <strong>Tablas/Columnas:</strong> 
+                            <code class="bg-slate-100 px-1 rounded text-red-500">productos</code> (<code class="text-slate-700">id_producto, stock</code>), 
+                            <code class="bg-slate-100 px-1 rounded text-red-500">detalles_pedidos</code> (<code class="text-slate-700">id_detalle, id_pedido, id_producto, cantidad, precio_unitario</code>).
+                        </div>
+                        <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl">
+                            <h5 class="text-sm font-bold text-emerald-800 mb-1">Preguntas de Discusión en Parejas:</h5>
+                            <ol class="list-decimal pl-4 text-xs text-emerald-900 space-y-1">
+                                <li>¿Cómo garantizarías que el ID de detalle autoincremental no choque con registros existentes en cada vuelta del WHILE?</li>
+                                <li>¿Cómo se previene un bucle infinito en esta simulación si el stock nunca baja del umbral?</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Reto 6 -->
+                    <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 relative">
+                        <span class="absolute top-4 right-4 badge-purple">Dificultad: Avanzada</span>
+                        <h3 class="font-bold text-xl text-slate-800 mb-3">Reto 6: Campaña de fidelización VIP</h3>
+                        <p class="text-sm text-slate-600 mb-4">
+                            <strong>Regla de negocio:</strong> La gerencia busca premiar a los clientes VIP. Si el cliente tiene tipo <code>'VIP'</code>, se le aplicará un descuento de 5.000 en el total de todos sus pedidos que estén en estado <code>'PROCESANDO'</code>. Si el total queda menor a 0, debe ajustarse a 0.
+                        </p>
+                        <div class="bg-white p-4 rounded-xl border border-slate-100 text-xs mb-4">
+                            <strong>Tablas/Columnas:</strong> 
+                            <code class="bg-slate-100 px-1 rounded text-red-500">clientes</code> (<code class="text-slate-700">id_cliente, tipo_cliente</code>), 
+                            <code class="bg-slate-100 px-1 rounded text-red-500">pedidos</code> (<code class="text-slate-700">id_pedido, id_cliente, total, estado</code>).
+                        </div>
+                        <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl">
+                            <h5 class="text-sm font-bold text-emerald-800 mb-1">Preguntas de Discusión en Parejas:</h5>
+                            <ol class="list-decimal pl-4 text-xs text-emerald-900 space-y-1">
+                                <li>¿Cómo conectarías la validación del tipo de cliente <code>'VIP'</code> de la tabla <code>clientes</code> con la actualización en la tabla <code>pedidos</code>?</li>
+                                <li>¿Qué beneficios o riesgos tiene realizar actualizaciones masivas a toda una categoría de clientes en un solo paso?</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <app-footer></app-footer>
+
+    <script src="js/components.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // Lógica de Pestañas
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabBtns.forEach(b => {
+                        b.classList.remove('text-emerald-700', 'bg-emerald-100', 'shadow-sm', 'active');
+                        b.classList.add('text-gray-500', 'hover:bg-gray-100');
+                    });
+                    tabContents.forEach(c => c.classList.remove('active'));
+
+                    btn.classList.remove('text-gray-500', 'hover:bg-gray-100');
+                    btn.classList.add('text-emerald-700', 'bg-emerald-100', 'shadow-sm', 'active');
+                    const targetTab = btn.getAttribute('data-tab');
+                    document.getElementById('tab-' + targetTab).classList.add('active');
+                });
+            });
+
+            // Copiar Script de Setup al portapapeles
+            const btnCopy = document.getElementById('btnCopy');
+            if (btnCopy) {
+                btnCopy.addEventListener('click', () => {
+                    const code = document.getElementById('scriptDB').innerText;
+                    navigator.clipboard.writeText(code).then(() => {
+                        const originalHTML = btnCopy.innerHTML;
+                        btnCopy.innerHTML = '<i class="fa-solid fa-check mr-2"></i>¡Copiado!';
+                        btnCopy.classList.add('text-emerald-400');
+                        setTimeout(() => {
+                            btnCopy.innerHTML = originalHTML;
+                            btnCopy.classList.remove('text-emerald-400');
+                        }, 2000);
+                    });
+                });
+            }
+        });
+
+        // Alternar visualización de pistas y soluciones
+        function toggleVisibility(id) {
+            const el = document.getElementById(id);
+            if (el.classList.contains('show')) {
+                el.classList.remove('show');
+            } else {
+                el.classList.add('show');
+            }
+        }
+    </script>
+</body>
+</html>

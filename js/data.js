@@ -6,6 +6,50 @@
 const appData = {
     entries: [
         {
+            id: 'taller-plsql',
+            unit: 'EA2',
+            type: 'hero',
+            href: 'taller-plsql.html',
+            colSpan: 2,
+            date: '2026-06-10',
+            dateText: '10 Jun 2026',
+            tag: 'TALLER PRÁCTICO', tagIcon: 'fa-laptop-code text-yellow-300',
+            badge: 'Taller',
+            title: 'Taller de Práctica:<br>Ciclos y DML en PL/SQL',
+            description: 'Pon a prueba tu lógica construyendo bucles (FOR, FOR REVERSE, WHILE) e integrando operaciones DML de forma progresiva sobre una base de datos de Tienda.',
+            btnText: 'Abrir Taller Práctico', btnIcon: 'fa-laptop-code',
+            theme: {
+                outerBorder: 'border-emerald-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-emerald-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-emerald-500/20', circle2: 'bg-teal-500/20',
+                tagBox: 'bg-emerald-900/50 text-emerald-200 border-emerald-700 backdrop-blur-sm', tagText: 'text-emerald-200', badgeTheme: 'bg-emerald-600 text-white border-emerald-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-emerald-100', btn: 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 w-full justify-center text-white shadow-lg border border-emerald-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(52,211,153,0.6)]'
+            },
+            icon: 'fa-laptop-code', iconContainer: 'bg-emerald-900/40 border-emerald-500/30', iconColor: 'text-emerald-400'
+        },
+        {
+            id: 'presentacion-taller-plsql',
+            unit: 'EA2',
+            type: 'hero',
+            href: 'presentacion-taller-plsql.html',
+            colSpan: 2,
+            date: '2026-06-10',
+            dateText: '10 Jun 2026',
+            tag: 'AULA INTERACTIVA', tagIcon: 'fa-chalkboard-user text-yellow-300',
+            badge: 'Proyector 2',
+            title: 'Presentación: Ciclos y DML Progresivo',
+            description: 'Clase de apoyo interactiva sobre el control de flujo con FOR/WHILE, DML procedural en PL/SQL y el uso de atributos como SQL%ROWCOUNT.',
+            btnText: 'Iniciar Presentación de Apoyo', btnIcon: 'fa-desktop',
+            theme: {
+                outerBorder: 'border-indigo-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-indigo-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-indigo-500/20', circle2: 'bg-purple-500/20',
+                tagBox: 'bg-indigo-900/50 text-indigo-200 border-indigo-700 backdrop-blur-sm', tagText: 'text-indigo-200', badgeTheme: 'bg-indigo-600 text-white border-indigo-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-indigo-200', btn: 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 w-full justify-center text-white shadow-lg border border-indigo-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(99,102,241,0.6)]'
+            },
+            icon: 'fa-chalkboard-user', iconContainer: 'bg-indigo-900/40 border-indigo-500/30', iconColor: 'text-indigo-400'
+        },
+        {
             id: 'presentacion-plsql',
             unit: 'EA2',
             type: 'hero',
