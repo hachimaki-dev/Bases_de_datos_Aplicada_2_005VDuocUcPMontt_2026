@@ -6,6 +6,28 @@
 const appData = {
     entries: [
         {
+            id: 'taller-plsql-sonidolatino',
+            unit: 'EA2',
+            type: 'hero',
+            href: 'taller_plsql_sonidolatino.html',
+            colSpan: 2,
+            date: '2026-06-13',
+            dateText: '13 Jun 2026',
+            tag: 'TALLER PRÁCTICO', tagIcon: 'fa-music text-violet-300',
+            badge: 'Taller M3',
+            title: 'Taller PL/SQL:<br>SonidoLatino',
+            description: 'Caso tipo taller con 10 requerimientos progresivos de DML con control de flujo (FOR, WHILE, IF) sobre una plataforma de streaming de música chilena y andina.',
+            btnText: 'Abrir Taller SonidoLatino', btnIcon: 'fa-laptop-code',
+            theme: {
+                outerBorder: 'border-violet-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-violet-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-violet-500/20', circle2: 'bg-fuchsia-500/20',
+                tagBox: 'bg-violet-900/50 text-violet-200 border-violet-700 backdrop-blur-sm', tagText: 'text-violet-200', badgeTheme: 'bg-violet-600 text-white border-violet-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-violet-100', btn: 'bg-gradient-to-r from-violet-500 to-fuchsia-600 hover:from-violet-600 hover:to-fuchsia-700 w-full justify-center text-white shadow-lg border border-violet-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(139,92,246,0.6)]'
+            },
+            icon: 'fa-music', iconContainer: 'bg-violet-900/40 border-violet-500/30', iconColor: 'text-violet-400'
+        },
+        {
             id: 'taller-plsql',
             unit: 'EA2',
             type: 'hero',
