@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preparación EV3 - Clase 2: El Cursor</title>
+
+    <!-- Configuración Centralizada -->
+    <script src="../js/config.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+    <style>
+        body,
+        html {
+            overflow: hidden !important;
+            height: 100% !important;
+            margin: 0 !important;
+            background-color: #F8FAFC !important;
+            color: #1E293B !important;
+        }
+
+        #app {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-image: radial-gradient(circle at 50% 50%, #FFFFFF 0%, #F1F5F9 100%);
+        }
+
+        pre[class*="language-"] {
+            margin: 0 !important;
+            padding: 2rem !important;
+            border-radius: 1.5rem !important;
+            font-size: 1.4rem !important;
+            line-height: 1.4 !important;
+            max-height: 55vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+            background-color: #1E1E2E !important;
+        }
+
+        .slide-element-title i {
+            margin-right: 15px;
+        }
+
+        /* Estilos resúmenes (Soluciones libres) */
+        details {
+            background-color: #F8FAFC;
+            border: 2px solid #E2E8F0;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            color: #334155;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        details[open] {
+            border-color: #818CF8;
+            background-color: #EEF2FF;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        summary {
+            font-weight: 800;
+            color: #4F46E5;
+            outline: none;
+            display: flex;
+            align-items: center;
+        }
+
+        summary::before {
+            content: "\f05a";
+            /* fa-info-circle */
+            font-family: "Font Awesome 6 Free";
+            margin-right: 10px;
+        }
+
+        details>div {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px dashed #CBD5E1;
+            line-height: 1.6;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: 0.3s;
+            z-index: 10;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Fade transitions */
+        .fade-enter-active,
+        .fade-leave-active {
+            transition: opacity 0.5s ease;
+        }
+
+        .fade-enter-from,
+        .fade-leave-to {
+            opacity: 0;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app" tabindex="0" @keydown="handleKeydown" class="focus:outline-none">
+
+        <!-- Header minimalista -->
+        <header
+            class="p-6 flex justify-between items-center z-50 fixed top-0 w-full bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+            <a href="../index.html"
+                class="text-violet-600 hover:text-violet-800 transition-colors flex items-center gap-2 font-black text-xl">
+                <i class="fa-solid fa-arrow-left"></i> Volver al Menú
+            </a>
+            <div
+                class="text-emerald-700 font-bold tracking-widest uppercase text-sm border-2 border-emerald-200 px-5 py-2 rounded-full bg-emerald-50 shadow-sm">
+                PREPARACIÓN EV3: URBAN WHEELS
+            </div>
+            <div
+                class="text-slate-700 font-bold text-2xl px-5 py-2 rounded-xl bg-slate-100 border-2 border-slate-200 shadow-sm">
+                Diapositiva {{ currentIndex + 1 }} de {{ slides.length }}
+            </div>
+        </header>
+
+        <!-- Contenedor Principal de Slides -->
+        <main
+            class="flex-grow flex flex-col items-center justify-center p-12 mt-24 mb-24 relative w-full h-full z-10 overflow-y-auto">
+
+            <div class="w-full max-w-7xl mx-auto flex flex-col items-center justify-center pt-8">
+
+                <!-- SLIDE TIPO TITLE -->
+                <div v-if="currentSlide.type === 'title'" class="text-center w-full fade-in">
+                    <div
+                        class="inline-block bg-orange-100 p-8 rounded-[3rem] mb-12 shadow-sm border-4 border-orange-200">
+                        <i :class="['fa-solid text-9xl text-orange-600', currentSlide.icon || 'fa-fire']"></i>
+                    </div>
+                    <h1
+                        class="text-6xl md:text-8xl font-black text-slate-800 mb-8 drop-shadow-sm leading-tight tracking-tight">
+                        {{ currentSlide.title }}
+                    </h1>
+                    <p class="text-3xl md:text-4xl text-slate-600 font-bold max-w-5xl mx-auto leading-relaxed mt-10"
+                        v-html="currentSlide.subtitle"></p>
+                </div>
+
+                <!-- SLIDE TIPO CONTENT -->
+                <div v-else-if="currentSlide.type === 'content'"
+                    class="w-full bg-white p-16 rounded-[3rem] border-2 border-slate-200 shadow-xl fade-in">
+                    <div class="flex items-center mb-12 border-b-4 border-slate-100 pb-8">
+                        <div class="bg-blue-100 p-6 rounded-3xl mr-8 border-4 border-blue-200 flex-shrink-0">
+                            <i :class="['fa-solid text-7xl text-blue-600', currentSlide.icon || 'fa-book-open']"></i>
+                        </div>
+                        <h2 class="text-6xl font-black text-slate-800 tracking-tight">{{ currentSlide.title }}</h2>
+                    </div>
+                    <div class="text-4xl text-slate-700 leading-[1.7] font-semibold" v-html="currentSlide.html"></div>
+                </div>
+
+                <!-- SLIDE TIPO CODE -->
+                <div v-else-if="currentSlide.type === 'code'" class="w-full fade-in">
+                    <div
+                        class="text-center mb-10 bg-white p-8 rounded-[2rem] shadow-sm border-2 border-slate-100 inline-block w-full">
+                        <h2 class="text-5xl font-black text-violet-700 mb-4 flex items-center justify-center gap-6">
+                            <i class="fa-solid fa-laptop-code text-5xl"></i> {{ currentSlide.title }}
+                        </h2>
+                        <p class="text-3xl text-slate-600 font-bold">{{ currentSlide.subtitle }}</p>
+                    </div>
+                    <div class="w-full relative group mt-8">
+                        <div
+                            class="relative bg-[#1E1E2E] rounded-[2.5rem] border-4 border-slate-800 overflow-hidden shadow-2xl">
+                            <div
+                                class="px-8 py-4 bg-[#11111B] flex gap-3 items-center justify-between border-b-2 border-slate-800">
+                                <div class="flex gap-4">
+                                    <div class="w-6 h-6 rounded-full bg-red-500"></div>
+                                    <div class="w-6 h-6 rounded-full bg-yellow-500"></div>
+                                    <div class="w-6 h-6 rounded-full bg-emerald-500"></div>
+                                </div>
+                                <div class="text-slate-400 font-mono text-2xl font-bold tracking-widest">Ejemplo.sql
+                                </div>
+                                <button @click="copyCode(currentSlide.sql)"
+                                    class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl font-bold transition text-lg flex items-center gap-2">
+                                    <i class="fa-solid fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                            <pre><code class="language-sql">{{ currentSlide.sql }}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SLIDE TIPO EXERCISES -->
+                <div v-else-if="currentSlide.type === 'exercises'"
+                    class="w-full bg-white p-12 rounded-[3rem] border-2 border-slate-200 shadow-xl fade-in text-left">
+                    <h2
+                        class="text-6xl font-black text-slate-800 mb-8 flex items-center gap-6 border-b-4 border-slate-100 pb-8">
+                        <i class="fa-solid fa-dumbbell text-emerald-600 bg-emerald-100 p-4 rounded-3xl"></i> {{
+                        currentSlide.title }}
+                    </h2>
+                    <p class="text-3xl text-slate-600 font-bold mb-10">{{ currentSlide.subtitle }}</p>
+
+                    <div class="grid grid-cols-1 gap-10">
+                        <div v-for="(ex, index) in currentSlide.items" :key="index"
+                            class="bg-slate-50 p-10 rounded-[2.5rem] border-2 border-slate-200 flex flex-col justify-between shadow-sm">
+                            <div>
+                                <div class="flex items-center justify-between mb-6">
+                                    <span
+                                        class="bg-violet-200 text-violet-800 font-black px-5 py-2 rounded-xl text-xl border-2 border-violet-300">Desafío
+                                        {{ ex.num }}</span>
+                                </div>
+                                <h3 class="text-4xl font-black text-slate-800 mb-6">{{ ex.title }}</h3>
+                                <div class="text-2xl text-slate-700 leading-relaxed font-semibold mb-8 bg-white p-6 rounded-2xl border border-slate-200"
+                                    v-html="ex.desc"></div>
+                            </div>
+
+                            <div class="space-y-6">
+                                <details class="group">
+                                    <summary
+                                        class="text-2xl bg-indigo-50 p-4 rounded-xl border border-indigo-200 hover:bg-indigo-100 transition">
+                                        Ver Solución Propuesta</summary>
+                                    <div
+                                        class="mt-4 p-2 bg-[#1E1E2E] rounded-2xl overflow-hidden relative group-open:animate-fadeIn">
+                                        <button @click="copyCode(ex.solution)"
+                                            class="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold transition text-sm z-10 flex items-center gap-2">
+                                            <i class="fa-solid fa-copy"></i> Copiar
+                                        </button>
+                                        <pre
+                                            class="!m-0 !p-6 !text-base !bg-transparent"><code class="language-sql">{{ ex.solution }}</code></pre>
+                                    </div>
+                                </details>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <div class="fixed bottom-12 left-0 w-full flex justify-center gap-16 z-50 pointer-events-none">
+            <button @click="prev" :disabled="currentIndex === 0"
+                class="pointer-events-auto w-28 h-28 rounded-full flex items-center justify-center bg-white text-slate-700 text-5xl shadow-[0_10px_25px_rgba(0,0,0,0.15)] hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-white transition-all border-4 border-slate-200 hover:scale-110 active:scale-95 focus:outline-none">
+                <i class="fa-solid fa-chevron-left ml-[-5px]"></i>
+            </button>
+            <button @click="next" :disabled="currentIndex === slides.length - 1"
+                class="pointer-events-auto w-28 h-28 rounded-full flex items-center justify-center bg-white text-slate-700 text-5xl shadow-[0_10px_25px_rgba(0,0,0,0.15)] hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-white transition-all border-4 border-slate-200 hover:scale-110 active:scale-95 focus:outline-none">
+                <i class="fa-solid fa-chevron-right mr-[-5px]"></i>
+            </button>
+        </div>
+
+        <div class="fixed bottom-0 left-0 h-6 bg-slate-200 w-full z-50">
+            <div class="h-full bg-gradient-to-r from-orange-500 via-rose-500 to-violet-500 transition-all duration-300 rounded-r-full shadow-[0_0_15px_rgba(249,115,22,0.5)]"
+                :style="{ width: progressPercentage + '%' }"></div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentIndex: 0,
+                    slides: [
+                        {
+                            type: 'title',
+                            title: 'Clase 2: El Cursor y La Prueba de Fuego',
+                            subtitle: 'Dominando los <strong>CURSORES EXPLÍCITOS</strong> para iterar sobre múltiples filas de la Base de Datos, y resolviendo un simulacro completo tipo EV3.<br><br><div class="flex flex-col md:flex-row gap-4 justify-center mt-6"><a href="./ev3%20real/BD_arriendo_vehiculos_URBAN_WHEELS.sql" download class="bg-violet-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-violet-700 transition shadow-md"><i class="fa-solid fa-database mr-2"></i> Descargar BD Oficial</a><a href="./bd_tablas_clon_ev3.sql" download class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-md"><i class="fa-solid fa-file-code mr-2"></i> Descargar Tablas Clon</a></div><br><span class="inline-block mt-4 bg-emerald-100 text-emerald-800 px-6 py-3 rounded-full border-2 border-emerald-200 font-black"><i class="fa-solid fa-keyboard mr-2"></i> Presiona la flecha DERECHA ➡ para avanzar</span>',
+                            icon: 'fa-fire-flame-curved'
+                        },
+                        {
+                            type: 'content',
+                            title: '⚡ Activación Rápida (Kahoot!)',
+                            icon: 'fa-bolt',
+                            html: `<p class="mb-8 text-3xl">Pensemos rápido. ¿Qué recordamos sobre los comandos básicos?</p>
+                            
+                            <div class="space-y-6">
+                                <div class="bg-slate-50 p-6 rounded-3xl border-4 border-slate-200">
+                                    <h3 class="text-3xl font-black text-slate-800 mb-4">1. ¿Qué instrucción detiene la ejecución de un LOOP inmediatamente?</h3>
+                                    <div class="grid grid-cols-2 gap-4 text-2xl font-bold">
+                                        <div class="bg-red-50 hover:bg-red-100 text-red-800 p-4 rounded-xl border-2 border-red-200 cursor-pointer transition">A) STOP</div>
+                                        <div class="bg-blue-50 hover:bg-blue-100 text-blue-800 p-4 rounded-xl border-2 border-blue-200 cursor-pointer transition">B) HALT</div>
+                                        <div class="bg-yellow-50 hover:bg-yellow-100 text-yellow-800 p-4 rounded-xl border-2 border-yellow-200 cursor-pointer transition">C) EXIT</div>
+                                        <div class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 p-4 rounded-xl border-2 border-emerald-200 cursor-pointer transition">D) BREAK</div>
+                                    </div>
+                                    <details class="mt-4"><summary class="text-xl text-slate-500 cursor-pointer hover:text-yellow-600 transition">Ver respuesta correcta</summary><div class="mt-2 p-4 bg-yellow-50 text-2xl text-yellow-700 font-bold border-l-4 border-yellow-500 rounded-r-xl">¡Exacto! Es la C (EXIT). Generalmente acompañado de un WHEN para condicionar la salida.</div></details>
+                                </div>
+
+                                <div class="bg-slate-50 p-6 rounded-3xl border-4 border-slate-200">
+                                    <h3 class="text-3xl font-black text-slate-800 mb-4">2. ¿Para qué usamos el comando TRUNCATE TABLE?</h3>
+                                    <div class="grid grid-cols-2 gap-4 text-2xl font-bold">
+                                        <div class="bg-red-50 hover:bg-red-100 text-red-800 p-4 rounded-xl border-2 border-red-200 cursor-pointer transition">A) Para borrar solo una fila.</div>
+                                        <div class="bg-blue-50 hover:bg-blue-100 text-blue-800 p-4 rounded-xl border-2 border-blue-200 cursor-pointer transition">B) Para vaciar completamente la tabla, de golpe.</div>
+                                        <div class="bg-yellow-50 hover:bg-yellow-100 text-yellow-800 p-4 rounded-xl border-2 border-yellow-200 cursor-pointer transition">C) Para crear una tabla nueva.</div>
+                                        <div class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 p-4 rounded-xl border-2 border-emerald-200 cursor-pointer transition">D) Para actualizar los datos.</div>
+                                    </div>
+                                    <details class="mt-4"><summary class="text-xl text-slate-500 cursor-pointer hover:text-blue-600 transition">Ver respuesta correcta</summary><div class="mt-2 p-4 bg-blue-50 text-2xl text-blue-700 font-bold border-l-4 border-blue-500 rounded-r-xl">¡Correcto! Es la B. Vacía la tabla completamente de forma rapidísima, y no permite ROLLBACK.</div></details>
+                                </div>
+                            </div>`
+                        },
+                        {
+                            type: 'content',
+                            title: 'El Límite del SELECT INTO (El Cajero Automático)',
+                            icon: 'fa-money-bill-transfer',
+                            html: `<p class="mb-8">En la clase anterior usamos <code>SELECT INTO</code>. Imagina que el <code>SELECT INTO</code> es como ir a un Cajero Automático.</p>
+                            
+                            <div class="bg-rose-50 p-8 rounded-3xl border-4 border-rose-200 mb-8 flex items-center gap-8 shadow-sm">
+                                <i class="fa-solid fa-building-columns text-8xl text-rose-500"></i>
+                                <div>
+                                    <h3 class="text-4xl font-black text-rose-800 mb-2">La regla del cajero: ¡Una cosa a la vez!</h3>
+                                    <p class="text-2xl text-rose-700 font-bold">Si le pides al cajero: "Dame el saldo de MI cuenta", te lo da sin problemas. Pero si le pides: "Dame el saldo de TODAS las cuentas del banco al mismo tiempo"... ¡El cajero colapsa!</p>
+                                    <p class="text-2xl text-rose-700 font-bold mt-2">En Oracle, ese colapso se llama <code>TOO_MANY_ROWS</code>.</p>
+                                </div>
+                            </div>
+
+                            <p class="text-3xl font-bold bg-violet-100 p-6 rounded-2xl border-l-8 border-violet-500 text-violet-800">
+                                Si necesitamos procesar a 20 empleados, tenemos que obligarlos a "hacer una fila" y atenderlos de a uno. Para eso existe el <strong class="text-violet-900 bg-white px-3 py-1 rounded-lg border border-violet-300">CURSOR</strong>.
+                            </p>`
+                        },
+                        {
+                            type: 'content',
+                            title: 'La Batalla de los Motores: SQL vs PL/SQL',
+                            icon: 'fa-network-wired',
+                            html: `<p class="mb-8">Para entender por qué los cursores son tan estrictos en Oracle, primero debemos saber quién es quién en el servidor:</p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                                <div class="bg-blue-50 p-8 rounded-3xl border-4 border-blue-200 shadow-sm">
+                                    <h3 class="text-3xl font-black text-blue-800 mb-4"><i class="fa-solid fa-database mr-2"></i> 1. El Motor SQL</h3>
+                                    <p class="text-2xl text-blue-700 leading-relaxed font-bold">
+                                        Trabaja con <strong>conjuntos masivos</strong> de datos. Si le pides un SELECT, te devuelve 10, 100 o 1 millón de filas de golpe, en un solo paquete.
+                                    </p>
+                                </div>
+                                <div class="bg-orange-50 p-8 rounded-3xl border-4 border-orange-200 shadow-sm">
+                                    <h3 class="text-3xl font-black text-orange-800 mb-4"><i class="fa-solid fa-gears mr-2"></i> 2. El Motor PL/SQL</h3>
+                                    <p class="text-2xl text-orange-700 leading-relaxed font-bold">
+                                        Trabaja de forma <strong>secuencial (línea por línea)</strong>. Toma decisiones individuales (IF) y usa variables simples que solo guardan un dato a la vez (como un vaso de agua vacío).
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="bg-indigo-50 p-6 rounded-3xl border-4 border-indigo-200 flex flex-col items-center justify-center text-center shadow-sm">
+                                <h4 class="text-3xl font-black text-indigo-900 mb-4">El Choque de Mundos</h4>
+                                <p class="text-2xl text-indigo-800 font-bold leading-relaxed mb-6">
+                                    ¿Cómo pasamos un camión lleno de datos (SQL) a vasos de agua individuales (PL/SQL)?
+                                </p>
+                                <div class="flex flex-col md:flex-row items-center gap-6 text-xl font-mono bg-white px-6 py-4 rounded-2xl border border-indigo-300">
+                                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded">Camión de Datos (SQL)</span>
+                                    <i class="fa-solid fa-arrow-right text-indigo-600 text-3xl"></i>
+                                    <span class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold">CURSOR (Canalizador / Puente)</span>
+                                    <i class="fa-solid fa-arrow-right text-indigo-600 text-3xl"></i>
+                                    <span class="bg-orange-100 text-orange-800 px-3 py-1 rounded">Variables Simples (PL/SQL)</span>
+                                </div>
+                            </div>`
+                        },
+                        {
+                            type: 'content',
+                            title: 'El "Context Area": La Bodega Temporal',
+                            icon: 'fa-memory',
+                            html: `<p class="mb-8">¿Qué pasa físicamente en el servidor Oracle cuando declaramos y abrimos un cursor?</p>
+                            
+                            <div class="space-y-6">
+                                <div class="bg-slate-50 p-6 rounded-3xl border-4 border-slate-200">
+                                    <h3 class="text-3xl font-black text-slate-800 mb-4">El Área de Contexto (Context Area)</h3>
+                                    <p class="text-2xl text-slate-700 leading-relaxed mb-6 font-semibold">
+                                        Es un espacio de memoria RAM reservado dinámicamente. Al ejecutar <code>OPEN c_empleados;</code>, Oracle copia los registros de tu SELECT desde el disco duro a esta bodega temporal de alta velocidad.
+                                    </p>
+                                    
+                                    <div class="bg-white p-6 rounded-2xl border border-slate-300 font-mono shadow-inner">
+                                        <div class="text-2xl text-indigo-600 font-black border-b-2 border-indigo-100 pb-2 mb-4 text-center">
+                                            [Context Area en la RAM del Servidor]
+                                        </div>
+                                        <div class="space-y-2 text-xl">
+                                            <div class="bg-slate-100 p-2 rounded flex justify-between border-l-4 border-indigo-500 font-bold">
+                                                <span>👉 Fila 1 (Puntero al inicio)</span>
+                                                <span class="text-slate-500">11996940 | Juan | 2500000</span>
+                                            </div>
+                                            <div class="bg-slate-50 p-2 rounded flex justify-between opacity-50 border-l-4 border-transparent">
+                                                <span>   Fila 2</span>
+                                                <span class="text-slate-500">15678901 | María | 3100000</span>
+                                            </div>
+                                            <div class="bg-slate-50 p-2 rounded flex justify-between opacity-50 border-l-4 border-transparent">
+                                                <span>   Fila 3</span>
+                                                <span class="text-slate-500">16890123 | Pedro | 1800000</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p class="text-2xl text-emerald-800 bg-emerald-50 p-4 rounded-xl border-l-8 border-emerald-500 font-bold">
+                                    💡 <strong>El Cursor no tiene los datos</strong>: Es simplemente la flecha (👉) o puntero que sabe en qué posición de la lista nos encontramos.
+                                </p>
+                            </div>`
+                        },
+                        {
+                            type: 'content',
+                            title: 'FETCH bajo la Lupa: Tres Tareas en Una',
+                            icon: 'fa-magnifying-glass-chart',
+                            html: `<p class="mb-8">La instrucción <code>FETCH c_empleados INTO v_nombre;</code> es el motor del bucle. Cada vez que se ejecuta en el LOOP, hace 3 tareas de forma automática:</p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-2xl font-bold text-center">
+                                <div class="bg-amber-50 p-6 rounded-3xl border-4 border-amber-200">
+                                    <div class="text-4xl mb-4 text-amber-600 font-black"><i class="fa-solid fa-copy mr-2"></i> 1. Copiar</div>
+                                    <p class="text-slate-700 text-lg leading-relaxed font-bold">
+                                        Toma los valores de la fila actual de la RAM donde está apuntando el cursor (👉).
+                                    </p>
+                                </div>
+                                <div class="bg-blue-50 p-6 rounded-3xl border-4 border-blue-200">
+                                    <div class="text-4xl mb-4 text-blue-600 font-black"><i class="fa-solid fa-share mr-2"></i> 2. Asignar</div>
+                                    <p class="text-slate-700 text-lg leading-relaxed font-bold">
+                                        Guarda esos valores en tus variables locales (<code>v_nombre</code>, <code>v_sueldo</code>, etc.).
+                                    </p>
+                                </div>
+                                <div class="bg-emerald-50 p-6 rounded-3xl border-4 border-emerald-200">
+                                    <div class="text-4xl mb-4 text-emerald-600 font-black"><i class="fa-solid fa-circle-arrow-down mr-2"></i> 3. Avanzar</div>
+                                    <p class="text-slate-700 text-lg leading-relaxed font-bold">
+                                        Mueve el puntero (👉) automáticamente a la siguiente fila de la lista para el próximo ciclo.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="bg-rose-50 p-6 rounded-3xl border-4 border-rose-200 shadow-sm">
+                                <h3 class="text-2xl font-black text-rose-800 mb-2">⚠️ ¿Por qué "EXIT WHEN" va INMEDIATAMENTE después del FETCH?</h3>
+                                <p class="text-xl text-rose-700 font-bold leading-relaxed">
+                                    Si el cursor intenta hacer FETCH pero el puntero llegó al final de la RAM y no hay datos, Oracle activa una bandera invisible llamada <code>%NOTFOUND = TRUE</code>. Si no nos salimos del LOOP ahí mismo, el programa procesará la última fila de forma duplicada o dará un error. ¡El control de salida siempre va justo después del FETCH!
+                                </p>
+                            </div>`
+                        },
+                        {
+                            type: 'content',
+                            title: 'Flujograma de Ejecución del Bucle',
+                            icon: 'fa-diagram-project',
+                            html: `<p class="mb-8">Así fluye el control paso a paso en tu programa durante el ciclo de vida del cursor:</p>
+                            
+                            <div class="flex flex-col items-center justify-center space-y-4 font-bold text-xl md:text-2xl w-full">
+                                <div class="bg-blue-600 text-white px-6 py-3 rounded-full shadow border-2 border-blue-300">
+                                    OPEN c_emp (Cargar datos en Context Area)
+                                </div>
+                                <i class="fa-solid fa-arrow-down text-blue-500 text-2xl"></i>
+                                <div class="bg-purple-600 text-white px-6 py-3 rounded-full shadow border-2 border-purple-300">
+                                    Entra al LOOP
+                                </div>
+                                <i class="fa-solid fa-arrow-down text-blue-500 text-2xl"></i>
+                                <div class="bg-amber-600 text-white px-6 py-3 rounded-xl shadow border-2 border-amber-300">
+                                    FETCH c_emp INTO variables
+                                </div>
+                                <i class="fa-solid fa-arrow-down text-blue-500 text-2xl"></i>
+                                <div class="bg-rose-100 text-rose-800 px-6 py-4 rounded-2xl border-4 border-rose-200 flex items-center gap-6">
+                                    <span>¿%NOTFOUND es TRUE? (¿Está vacío?)</span>
+                                    <div class="flex gap-4">
+                                        <span class="bg-emerald-600 text-white px-3 py-1 rounded">Sí</span>
+                                        <span class="bg-red-600 text-white px-3 py-1 rounded">No</span>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between w-full max-w-2xl text-lg">
+                                    <div class="flex flex-col items-center bg-emerald-50 text-emerald-800 p-4 rounded-xl border border-emerald-200 shadow-sm w-[45%]">
+                                        <i class="fa-solid fa-circle-xmark text-emerald-600 text-2xl mb-2"></i>
+                                        <span>Ejecuta EXIT</span>
+                                        <span class="text-xs text-slate-500 mt-1">Cierra el ciclo y va a CLOSE</span>
+                                    </div>
+                                    <div class="flex flex-col items-center bg-blue-50 text-blue-800 p-4 rounded-xl border border-blue-200 shadow-sm w-[45%]">
+                                        <i class="fa-solid fa-rotate-right text-blue-600 text-2xl mb-2"></i>
+                                        <span>Procesa Datos & Vuelve al LOOP</span>
+                                        <span class="text-xs text-slate-500 mt-1">Siguiente FETCH</span>
+                                    </div>
+                                </div>
+                            </div>`
+                        },
+                        {
+                            type: 'content',
+                            title: 'El Ciclo en Resumen: El Carrito de Supermercado',
+                            icon: 'fa-cart-shopping',
+                            html: `<p class="mb-8">Consolidemos todo. El ciclo de vida de un cursor explícito se compone de 4 pasos obligatorios, idénticos a hacer compras:</p>
+                                   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 font-mono text-2xl bg-slate-50 p-8 rounded-3xl border-4 border-slate-200">
+                                       <div class="p-6 bg-blue-50 border-l-8 border-blue-400 rounded-xl shadow-sm">
+                                           <span class="text-blue-700 font-black text-3xl">1. DECLARE (La Lista)</span>
+                                           <p class="text-slate-600 mt-2 font-sans font-bold"><code>CURSOR c_emp IS SELECT...</code><br>Escribimos la lista de compras. Aún no tenemos las peras ni manzanas, solo el papel que dice qué queremos.</p>
+                                       </div>
+                                       <div class="p-6 bg-emerald-50 border-l-8 border-emerald-400 rounded-xl shadow-sm">
+                                           <span class="text-emerald-700 font-black text-3xl">2. OPEN (Llenar el Carrito)</span>
+                                           <p class="text-slate-600 mt-2 font-sans font-bold"><code>OPEN c_emp;</code><br>Vamos a las góndolas (tablas), recolectamos los registros y llenamos nuestro carro (RAM).</p>
+                                       </div>
+                                       <div class="p-6 bg-amber-50 border-l-8 border-amber-400 rounded-xl shadow-sm">
+                                           <span class="text-amber-700 font-black text-3xl">3. FETCH (Pasar por Caja)</span>
+                                           <p class="text-slate-600 mt-2 font-sans font-bold"><code>FETCH c_emp INTO variables;</code><br>Dentro del LOOP, sacamos un producto del carro y lo escaneamos en la caja. Se repite hasta que el carro esté vacío.</p>
+                                       </div>
+                                       <div class="p-6 bg-rose-50 border-l-8 border-rose-400 rounded-xl shadow-sm">
+                                           <span class="text-rose-700 font-black text-3xl">4. CLOSE (Devolver Carrito)</span>
+                                           <p class="text-slate-600 mt-2 font-sans font-bold"><code>CLOSE c_emp;</code><br>Ya pagamos. Devolvemos el carro de compras en su lugar para liberar el espacio.</p>
+                                       </div>
+                                   </div>`
+                        },
+                        {
+                            type: 'code',
+                            title: 'El Código Más Simple Posible',
+                            subtitle: 'Antes de hacer cálculos locos, veamos cómo funciona el cursor "desnudo", solo imprimiendo nombres.',
+                            sql: `DECLARE
+    -- 1. La Lista (DECLARE)
+    CURSOR c_empleados IS
+        SELECT pnombre_emp
+        FROM empleado;
+        
+    -- Variable para guardar la pera que saco del carrito
+    v_nombre empleado.pnombre_emp%TYPE;
+BEGIN
+    -- 2. Llenar el carrito (OPEN)
+    OPEN c_empleados;
+    
+    LOOP
+        -- 3. Pasar por caja (FETCH)
+        FETCH c_empleados INTO v_nombre;
+        
+        -- Si el carrito ya está vacío, detente y salte de la caja
+        EXIT WHEN c_empleados%NOTFOUND;
+        
+        DBMS_OUTPUT.PUT_LINE('Procesando a: ' || v_nombre);
+    END LOOP;
+    
+    -- 4. Devolver el carrito (CLOSE)
+    CLOSE c_empleados;
+END;
+/`
+                        },
+                        {
+                            type: 'code',
+                            title: 'Ahora sí: Agregando la matemática',
+                            subtitle: 'Una vez dominada la estructura, podemos añadir más datos, matemáticas y condiciones adentro del LOOP.',
+                            sql: `DECLARE
+    -- 1. DECLARE (Declarar Cursor y variables receptoras)
+    CURSOR c_empleados IS
+        SELECT numrun_emp, pnombre_emp, sueldo_base
+        FROM empleado
+        ORDER BY numrun_emp;
+        
+    v_run    empleado.numrun_emp%TYPE;
+    v_nombre empleado.pnombre_emp%TYPE;
+    v_sueldo empleado.sueldo_base%TYPE;
+BEGIN
+    -- 2. OPEN (Ejecutar en memoria)
+    OPEN c_empleados;
+    
+    LOOP
+        -- 3. FETCH (Extraer fila por fila a las variables)
+        FETCH c_empleados INTO v_run, v_nombre, v_sueldo;
+        
+        -- Condición de salida OBLIGATORIA: Si ya no quedan más filas
+        EXIT WHEN c_empleados%NOTFOUND;
+        
+        -- Lógica de negocio para ESTA fila específica:
+        DBMS_OUTPUT.PUT_LINE(v_nombre || ' tiene un bono de $' || (v_sueldo * 0.1));
+    END LOOP;
+    
+    -- 4. CLOSE (Liberar memoria)
+    CLOSE c_empleados;
+END;
+/`
+                        },
+                        {
+                            type: 'content',
+                            title: 'TRUNCATE: Limpiar la pizarra',
+                            icon: 'fa-broom',
+                            html: `<p class="mb-8">En la prueba, el cursor recorrerá a todos los empleados y guardará un resumen en otra tabla. Si ejecutas tu código 2 veces seguidas por accidente, ¡los datos se guardarán duplicados!</p>
+                            
+                            <div class="bg-slate-50 p-8 rounded-3xl border-4 border-slate-200 mb-8 shadow-sm">
+                                <h3 class="text-3xl font-black text-slate-800 mb-4">La solución: Borrar todo antes de empezar</h3>
+                                <p class="text-2xl text-slate-700 font-bold mb-4">Es como borrar la pizarra al entrar a la sala, antes de empezar la clase nueva. Para eso usamos <code>TRUNCATE TABLE</code>.</p>
+                                <p class="text-2xl text-slate-700 font-bold">PERO, PL/SQL es mañoso y no deja correr comandos de borrado directamente. Debemos "engañarlo" envolviéndolo en una orden especial llamada <strong class="text-indigo-600 bg-indigo-100 px-2 py-1 rounded">EXECUTE IMMEDIATE</strong>:</p>
+                            </div>
+
+                            <div class="bg-[#1E1E2E] p-6 rounded-2xl shadow-xl font-mono text-3xl text-emerald-400 border border-slate-700">
+                                EXECUTE IMMEDIATE 'TRUNCATE TABLE resumen_productividad_emp';
+                            </div>`
+                        },
+                        {
+                            type: 'exercises',
+                            title: 'Desafío Clon: Simulacro EV3',
+                            subtitle: 'Un caso espejo de la evaluación. ¡Tú puedes!',
+                            items: [
+                                {
+                                    num: 'A',
+                                    title: 'Resumen Anual de Productividad (Emula Parte 1 de EV3)',
+                                    desc: `Crea un bloque anónimo que calcule la productividad 2025 de los empleados y la inserte en <code>RESUMEN_PRODUCTIVIDAD_EMP</code>.<br><br>
+                                    <strong>Requerimientos Mínimos (Sigue esta estructura!):</strong>
+                                    <ul class="list-decimal ml-8 mt-4 space-y-3">
+                                        <li>Ejecutar TRUNCATE sobre <code>RESUMEN_PRODUCTIVIDAD_EMP</code> (usando Execute Immediate).</li>
+                                        <li>Crear un cursor sin parámetros que traiga de <code>EMPLEADO</code>: numrun_emp, nombre (pnombre + ap_paterno), y fecha_contrato. Ordenado por numrun_emp.</li>
+                                        <li>Dentro del LOOP del cursor, hacer <strong class="text-indigo-600">Selects independientes</strong> (funciones de grupo) para obtener de ` + '`VEHICULO_ELECTRICO`' + ` y ` + '`ARRIENDO_VEHICULO`' + `:
+                                            <ul class="list-disc ml-8 mt-2 text-xl">
+                                                <li>Cantidad de vehículos que el empleado tiene asignados.</li>
+                                                <li>Total de arriendos en 2025 de SUS vehículos (COUNT).</li>
+                                                <li>Total de días arrendados en 2025 de SUS vehículos (SUM). (Asegura transformar NULL a 0 con NVL).</li>
+                                            </ul>
+                                        </li>
+                                        <li>Calcular antigüedad: <code>TRUNC(MONTHS_BETWEEN(SYSDATE, fecha_contrato)/12)</code></li>
+                                        <li>Calcular Bono Inicial = 5000 * total de arriendos.</li>
+                                        <li>Clasificar Productividad (IF): 
+                                            <ul class="list-disc ml-8 mt-2 text-xl">
+                                                <li>≥ 10 arriendos -> 'Alta'</li>
+                                                <li>Entre 5 y 9 -> 'Media'</li>
+                                                <li>Entre 1 y 4 -> 'Baja'</li>
+                                                <li>0 -> 'Sin Actividad'</li>
+                                            </ul>
+                                        </li>
+                                        <li>Insertar todos estos datos en la tabla ` + '`RESUMEN_PRODUCTIVIDAD_EMP`' + ` (usa INSERT convencional).</li>
+                                    </ul>`,
+                                    solution: `DECLARE
+    -- Cursor de empleados
+    CURSOR c_emp IS 
+        SELECT numrun_emp, pnombre_emp || ' ' || appaterno_emp AS nom_completo, fecha_contrato
+        FROM empleado
+        ORDER BY numrun_emp;
+        
+    -- Variables receptoras del cursor
+    v_run     empleado.numrun_emp%TYPE;
+    v_nom     VARCHAR2(60);
+    v_fec_con empleado.fecha_contrato%TYPE;
+    
+    -- Variables para cálculos
+    v_cant_vehiculos NUMBER;
+    v_total_arri     NUMBER;
+    v_total_dias     NUMBER;
+    v_antiguedad     NUMBER;
+    v_bono_calc      NUMBER;
+    v_clasificacion  VARCHAR2(20);
+BEGIN
+    -- Limpiar la tabla destino
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE RESUMEN_PRODUCTIVIDAD_EMP';
+    
+    -- Recorrer el cursor
+    OPEN c_emp;
+    LOOP
+        FETCH c_emp INTO v_run, v_nom, v_fec_con;
+        EXIT WHEN c_emp%NOTFOUND;
+        
+        -- 1. Selects separados para funciones de grupo (Regla de la EV3)
+        -- Cantidad de vehículos asignados
+        SELECT COUNT(cod_vehiculo)
+        INTO v_cant_vehiculos
+        FROM vehiculo_electrico
+        WHERE numrun_emp = v_run;
+        
+        -- Total arriendos y días (AÑO 2025)
+        SELECT COUNT(a.id_arriendo), NVL(SUM(a.dias_solicitados), 0)
+        INTO v_total_arri, v_total_dias
+        FROM arriendo_vehiculo a
+        JOIN vehiculo_electrico v ON a.cod_vehiculo = v.cod_vehiculo
+        WHERE v.numrun_emp = v_run
+          AND EXTRACT(YEAR FROM a.fecha_ini_arriendo) = 2025;
+          
+        -- 2. Cálculos PL/SQL
+        v_antiguedad := TRUNC(MONTHS_BETWEEN(SYSDATE, v_fec_con)/12);
+        v_bono_calc  := v_total_arri * 5000;
+        
+        -- 3. Clasificación IF/ELSIF
+        IF v_total_arri >= 10 THEN
+            v_clasificacion := 'Alta';
+        ELSIF v_total_arri >= 5 THEN
+            v_clasificacion := 'Media';
+        ELSIF v_total_arri >= 1 THEN
+            v_clasificacion := 'Baja';
+        ELSE
+            v_clasificacion := 'Sin Actividad';
+        END IF;
+        
+        -- 4. INSERT final en tabla resumen
+        INSERT INTO RESUMEN_PRODUCTIVIDAD_EMP 
+            (numrun_emp, anno_proceso, nombre_completo, antiguedad_anios, 
+             cant_vehiculos_asignados, total_arriendos_gestionados, 
+             total_dias_arrendados, bono_calculado, clasificacion_productividad)
+        VALUES 
+            (v_run, 2025, v_nom, v_antiguedad, 
+             v_cant_vehiculos, v_total_arri, 
+             v_total_dias, v_bono_calc, v_clasificacion);
+             
+    END LOOP;
+    CLOSE c_emp;
+    
+    DBMS_OUTPUT.PUT_LINE('Proceso de Resumen finalizado exitosamente.');
+END;
+/`
+                                }
+                            ]
+                        },
+                        {
+                            type: 'exercises',
+                            title: 'Desafío Clon: Simulacro EV3 (Parte 2)',
+                            subtitle: 'Análisis de los resultados generados en la Parte 1.',
+                            items: [
+                                {
+                                    num: 'B',
+                                    title: 'Ajuste de Bono (Emula Parte 2 de EV3)',
+                                    desc: `Crea un bloque anónimo que lea los resultados de la parte A y proponga el bono final.<br><br>
+                                    <strong>Requerimientos:</strong>
+                                    <ul class="list-decimal ml-8 mt-4 space-y-3">
+                                        <li>Limpiar ` + '`AJUSTE_BONO_EMP`' + ` con EXECUTE IMMEDIATE.</li>
+                                        <li>Crear cursor que lea ` + '`RESUMEN_PRODUCTIVIDAD_EMP`' + ` y ordene por numrun_emp.</li>
+                                        <li>En el LOOP, por cada empleado, ir a buscar su porcentaje de ajuste y acción de RRHH a la tabla ` + '`PARAM_AJUSTE_BONO`' + ` basado en su <code>clasificacion_productividad</code>.</li>
+                                        <li>Calcular el <code>bono_propuesto = bono_calculado * (1 + (porc_ajuste / 100))</code>.</li>
+                                        <li>Calcular <code>diferencia = bono_propuesto - bono_calculado</code>.</li>
+                                        <li>Insertar en ` + '`AJUSTE_BONO_EMP`' + `.</li>
+                                    </ul>`,
+                                    solution: `DECLARE
+    CURSOR c_resumen IS
+        SELECT numrun_emp, anno_proceso, clasificacion_productividad, bono_calculado
+        FROM RESUMEN_PRODUCTIVIDAD_EMP
+        ORDER BY numrun_emp;
+        
+    v_run     RESUMEN_PRODUCTIVIDAD_EMP.numrun_emp%TYPE;
+    v_anno    RESUMEN_PRODUCTIVIDAD_EMP.anno_proceso%TYPE;
+    v_clasif  RESUMEN_PRODUCTIVIDAD_EMP.clasificacion_productividad%TYPE;
+    v_bono    RESUMEN_PRODUCTIVIDAD_EMP.bono_calculado%TYPE;
+    
+    v_porc_ajuste PARAM_AJUSTE_BONO.porc_ajuste%TYPE;
+    v_accion      PARAM_AJUSTE_BONO.accion_rh%TYPE;
+    
+    v_bono_prop   NUMBER;
+    v_dif         NUMBER;
+BEGIN
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE AJUSTE_BONO_EMP';
+    
+    OPEN c_resumen;
+    LOOP
+        FETCH c_resumen INTO v_run, v_anno, v_clasif, v_bono;
+        EXIT WHEN c_resumen%NOTFOUND;
+        
+        -- Obtener parámetros
+        SELECT porc_ajuste, accion_rh
+        INTO v_porc_ajuste, v_accion
+        FROM PARAM_AJUSTE_BONO
+        WHERE clasificacion = v_clasif;
+        
+        -- Cálculos (redondeados)
+        v_bono_prop := ROUND(v_bono * (1 + (v_porc_ajuste / 100)));
+        v_dif := v_bono_prop - v_bono;
+        
+        -- Insert
+        INSERT INTO AJUSTE_BONO_EMP 
+            (numrun_emp, anno_proceso, clasificacion, bono_actual, 
+             porc_ajuste, bono_propuesto, diferencia, accion_recomendada)
+        VALUES 
+            (v_run, v_anno, v_clasif, v_bono, 
+             v_porc_ajuste, v_bono_prop, v_dif, v_accion);
+             
+    END LOOP;
+    CLOSE c_resumen;
+    
+    DBMS_OUTPUT.PUT_LINE('Proceso de Ajuste de Bonos completado.');
+END;
+/`
+                                }
+                            ]
+                        },
+                        {
+                            type: 'content',
+                            title: 'Cierre y Metacognición',
+                            icon: 'fa-brain',
+                            html: `<div class="bg-orange-50 p-12 rounded-[3rem] border-4 border-orange-200 text-center shadow-inner mt-8">
+                                <i class="fa-solid fa-lightbulb text-8xl text-orange-400 mb-8"></i>
+                                <h3 class="text-5xl font-black text-orange-900 mb-8">Para reflexionar...</h3>
+                                <p class="text-4xl text-orange-800 font-bold leading-relaxed mb-8">
+                                    ¿De qué manera crees que automatizar este proceso (que calcula bonos para TODOS los empleados con un solo bloque de código) genera valor en el mundo laboral?
+                                </p>
+                                <p class="text-3xl text-orange-600 font-medium leading-relaxed">
+                                    Imagina hacer estos mismos cruces y validaciones a mano, mes a mes, para 1,000 empleados. Al automatizar estos flujos usando cursores, no solo ahorramos tiempo masivo, sino que evitamos errores humanos críticos en los pagos de la empresa. ¡Ese es el verdadero poder del PL/SQL!
+                                </p>
+                            </div>`
+                        }
+                    ]
+                };
+            },
+            computed: {
+                currentSlide() {
+                    return this.slides[this.currentIndex];
+                },
+                progressPercentage() {
+                    return ((this.currentIndex + 1) / this.slides.length) * 100;
+                }
+            },
+            methods: {
+                next() {
+                    if (this.currentIndex < this.slides.length - 1) {
+                        this.currentIndex++;
+                    }
+                },
+                prev() {
+                    if (this.currentIndex > 0) {
+                        this.currentIndex--;
+                    }
+                },
+                handleKeydown(e) {
+                    if (e.key === 'ArrowRight' || e.key === ' ') {
+                        this.next();
+                    } else if (e.key === 'ArrowLeft') {
+                        this.prev();
+                    }
+                },
+                copyCode(text) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        alert('¡Código copiado al portapapeles!');
+                    });
+                }
+            },
+            mounted() {
+                this.$el.focus();
+            },
+            updated() {
+                // Re-run prism highlighting when slide changes
+                if (window.Prism) {
+                    Prism.highlightAll();
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+
+</html>

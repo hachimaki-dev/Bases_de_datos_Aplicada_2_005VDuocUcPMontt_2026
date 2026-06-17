@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preparación EV3 - Clase 1: Los Cimientos</title>
+
+    <!-- Configuración Centralizada -->
+    <script src="../js/config.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+    <style>
+        body,
+        html {
+            overflow: hidden !important;
+            height: 100% !important;
+            margin: 0 !important;
+            background-color: #F8FAFC !important;
+            /* bg-slate-50 */
+            color: #1E293B !important;
+            /* text-slate-800 */
+        }
+
+        #app {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-image: radial-gradient(circle at 50% 50%, #FFFFFF 0%, #F1F5F9 100%);
+        }
+
+        pre[class*="language-"] {
+            margin: 0 !important;
+            padding: 2rem !important;
+            border-radius: 1.5rem !important;
+            font-size: 1.5rem !important;
+            line-height: 1.4 !important;
+            max-height: 55vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+            background-color: #1E1E2E !important;
+            /* Dark background for code to stand out */
+        }
+
+        .slide-element-title i {
+            margin-right: 15px;
+        }
+
+        /* Estilos resúmenes (Soluciones libres) */
+        details {
+            background-color: #F8FAFC;
+            border: 2px solid #E2E8F0;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            color: #334155;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        details[open] {
+            border-color: #818CF8;
+            background-color: #EEF2FF;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        summary {
+            font-weight: 800;
+            color: #4F46E5;
+            outline: none;
+            display: flex;
+            align-items: center;
+        }
+
+        summary::before {
+            content: "\f05a";
+            /* fa-info-circle */
+            font-family: "Font Awesome 6 Free";
+            margin-right: 10px;
+        }
+
+        details>div {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px dashed #CBD5E1;
+            line-height: 1.6;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: 0.3s;
+            z-index: 10;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Fade transitions */
+        .fade-enter-active,
+        .fade-leave-active {
+            transition: opacity 0.5s ease;
+        }
+
+        .fade-enter-from,
+        .fade-leave-to {
+            opacity: 0;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app" tabindex="0" @keydown="handleKeydown" class="focus:outline-none">
+
+        <!-- Header minimalista -->
+        <header
+            class="p-6 flex justify-between items-center z-50 fixed top-0 w-full bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+            <a href="../index.html"
+                class="text-violet-600 hover:text-violet-800 transition-colors flex items-center gap-2 font-black text-xl">
+                <i class="fa-solid fa-arrow-left"></i> Volver al Menú
+            </a>
+            <div
+                class="text-emerald-700 font-bold tracking-widest uppercase text-sm border-2 border-emerald-200 px-5 py-2 rounded-full bg-emerald-50 shadow-sm">
+                PREPARACIÓN EV3: URBAN WHEELS
+            </div>
+            <div
+                class="text-slate-700 font-bold text-2xl px-5 py-2 rounded-xl bg-slate-100 border-2 border-slate-200 shadow-sm">
+                Diapositiva {{ currentIndex + 1 }} de {{ slides.length }}
+            </div>
+        </header>
+
+        <!-- Contenedor Principal de Slides -->
+        <main
+            class="flex-grow flex flex-col items-center justify-center p-12 mt-24 mb-24 relative w-full h-full z-10 overflow-y-auto">
+
+            <div class="w-full max-w-7xl mx-auto flex flex-col items-center justify-center pt-8">
+
+                <!-- SLIDE TIPO TITLE -->
+                <div v-if="currentSlide.type === 'title'" class="text-center w-full fade-in">
+                    <div
+                        class="inline-block bg-violet-100 p-8 rounded-[3rem] mb-12 shadow-sm border-4 border-violet-200">
+                        <i :class="['fa-solid text-9xl text-violet-600', currentSlide.icon || 'fa-graduation-cap']"></i>
+                    </div>
+                    <h1
+                        class="text-6xl md:text-8xl font-black text-slate-800 mb-8 drop-shadow-sm leading-tight tracking-tight">
+                        {{ currentSlide.title }}
+                    </h1>
+                    <p class="text-3xl md:text-4xl text-slate-600 font-bold max-w-5xl mx-auto leading-relaxed mt-10"
+                        v-html="currentSlide.subtitle"></p>
+                </div>
+
+                <!-- SLIDE TIPO CONTENT -->
+                <div v-else-if="currentSlide.type === 'content'"
+                    class="w-full bg-white p-16 rounded-[3rem] border-2 border-slate-200 shadow-xl fade-in">
+                    <div class="flex items-center mb-12 border-b-4 border-slate-100 pb-8">
+                        <div class="bg-blue-100 p-6 rounded-3xl mr-8 border-4 border-blue-200">
+                            <i :class="['fa-solid text-7xl text-blue-600', currentSlide.icon || 'fa-book-open']"></i>
+                        </div>
+                        <h2 class="text-6xl font-black text-slate-800 tracking-tight">{{ currentSlide.title }}</h2>
+                    </div>
+                    <div class="text-4xl text-slate-700 leading-[1.7] font-semibold" v-html="currentSlide.html"></div>
+                </div>
+
+                <!-- SLIDE TIPO CODE -->
+                <div v-else-if="currentSlide.type === 'code'" class="w-full fade-in">
+                    <div
+                        class="text-center mb-10 bg-white p-8 rounded-[2rem] shadow-sm border-2 border-slate-100 inline-block w-full">
+                        <h2 class="text-5xl font-black text-violet-700 mb-4 flex items-center justify-center gap-6">
+                            <i class="fa-solid fa-laptop-code text-5xl"></i> {{ currentSlide.title }}
+                        </h2>
+                        <p class="text-3xl text-slate-600 font-bold">{{ currentSlide.subtitle }}</p>
+                    </div>
+                    <div class="w-full relative group mt-8">
+                        <div
+                            class="relative bg-[#1E1E2E] rounded-[2.5rem] border-4 border-slate-800 overflow-hidden shadow-2xl">
+                            <div
+                                class="px-8 py-4 bg-[#11111B] flex gap-3 items-center justify-between border-b-2 border-slate-800">
+                                <div class="flex gap-4">
+                                    <div class="w-6 h-6 rounded-full bg-red-500"></div>
+                                    <div class="w-6 h-6 rounded-full bg-yellow-500"></div>
+                                    <div class="w-6 h-6 rounded-full bg-emerald-500"></div>
+                                </div>
+                                <div class="text-slate-400 font-mono text-2xl font-bold tracking-widest">Ejemplo.sql
+                                </div>
+                                <button @click="copyCode(currentSlide.sql)"
+                                    class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl font-bold transition text-lg flex items-center gap-2">
+                                    <i class="fa-solid fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                            <pre><code class="language-sql">{{ currentSlide.sql }}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SLIDE TIPO EXERCISES -->
+                <div v-else-if="currentSlide.type === 'exercises'"
+                    class="w-full bg-white p-12 rounded-[3rem] border-2 border-slate-200 shadow-xl fade-in text-left">
+                    <h2
+                        class="text-6xl font-black text-slate-800 mb-8 flex items-center gap-6 border-b-4 border-slate-100 pb-8">
+                        <i class="fa-solid fa-dumbbell text-emerald-600 bg-emerald-100 p-4 rounded-3xl"></i> {{
+                        currentSlide.title }}
+                    </h2>
+                    <p class="text-3xl text-slate-600 font-bold mb-10">{{ currentSlide.subtitle }}</p>
+
+                    <div class="grid grid-cols-1 gap-10">
+                        <div v-for="(ex, index) in currentSlide.items" :key="index"
+                            class="bg-slate-50 p-10 rounded-[2.5rem] border-2 border-slate-200 flex flex-col justify-between shadow-sm">
+                            <div>
+                                <div class="flex items-center justify-between mb-6">
+                                    <span
+                                        class="bg-violet-200 text-violet-800 font-black px-5 py-2 rounded-xl text-xl border-2 border-violet-300">Desafío
+                                        {{ ex.num }}</span>
+                                </div>
+                                <h3 class="text-4xl font-black text-slate-800 mb-6">{{ ex.title }}</h3>
+                                <div class="text-2xl text-slate-700 leading-relaxed font-semibold mb-8 bg-white p-6 rounded-2xl border border-slate-200"
+                                    v-html="ex.desc"></div>
+                            </div>
+
+                            <div class="space-y-6">
+                                <details class="group">
+                                    <summary
+                                        class="text-2xl bg-indigo-50 p-4 rounded-xl border border-indigo-200 hover:bg-indigo-100 transition">
+                                        Ver Solución Propuesta</summary>
+                                    <div
+                                        class="mt-4 p-2 bg-[#1E1E2E] rounded-2xl overflow-hidden relative group-open:animate-fadeIn">
+                                        <button @click="copyCode(ex.solution)"
+                                            class="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold transition text-sm z-10 flex items-center gap-2">
+                                            <i class="fa-solid fa-copy"></i> Copiar
+                                        </button>
+                                        <pre
+                                            class="!m-0 !p-6 !text-lg !bg-transparent"><code class="language-sql">{{ ex.solution }}</code></pre>
+                                    </div>
+                                </details>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <div class="fixed bottom-12 left-0 w-full flex justify-center gap-16 z-50 pointer-events-none">
+            <button @click="prev" :disabled="currentIndex === 0"
+                class="pointer-events-auto w-28 h-28 rounded-full flex items-center justify-center bg-white text-slate-700 text-5xl shadow-[0_10px_25px_rgba(0,0,0,0.15)] hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-white transition-all border-4 border-slate-200 hover:scale-110 active:scale-95 focus:outline-none">
+                <i class="fa-solid fa-chevron-left ml-[-5px]"></i>
+            </button>
+            <button @click="next" :disabled="currentIndex === slides.length - 1"
+                class="pointer-events-auto w-28 h-28 rounded-full flex items-center justify-center bg-white text-slate-700 text-5xl shadow-[0_10px_25px_rgba(0,0,0,0.15)] hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-white transition-all border-4 border-slate-200 hover:scale-110 active:scale-95 focus:outline-none">
+                <i class="fa-solid fa-chevron-right mr-[-5px]"></i>
+            </button>
+        </div>
+
+        <div class="fixed bottom-0 left-0 h-6 bg-slate-200 w-full z-50">
+            <div class="h-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-emerald-500 transition-all duration-300 rounded-r-full shadow-[0_0_15px_rgba(139,92,246,0.5)]"
+                :style="{ width: progressPercentage + '%' }"></div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentIndex: 0,
+                    slides: [
+                        {
+                            type: 'title',
+                            title: 'Clase 1: Los Cimientos y Lo Inesperado',
+                            subtitle: 'Repaso de <strong>SELECT INTO</strong>, toma de decisiones con <strong>IF/ELSIF</strong>, y el manejo de <strong>EXCEPCIONES</strong>.<br><br><div class="flex flex-col md:flex-row gap-4 justify-center mt-6"><a href="./ev3%20real/BD_arriendo_vehiculos_URBAN_WHEELS.sql" download class="bg-violet-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-violet-700 transition shadow-md"><i class="fa-solid fa-database mr-2"></i> Descargar BD Oficial</a><a href="./bd_tablas_clon_ev3.sql" download class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-md"><i class="fa-solid fa-file-code mr-2"></i> Descargar Tablas Clon</a></div><br><span class="inline-block mt-4 bg-emerald-100 text-emerald-800 px-6 py-3 rounded-full border-2 border-emerald-200 font-black"><i class="fa-solid fa-keyboard mr-2"></i> Presiona la flecha DERECHA ➡ para avanzar</span>',
+                            icon: 'fa-building-shield'
+                        },
+                        {
+                            type: 'content',
+                            title: '⚡ Activación Rápida (Kahoot!)',
+                            icon: 'fa-bolt',
+                            html: `<p class="mb-8 text-3xl">Pensemos rápido. ¿Cuál es la respuesta correcta para cada caso?</p>
+                            
+                            <div class="space-y-6">
+                                <div class="bg-slate-50 p-6 rounded-3xl border-4 border-slate-200">
+                                    <h3 class="text-3xl font-black text-slate-800 mb-4">1. ¿Qué cláusula es OBLIGATORIA al usar SELECT dentro de PL/SQL?</h3>
+                                    <div class="grid grid-cols-2 gap-4 text-2xl font-bold">
+                                        <div class="bg-red-50 hover:bg-red-100 text-red-800 p-4 rounded-xl border-2 border-red-200 cursor-pointer transition">A) WHERE</div>
+                                        <div class="bg-blue-50 hover:bg-blue-100 text-blue-800 p-4 rounded-xl border-2 border-blue-200 cursor-pointer transition">B) GROUP BY</div>
+                                        <div class="bg-yellow-50 hover:bg-yellow-100 text-yellow-800 p-4 rounded-xl border-2 border-yellow-200 cursor-pointer transition">C) INTO</div>
+                                        <div class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 p-4 rounded-xl border-2 border-emerald-200 cursor-pointer transition">D) ORDER BY</div>
+                                    </div>
+                                    <details class="mt-4"><summary class="text-xl text-slate-500 cursor-pointer hover:text-emerald-600 transition">Ver respuesta correcta</summary><div class="mt-2 p-4 bg-emerald-50 text-2xl text-emerald-700 font-bold border-l-4 border-emerald-500 rounded-r-xl">¡Exacto! Es la C (INTO). Necesitamos guardar el resultado en variables.</div></details>
+                                </div>
+
+                                <div class="bg-slate-50 p-6 rounded-3xl border-4 border-slate-200">
+                                    <h3 class="text-3xl font-black text-slate-800 mb-4">2. ¿Qué atributo usamos para que una variable tenga el mismo tipo de dato que una columna?</h3>
+                                    <div class="grid grid-cols-2 gap-4 text-2xl font-bold">
+                                        <div class="bg-red-50 hover:bg-red-100 text-red-800 p-4 rounded-xl border-2 border-red-200 cursor-pointer transition">A) %ROWTYPE</div>
+                                        <div class="bg-blue-50 hover:bg-blue-100 text-blue-800 p-4 rounded-xl border-2 border-blue-200 cursor-pointer transition">B) %TYPE</div>
+                                        <div class="bg-yellow-50 hover:bg-yellow-100 text-yellow-800 p-4 rounded-xl border-2 border-yellow-200 cursor-pointer transition">C) %COLUMN</div>
+                                        <div class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 p-4 rounded-xl border-2 border-emerald-200 cursor-pointer transition">D) VARCHAR2</div>
+                                    </div>
+                                    <details class="mt-4"><summary class="text-xl text-slate-500 cursor-pointer hover:text-blue-600 transition">Ver respuesta correcta</summary><div class="mt-2 p-4 bg-blue-50 text-2xl text-blue-700 font-bold border-l-4 border-blue-500 rounded-r-xl">¡Bien! Es la B (%TYPE). %ROWTYPE es para la fila completa.</div></details>
+                                </div>
+                            </div>`
+                        },
+                        {
+                            type: 'content',
+                            title: 'Anatomía Básica del Bloque PL/SQL',
+                            icon: 'fa-cubes',
+                            html: `<p class="mb-8">Todo bloque anónimo en PL/SQL (como los que pide la EV3) tiene esta estructura fundamental:</p>
+                                   <div class="grid grid-cols-1 gap-6 font-mono text-2xl bg-slate-50 p-8 rounded-3xl border-4 border-slate-200">
+                                       <div class="p-6 bg-blue-50 border-l-8 border-blue-400 rounded-xl">
+                                           <span class="text-blue-700 font-black text-3xl">DECLARE</span>
+                                           <p class="text-slate-600 mt-2 font-sans font-bold">Aquí nacen las variables y cursores. Siempre usa %TYPE.</p>
+                                       </div>
+                                       <div class="p-6 bg-emerald-50 border-l-8 border-emerald-400 rounded-xl">
+                                           <span class="text-emerald-700 font-black text-3xl">BEGIN</span>
+                                           <p class="text-slate-600 mt-2 font-sans font-bold">La zona de acción. Selects, Inserts, Ifs, Loops. ¡Aquí ocurre la magia!</p>
+                                       </div>
+                                       <div class="p-6 bg-rose-50 border-l-8 border-rose-400 rounded-xl">
+                                           <span class="text-rose-700 font-black text-3xl">EXCEPTION</span>
+                                           <p class="text-slate-600 mt-2 font-sans font-bold">La red de seguridad. Si el bloque BEGIN choca, caemos aquí (lo veremos hoy).</p>
+                                       </div>
+                                       <div class="p-6 bg-slate-100 border-l-8 border-slate-400 rounded-xl">
+                                           <span class="text-slate-700 font-black text-3xl">END;</span>
+                                       </div>
+                                   </div>`
+                        },
+                        {
+                            type: 'code',
+                            title: 'SELECT INTO + Toma de Decisiones',
+                            subtitle: 'Uniendo la lectura de datos con la lógica de negocio (IF / ELSIF).',
+                            sql: `DECLARE
+    -- 1. Declarar las variables con el tipo exacto de la tabla
+    v_sueldo    empleado.sueldo_base%TYPE;
+    v_nombre    empleado.pnombre_emp%TYPE;
+BEGIN
+    -- 2. Leer desde la BD (Debe traer EXACTAMENTE 1 fila)
+    SELECT pnombre_emp, sueldo_base
+    INTO v_nombre, v_sueldo
+    FROM empleado
+    WHERE numrun_emp = 12459100;
+    
+    -- 3. Tomar decisiones
+    IF v_sueldo > 1200000 THEN
+        DBMS_OUTPUT.PUT_LINE(v_nombre || ' tiene un sueldo ALTO');
+    ELSIF v_sueldo >= 900000 THEN
+        DBMS_OUTPUT.PUT_LINE(v_nombre || ' tiene un sueldo MEDIO');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE(v_nombre || ' tiene un sueldo BAJO');
+    END IF;
+END;
+/`
+                        },
+                        {
+                            type: 'content',
+                            title: '¿Qué pasa cuando algo sale mal?',
+                            icon: 'fa-car-burst',
+                            html: `<p class="mb-8">En el mundo real, los datos no son perfectos. ¿Qué ocurre si buscamos un empleado que <strong>no existe</strong>? ¿O si nuestra búsqueda retorna <strong>20 empleados</strong> a la vez?</p>
+                            
+                            <div class="bg-rose-50 p-8 rounded-3xl border-4 border-rose-200 mb-8 flex items-center gap-8 shadow-sm">
+                                <i class="fa-solid fa-triangle-exclamation text-8xl text-rose-500"></i>
+                                <div>
+                                    <h3 class="text-4xl font-black text-rose-800 mb-2">¡El código explota! (Error Crítico)</h3>
+                                    <p class="text-2xl text-rose-700 font-bold">Oracle detiene la ejecución inmediatamente y lanza una alerta roja. Todo el progreso del bloque se cancela.</p>
+                                </div>
+                            </div>
+
+                            <p class="text-3xl">Para evitar que el programa se detenga bruscamente, usamos el bloque <strong class="text-violet-700 bg-violet-100 px-3 py-1 rounded-lg">EXCEPTION</strong>. Es como el airbag del código: absorbe el impacto y nos permite manejar el accidente con elegancia.</p>`
+                        },
+                        {
+                            type: 'content',
+                            title: 'Las Excepciones Predefinidas',
+                            icon: 'fa-shield-halved',
+                            html: `<p class="mb-8">Oracle tiene "nombres especiales" para los errores más comunes de <code>SELECT INTO</code>. Debes aprenderte estos dos de memoria:</p>
+                            
+                            <ul class="space-y-6">
+                                <li class="bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 flex flex-col shadow-sm">
+                                    <span class="text-3xl font-black text-indigo-700 font-mono mb-2">NO_DATA_FOUND</span>
+                                    <span class="text-2xl font-bold text-slate-600">Se dispara cuando tu SELECT INTO devuelve <strong class="text-rose-600 bg-rose-100 px-2 rounded">0 filas</strong>. Ejemplo: Buscaste un RUT que no existe.</span>
+                                </li>
+                                <li class="bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 flex flex-col shadow-sm">
+                                    <span class="text-3xl font-black text-indigo-700 font-mono mb-2">TOO_MANY_ROWS</span>
+                                    <span class="text-2xl font-bold text-slate-600">Se dispara cuando tu SELECT INTO devuelve <strong class="text-rose-600 bg-rose-100 px-2 rounded">2 o más filas</strong>. (Recuerda que SELECT INTO solo soporta 1 registro exacto).</span>
+                                </li>
+                                <li class="bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 flex flex-col shadow-sm">
+                                    <span class="text-3xl font-black text-indigo-700 font-mono mb-2">OTHERS</span>
+                                    <span class="text-2xl font-bold text-slate-600">El comodín. Atrapa <strong>cualquier otro error</strong> que no hayas especificado antes (divisiones por cero, errores de conexión, etc). Siempre va al final.</span>
+                                </li>
+                            </ul>`
+                        },
+                        {
+                            type: 'code',
+                            title: 'Protegiendo el Código con EXCEPTION',
+                            subtitle: 'Un bloque robusto nunca explota sin avisar.',
+                            sql: `DECLARE
+    v_nombre empleado.pnombre_emp%TYPE;
+    v_sueldo empleado.sueldo_base%TYPE;
+BEGIN
+    SELECT pnombre_emp, sueldo_base
+    INTO v_nombre, v_sueldo
+    FROM empleado
+    WHERE numrun_emp = 99999999; -- ¡RUT INEXISTENTE!
+    
+    DBMS_OUTPUT.PUT_LINE('Nombre: ' || v_nombre);
+    
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('ERROR: El empleado buscado no existe en la BD.');
+    WHEN TOO_MANY_ROWS THEN
+        DBMS_OUTPUT.PUT_LINE('ERROR: La consulta retornó más de un empleado.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('ERROR CRÍTICO INESPERADO: ' || SQLERRM);
+END;
+/`
+                        },
+                        {
+                            type: 'exercises',
+                            title: 'Desafío Mini-Clon 1',
+                            subtitle: 'Practiquemos lo aprendido con un caso real de la empresa Urban Wheels.',
+                            items: [
+                                {
+                                    num: '1',
+                                    title: 'El "Empleado Seguro"',
+                                    desc: `Crea un bloque anónimo que busque al empleado con <code>numrun_emp = 11996940</code>.<br><br>
+                                    <strong>Requerimientos:</strong>
+                                    <ul class="list-disc ml-8 mt-4 space-y-2">
+                                        <li>Obtener su <strong>nombre (pnombre_emp)</strong> y su <strong>fecha de contrato</strong>.</li>
+                                        <li>Calcular su <strong>antigüedad en años</strong>. <br>Fórmula: <code>TRUNC(MONTHS_BETWEEN(SYSDATE, v_fecha_contrato) / 12)</code></li>
+                                        <li>Si tiene <strong>más de 25 años</strong> de antigüedad, imprimir: "X es un empleado VETERANO".</li>
+                                        <li>Si tiene <strong>entre 10 y 25 años</strong> (inclusive), imprimir: "X es un empleado EXPERIMENTADO".</li>
+                                        <li>Si tiene <strong>menos de 10 años</strong>, imprimir: "X es un empleado JUNIOR".</li>
+                                        <li><strong>Obligatorio:</strong> Agregar bloque de excepciones para <code>NO_DATA_FOUND</code> y <code>OTHERS</code> con mensajes de alerta.</li>
+                                    </ul>
+                                    <br><em>Tip: Prueba cambiar el RUN en tu código a un número que no exista para ver cómo se activa tu excepción.</em>`,
+                                    solution: `DECLARE
+    v_nombre     empleado.pnombre_emp%TYPE;
+    v_fecha_cont empleado.fecha_contrato%TYPE;
+    v_anios      NUMBER;
+BEGIN
+    -- 1. Consultar la BD
+    SELECT pnombre_emp, fecha_contrato
+    INTO v_nombre, v_fecha_cont
+    FROM empleado
+    WHERE numrun_emp = 11996940;
+    
+    -- 2. Calcular antigüedad
+    v_anios := TRUNC(MONTHS_BETWEEN(SYSDATE, v_fecha_cont) / 12);
+    
+    -- 3. Toma de decisiones
+    IF v_anios > 25 THEN
+        DBMS_OUTPUT.PUT_LINE(v_nombre || ' es un empleado VETERANO (' || v_anios || ' años)');
+    ELSIF v_anios >= 10 THEN
+        DBMS_OUTPUT.PUT_LINE(v_nombre || ' es un empleado EXPERIMENTADO (' || v_anios || ' años)');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE(v_nombre || ' es un empleado JUNIOR (' || v_anios || ' años)');
+    END IF;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('⚠️ ATENCIÓN: El RUN ingresado no pertenece a ningún empleado.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('❌ ERROR DESCONOCIDO: ' || SQLERRM);
+END;
+/`
+                                }
+                            ]
+                        },
+                        {
+                            type: 'exercises',
+                            title: 'Desafío Mini-Clon 2',
+                            subtitle: 'Análisis y clasificación de clientes según su renta.',
+                            items: [
+                                {
+                                    num: '2',
+                                    title: 'El Cliente y su Renta',
+                                    desc: `Crea un bloque anónimo que busque al cliente con <code>numrun_cli = 15678901</code>.<br><br>
+                                    <strong>Requerimientos:</strong>
+                                    <ul class="list-disc ml-8 mt-4 space-y-2">
+                                        <li>Obtener su <strong>nombre (pnombre_cli)</strong> y su <strong>renta</strong>.</li>
+                                        <li>Si la renta es <strong>mayor a 3.000.000</strong>, imprimir: "El cliente X es de categoría PREMIUM ALTO".</li>
+                                        <li>Si la renta está <strong>entre 2.000.000 y 3.000.000</strong> (inclusive), imprimir: "El cliente X es de categoría FRECUENTE".</li>
+                                        <li>Si la renta es <strong>menor a 2.000.000</strong>, imprimir: "El cliente X es de categoría ESTÁNDAR".</li>
+                                        <li><strong>Obligatorio:</strong> Agregar bloque de excepciones para <code>NO_DATA_FOUND</code> y <code>OTHERS</code>.</li>
+                                    </ul>`,
+                                    solution: `DECLARE
+    v_nombre cliente.pnombre_cli%TYPE;
+    v_renta  cliente.renta%TYPE;
+BEGIN
+    SELECT pnombre_cli, renta
+    INTO v_nombre, v_renta
+    FROM cliente
+    WHERE numrun_cli = 15678901;
+    
+    IF v_renta > 3000000 THEN
+        DBMS_OUTPUT.PUT_LINE('El cliente ' || v_nombre || ' es de categoría PREMIUM ALTO');
+    ELSIF v_renta >= 2000000 THEN
+        DBMS_OUTPUT.PUT_LINE('El cliente ' || v_nombre || ' es de categoría FRECUENTE');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('El cliente ' || v_nombre || ' es de categoría ESTÁNDAR');
+    END IF;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('⚠️ ATENCIÓN: No se encontró ningún cliente con ese RUN.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('❌ ERROR DESCONOCIDO: ' || SQLERRM);
+END;
+/`
+                                }
+                            ]
+                        },
+                        {
+                            type: 'exercises',
+                            title: 'Desafío Mini-Clon 3',
+                            subtitle: 'Clasificación de vehículos según su valor de arriendo.',
+                            items: [
+                                {
+                                    num: '3',
+                                    title: 'El Vehículo de Urban Wheels',
+                                    desc: `Crea un bloque anónimo que busque el vehículo con <code>cod_vehiculo = \\'UW005\\'</code>.<br><br>
+                                    <strong>Requerimientos:</strong>
+                                    <ul class="list-disc ml-8 mt-4 space-y-2">
+                                        <li>Obtener su <strong>modelo</strong> y su <strong>valor de arriendo diario (valor_arriendo_dia)</strong>.</li>
+                                        <li>Si el valor es <strong>mayor a 30.000</strong>, imprimir: "El modelo X es un vehículo de LUJO".</li>
+                                        <li>Si el valor está <strong>entre 20.000 y 30.000</strong> (inclusive), imprimir: "El modelo X es un vehículo de GAMA MEDIA".</li>
+                                        <li>Si el valor es <strong>menor a 20.000</strong>, imprimir: "El modelo X es un vehículo ECONÓMICO".</li>
+                                        <li><strong>Obligatorio:</strong> Agregar bloque de excepciones para <code>NO_DATA_FOUND</code> y <code>OTHERS</code>.</li>
+                                    </ul>`,
+                                    solution: `DECLARE
+    v_modelo vehiculo_electrico.modelo%TYPE;
+    v_valor  vehiculo_electrico.valor_arriendo_dia%TYPE;
+BEGIN
+    SELECT modelo, valor_arriendo_dia
+    INTO v_modelo, v_valor
+    FROM vehiculo_electrico
+    WHERE cod_vehiculo = 'UW005';
+    
+    IF v_valor > 30000 THEN
+        DBMS_OUTPUT.PUT_LINE('El modelo ' || v_modelo || ' es un vehículo de LUJO');
+    ELSIF v_valor >= 20000 THEN
+        DBMS_OUTPUT.PUT_LINE('El modelo ' || v_modelo || ' es un vehículo de GAMA MEDIA');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('El modelo ' || v_modelo || ' es un vehículo ECONÓMICO');
+    END IF;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('⚠️ ATENCIÓN: No existe un vehículo con ese código.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('❌ ERROR DESCONOCIDO: ' || SQLERRM);
+END;
+/`
+                                }
+                            ]
+                        },
+                        {
+                            type: 'content',
+                            title: 'Cierre y Metacognición',
+                            icon: 'fa-brain',
+                            html: `<div class="bg-indigo-50 p-12 rounded-[3rem] border-4 border-indigo-200 text-center shadow-inner mt-8">
+                                <i class="fa-solid fa-lightbulb text-8xl text-indigo-400 mb-8"></i>
+                                <h3 class="text-5xl font-black text-indigo-900 mb-8">Para reflexionar...</h3>
+                                <p class="text-4xl text-indigo-800 font-bold leading-relaxed mb-8">
+                                    ¿Por qué crees que es <strong>tan importante</strong> anticiparnos a los errores (como NO_DATA_FOUND) usando excepciones en lugar de dejar que Oracle detenga el programa bruscamente?
+                                </p>
+                                <p class="text-3xl text-indigo-600 font-medium leading-relaxed">
+                                    Piensa en el impacto para el usuario final o para el sistema si un proceso se cae a la mitad sin avisar. ¡El software profesional no solo funciona cuando todo sale bien, sino que sabe qué hacer cuando algo sale mal!
+                                </p>
+                            </div>`
+                        }
+                    ]
+                };
+            },
+            computed: {
+                currentSlide() {
+                    return this.slides[this.currentIndex];
+                },
+                progressPercentage() {
+                    return ((this.currentIndex + 1) / this.slides.length) * 100;
+                }
+            },
+            methods: {
+                next() {
+                    if (this.currentIndex < this.slides.length - 1) {
+                        this.currentIndex++;
+                    }
+                },
+                prev() {
+                    if (this.currentIndex > 0) {
+                        this.currentIndex--;
+                    }
+                },
+                handleKeydown(e) {
+                    if (e.key === 'ArrowRight' || e.key === ' ') {
+                        this.next();
+                    } else if (e.key === 'ArrowLeft') {
+                        this.prev();
+                    }
+                },
+                copyCode(text) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        alert('¡Código copiado al portapapeles!');
+                    });
+                }
+            },
+            mounted() {
+                this.$el.focus();
+            },
+            updated() {
+                // Re-run prism highlighting when slide changes
+                if (window.Prism) {
+                    Prism.highlightAll();
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+
+</html>

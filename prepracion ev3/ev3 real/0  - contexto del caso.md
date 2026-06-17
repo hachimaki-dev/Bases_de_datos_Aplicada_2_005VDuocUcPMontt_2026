@@ -1,0 +1,16 @@
+Caso Arriendo de Vehículos de Movilidad Urbana — URBAN WHEELS LTDA.
+
+En la última década, la movilidad urbana en Latinoamérica ha experimentado una transformación radical impulsada por la sustentabilidad ambiental y la búsqueda de soluciones de transporte eficientes. En este contexto, el año 2012 un grupo de emprendedores chilenos funda la empresa URBAN WHEELS LTDA. con sede en Santiago, con el objetivo de proporcionar soluciones de arriendo de vehículos de movilidad urbana de última generación, como bicicletas eléctricas, scooters eléctricos y patines eléctricos. La empresa se posiciona como líder en sustentabilidad ambiental, ofreciendo alternativas de desplazamiento limpias, económicas y accesibles para ciudadanos y empresas que buscan reducir su huella de carbono.
+La flota de URBAN WHEELS incluye bicicletas eléctricas de marcas reconocidas internacionalmente como Trek y Specialized, scooters eléctricos de Xiaomi y Segway, patines eléctricos de la línea Xiaomi Pro, bicicletas urbanas de Decathlon y triciclos eléctricos. Cada vehículo es inspeccionado y mantenido bajo estrictos protocolos de seguridad y calidad, asegurando máxima confiabilidad para los clientes.
+Cada vehículo está asignado a un encargado de arriendo, cuya función es gestionar todo el proceso de reserva, entrega, devolución e inspección post-uso de la unidad. Según las políticas comerciales de URBAN WHEELS, la empresa clasifica a sus clientes en cuatro categorías:
+Socio: cliente que invierte significativamente en los servicios de la empresa y participa en la toma de decisiones estratégicas.
+Premium: cliente frecuente que realiza arriendos de alta frecuencia y alto volumen.
+Nacional: cliente individual o empresa chilena que utiliza los servicios de forma esporádica o permanente.
+Extranjero: turista o empresa extranjera que utiliza los servicios durante su estadía en Chile.
+El modelo de negocio de URBAN WHEELS se fundamenta en un sistema de cobro dual: los clientes pagan un valor diario por arriendo del vehículo, más una garantía diaria que les es reintegrada al momento de la devolución en condiciones satisfactorias. El cobro parcial o total de la garantía se efectúa por las siguientes causales:
+Daños mecánicos o estructurales en el vehículo producto del mal uso.
+Daños en el sistema de propulsión, batería o componentes eléctricos.
+Rotura de neumáticos, frenos defectuosos u otros sistemas de seguridad.
+Multas por infracciones de tránsito durante el arriendo.
+La devolución de cualquier vehículo debe efectuarse dentro de los plazos establecidos en el contrato de arriendo. Las devoluciones fuera de plazo implican un cobro de multa por atraso, que varía según la cantidad de días excedidos. Los encargados de arriendo, además de su sueldo base, perciben una comisión por cada vehículo arrendado a su cargo, incentivando la calidad del servicio.
+URBAN WHEELS proyecta expandirse hacia otras ciudades de Chile y consolidarse como la plataforma de movilidad urbana sustentable número uno del país. Para lograr este objetivo, ha contratado los servicios de SIIT (empresa de soluciones informáticas), líder en consultoría tecnológica, para rediseñar completamente su arquitectura de datos y desarrollar nuevas herramientas analíticas que proporcionen información crítica para la toma de decisiones estratégicas.

@@ -6,8 +6,52 @@
 const appData = {
     entries: [
         {
+            id: 'preparacion-ev3-c2',
+            unit: 'EA3',
+            type: 'hero',
+            href: 'prepracion ev3/preparacion-ev3-clase2.html',
+            colSpan: 2,
+            date: '2026-06-17T20:00:00',
+            dateText: '17 Jun 2026',
+            tag: 'SIMULACRO EV3', tagIcon: 'fa-fire text-orange-300',
+            badge: 'Clase 2',
+            title: 'Preparación EV3:<br>Cursores y Simulacro',
+            description: 'Aprende a dominar los cursores explícitos y resuelve el Desafío Clon: un simulacro completo de la Evaluación 3 sobre la base de datos Urban Wheels.',
+            btnText: 'Iniciar Clase 2', btnIcon: 'fa-rocket',
+            theme: {
+                outerBorder: 'border-orange-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-orange-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-orange-500/20', circle2: 'bg-red-500/20',
+                tagBox: 'bg-orange-900/50 text-orange-200 border-orange-700 backdrop-blur-sm', tagText: 'text-orange-200', badgeTheme: 'bg-orange-600 text-white border-orange-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-orange-100', btn: 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 w-full justify-center text-white shadow-lg border border-orange-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(249,115,22,0.6)]'
+            },
+            icon: 'fa-fire-flame-curved', iconContainer: 'bg-orange-900/40 border-orange-500/30', iconColor: 'text-orange-400'
+        },
+        {
+            id: 'preparacion-ev3-c1',
+            unit: 'EA3',
+            type: 'hero',
+            href: 'prepracion ev3/preparacion-ev3-clase1.html',
+            colSpan: 2,
+            date: '2026-06-17',
+            dateText: '17 Jun 2026',
+            tag: 'PREPARACIÓN EV3', tagIcon: 'fa-shield-halved text-emerald-300',
+            badge: 'Clase 1',
+            title: 'Preparación EV3:<br>Select INTO y Excepciones',
+            description: 'Refuerza los cimientos del PL/SQL. Aprende a tomar decisiones con variables y descubre cómo evitar que tu código explote atrapando Excepciones (NO_DATA_FOUND, TOO_MANY_ROWS).',
+            btnText: 'Iniciar Clase 1', btnIcon: 'fa-play',
+            theme: {
+                outerBorder: 'border-emerald-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-emerald-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-emerald-500/20', circle2: 'bg-teal-500/20',
+                tagBox: 'bg-emerald-900/50 text-emerald-200 border-emerald-700 backdrop-blur-sm', tagText: 'text-emerald-200', badgeTheme: 'bg-emerald-600 text-white border-emerald-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-emerald-100', btn: 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 w-full justify-center text-white shadow-lg border border-emerald-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(52,211,153,0.6)]'
+            },
+            icon: 'fa-building-shield', iconContainer: 'bg-emerald-900/40 border-emerald-500/30', iconColor: 'text-emerald-400'
+        },
+        {
             id: 'taller-plsql-sonidolatino',
-            unit: 'EA2',
+            unit: 'EA3',
             type: 'hero',
             href: 'taller_plsql_sonidolatino.html',
             colSpan: 2,
@@ -29,7 +73,7 @@ const appData = {
         },
         {
             id: 'taller-plsql',
-            unit: 'EA2',
+            unit: 'EA3',
             type: 'hero',
             href: 'taller-plsql.html',
             colSpan: 2,
@@ -51,7 +95,7 @@ const appData = {
         },
         {
             id: 'presentacion-taller-plsql',
-            unit: 'EA2',
+            unit: 'EA3',
             type: 'hero',
             href: 'presentacion-taller-plsql.html',
             colSpan: 2,
@@ -73,7 +117,7 @@ const appData = {
         },
         {
             id: 'presentacion-plsql',
-            unit: 'EA2',
+            unit: 'EA3',
             type: 'hero',
             href: 'presentacion-plsql.html',
             colSpan: 2,
