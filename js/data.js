@@ -6,6 +6,72 @@
 const appData = {
     entries: [
         {
+            id: 'activacion-ev3',
+            unit: 'EA3',
+            type: 'hero',
+            href: 'prepracion ev3/presentacion_html/activacion.html',
+            colSpan: 2,
+            date: '2026-06-25T09:30:00',
+            dateText: '25 Jun 2026',
+            tag: 'PASO 1: CALENTAMIENTO', tagIcon: 'fa-fire text-amber-400',
+            badge: 'Dinámica Rápida',
+            title: 'Activación de Conocimientos Previos',
+            description: 'Mini-retos rápidos para calentar motores. Repasaremos funciones de grupo, fechas, JOINs y haremos un mini bloque PL/SQL simplificado antes de programar en serio.',
+            btnText: 'Iniciar Calentamiento', btnIcon: 'fa-bolt',
+            theme: {
+                outerBorder: 'border-amber-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-amber-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-amber-500/20', circle2: 'bg-orange-500/20',
+                tagBox: 'bg-amber-900/50 text-amber-200 border-amber-700 backdrop-blur-sm', tagText: 'text-amber-200', badgeTheme: 'bg-amber-600 text-white border-amber-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-amber-100', btn: 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 w-full justify-center text-white shadow-lg border border-amber-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(245,158,11,0.6)]'
+            },
+            icon: 'fa-stopwatch', iconContainer: 'bg-amber-900/40 border-amber-500/30', iconColor: 'text-amber-400'
+        },
+        {
+            id: 'simulacro-ev3-legos',
+            unit: 'EA3',
+            type: 'hero',
+            href: 'prepracion ev3/presentacion_html/simulacro.html',
+            colSpan: 2,
+            date: '2026-06-25T10:00:00',
+            dateText: '25 Jun 2026',
+            tag: 'SIMULACRO INTERACTIVO', tagIcon: 'fa-puzzle-piece text-cyan-300',
+            badge: 'Taller Guiado',
+            title: 'Metodología Lego:<br>Mantenimiento Preventivo',
+            description: 'Aprende a programar PL/SQL desde cero sin frustraciones. Taller guiado paso a paso donde probamos las consultas SQL por separado antes de ensamblar el bloque final.',
+            btnText: 'Iniciar Simulacro Guiado', btnIcon: 'fa-gamepad',
+            theme: {
+                outerBorder: 'border-cyan-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-cyan-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-cyan-500/20', circle2: 'bg-blue-500/20',
+                tagBox: 'bg-cyan-900/50 text-cyan-200 border-cyan-700 backdrop-blur-sm', tagText: 'text-cyan-200', badgeTheme: 'bg-cyan-600 text-white border-cyan-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-cyan-100', btn: 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 w-full justify-center text-white shadow-lg border border-cyan-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(6,182,212,0.6)]'
+            },
+            icon: 'fa-cubes-stacked', iconContainer: 'bg-cyan-900/40 border-cyan-500/30', iconColor: 'text-cyan-400'
+        },
+        {
+            id: 'presentacion-ev3-resolucion',
+            unit: 'EA3',
+            type: 'hero',
+            href: 'prepracion ev3/presentacion_html/index.html',
+            colSpan: 2,
+            date: '2026-06-24T12:00:00',
+            dateText: '24 Jun 2026',
+            tag: 'AULA INTERACTIVA', tagIcon: 'fa-chalkboard-user text-pink-300',
+            badge: 'Resolución EV3',
+            title: 'Análisis y Resolución:<br>Caso Urban Wheels',
+            description: 'Clase interactiva con revelación progresiva. Analiza el problema del negocio y construye la solución PL/SQL paso a paso (cursores, funciones de grupo y excepciones).',
+            btnText: 'Iniciar Presentación', btnIcon: 'fa-desktop',
+            theme: {
+                outerBorder: 'border-pink-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-pink-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-pink-500/20', circle2: 'bg-purple-500/20',
+                tagBox: 'bg-pink-900/50 text-pink-200 border-pink-700 backdrop-blur-sm', tagText: 'text-pink-200', badgeTheme: 'bg-pink-600 text-white border-pink-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-pink-100', btn: 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 w-full justify-center text-white shadow-lg border border-pink-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(236,72,153,0.6)]'
+            },
+            icon: 'fa-chalkboard-user', iconContainer: 'bg-pink-900/40 border-pink-500/30', iconColor: 'text-pink-400'
+        },
+        {
             id: 'preparacion-ev3-c2',
             unit: 'EA3',
             type: 'hero',

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resolución PL/SQL - Urban Wheels</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="presentation">
+        
+        <!-- SLIDE 1: PORTADA -->
+        <div class="slide active">
+            <div class="content-center text-center">
+                <div class="hacker-badge step">MÓDULO PL/SQL</div>
+                <h1 class="glitch step" data-text="Urban Wheels">Urban Wheels</h1>
+                <h2 class="step">Análisis y Resolución de Casos</h2>
+                <p class="subtitle step">Evaluación 3 - Bases de Datos Aplicada</p>
+                <div class="nav-hint step">Presiona [Flecha Derecha] o Espacio para continuar</div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: CONTEXTO -->
+        <div class="slide">
+            <header>
+                <h2>01. El Contexto del Negocio</h2>
+            </header>
+            <div class="content">
+                <div class="grid-2">
+                    <div class="card step">
+                        <h3><span class="icon">🚗</span> La Misión</h3>
+                        <p>Somos el sistema backend de <strong>Urban Wheels LTDA.</strong>, una empresa de arriendo de vehículos eléctricos.</p>
+                        <p>Necesitamos procesar los datos del año <strong>2025</strong> para tomar decisiones estratégicas.</p>
+                    </div>
+                    <div class="card step highlight-card">
+                        <h3><span class="icon">📊</span> La Regla de Oro (Demanda)</h3>
+                        <table>
+                            <tr><th>Arriendos en 2025</th><th>Clasificación</th></tr>
+                            <tr><td>6 o más</td><td><span class="badge high">Alta</span></td></tr>
+                            <tr><td>3 a 5</td><td><span class="badge med">Media</span></td></tr>
+                            <tr><td>1 a 2</td><td><span class="badge low">Baja</span></td></tr>
+                            <tr><td>0</td><td><span class="badge none">Sin Demanda</span></td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: EJERCICIO 1 - EL TEXTO LITERAL -->
+        <div class="slide">
+            <header>
+                <h2>02. Ejercicio 1: El Requerimiento</h2>
+            </header>
+            <div class="content">
+                <p class="step">Antes de hacer nada, leamos el texto <strong>literal</strong> de la evaluación:</p>
+                <div class="card mt-2 step border-pink" style="background: rgba(255, 51, 102, 0.05);">
+                    <h3>📄 Enunciado</h3>
+                    <p class="mt-1" style="font-size: 1.3rem; font-style: italic; line-height: 1.8;">
+                        "Construya un bloque PL/SQL anónimo que, para cada vehículo de la tabla VEHICULO_ELECTRICO, calcule —usando únicamente los arriendos del año 2025 registrados en ARRIENDO_VEHICULO— la cantidad de arriendos, el total de días arrendados, el promedio de días por arriendo, el ingreso generado y la clasificación de demanda del vehículo. El resultado debe insertarse en la tabla RESUMEN_ANUAL_VEHICULO, ordenado por código de vehículo, y debe poder volver a ejecutarse sin duplicar datos."
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: EJERCICIO 1 - ENTENDIENDO EL REQUISITO -->
+        <div class="slide">
+            <header>
+                <h2>03. Ejercicio 1: Desmenuzando el Requisito</h2>
+            </header>
+            <div class="content">
+                <p class="step">El texto asusta. <strong>Traduzcamos de 'Profesor' a 'Desarrollador':</strong></p>
+                <div class="grid-2 mt-1">
+                    <div class="card small step border-purple">
+                        <h4>El Requisito dice...</h4>
+                        <p>"...para cada vehículo..."</p>
+                        <p>"...calcule cantidad, total días, ingreso..."</p>
+                        <p>"...usando arriendos del 2025..."</p>
+                        <p>"...poder volver a ejecutarse sin duplicar..."</p>
+                    </div>
+                    <div class="card small step highlight-card">
+                        <h4>Tu Cerebro debe procesar...</h4>
+                        <p>👉 <strong>CURSOR</strong> principal + <strong>LOOP</strong>.</p>
+                        <p>👉 <strong>Variables</strong> PL/SQL para hacer cálculos.</p>
+                        <p>👉 <strong>SELECT INTO</strong> filtrando por año.</p>
+                        <p>👉 <strong>TRUNCATE TABLE</strong> al inicio de todo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: EJERCICIO 1 - ESTRATEGIA (Para el 0%) -->
+        <div class="slide">
+            <header>
+                <h2>04. Ejercicio 1: La Estrategia Humana</h2>
+            </header>
+            <div class="content">
+                <p class="step">Ahora armemos el algoritmo <strong>paso a paso</strong> (sin programar aún):</p>
+                <ul class="strategy-list">
+                    <li class="step">
+                        <span class="step-num">1</span> 
+                        <strong>Preparar el terreno:</strong> Vaciar la tabla de destino (TRUNCATE) para no chocar con datos viejos.
+                    </li>
+                    <li class="step">
+                        <span class="step-num">2</span> 
+                        <strong>Catálogo:</strong> Tomamos la lista de todos los vehículos (Cursor).
+                    </li>
+                    <li class="step">
+                        <span class="step-num">3</span> 
+                        <strong>El Bucle:</strong> Vehículo por vehículo, miramos su historial de 2025.
+                    </li>
+                    <li class="step">
+                        <span class="step-num">4</span> 
+                        <strong>Matemáticas:</strong> Contamos (COUNT), sumamos (SUM) y decidimos la clasificación con IF/ELSE.
+                    </li>
+                    <li class="step">
+                        <span class="step-num">5</span> 
+                        <strong>Guardar:</strong> Insertamos el resumen en la tabla final.
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: EJERCICIO 1 - TÉCNICO (Para el 100%) -->
+        <div class="slide">
+            <header>
+                <h2>05. Ejercicio 1: Restricciones Técnicas</h2>
+            </header>
+            <div class="content">
+                <div class="alert warning step">
+                    <strong>¡Atención!</strong> La rúbrica tiene reglas estrictas de diseño.
+                </div>
+                <div class="grid-3 mt-2">
+                    <div class="card small step border-pink">
+                        <h4>TRUNCATE</h4>
+                        <p>No es DML, es DDL. En PL/SQL necesitamos usar <code>EXECUTE IMMEDIATE</code>.</p>
+                    </div>
+                    <div class="card small step border-cyan">
+                        <h4>Cursor Austero</h4>
+                        <p>Solo trae datos básicos. Nada de COUNT o SUM dentro del Cursor.</p>
+                    </div>
+                    <div class="card small step border-purple">
+                        <h4>SELECT INTO</h4>
+                        <p>Las agrupaciones (COUNT, SUM) van en consultas separadas por cada vuelta del loop.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: EJERCICIO 1 - EL CÓDIGO (Parte 1) -->
+        <div class="slide">
+            <header>
+                <h2>06. Ejercicio 1: El Código (1/2)</h2>
+            </header>
+            <div class="content code-slide">
+                <div class="step">
+                    <p class="code-comment">-- 1. Declaración y Truncado</p>
+                    <pre><code>DECLARE
+    CURSOR c_vehiculos IS 
+        SELECT v.cod_vehiculo, t.nombre_tipo_vehiculo, v.modelo, v.valor_arriendo_dia
+        FROM VEHICULO_ELECTRICO v JOIN TIPO_VEHICULO t ON t.id_tipo_vehiculo = v.id_tipo_vehiculo
+        ORDER BY v.cod_vehiculo;
+BEGIN
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE RESUMEN_ANUAL_VEHICULO';
+    
+    OPEN c_vehiculos;
+    LOOP
+        FETCH c_vehiculos INTO v_cod, v_tipo, v_modelo, v_valor_dia;
+        EXIT WHEN c_vehiculos%NOTFOUND;</code></pre>
+                </div>
+                
+                <div class="step mt-1">
+                    <p class="code-comment">-- 2. Cálculos obligatorios con SELECT INTO</p>
+                    <pre><code class="highlight-line">        SELECT COUNT(*) INTO v_cantidad FROM ARRIENDO_VEHICULO 
+        WHERE cod_vehiculo = v_cod AND EXTRACT(YEAR FROM fecha_ini_arriendo) = 2025;
+
+        <span class="callout-code">-- ¡CUIDADO! NVL evita que un SUM nulo rompa el proceso si no hay arriendos</span>
+        SELECT NVL(SUM(dias_solicitados), 0) INTO v_total_dias FROM ARRIENDO_VEHICULO 
+        WHERE cod_vehiculo = v_cod AND EXTRACT(YEAR FROM fecha_ini_arriendo) = 2025;</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: EJERCICIO 1 - EL CÓDIGO (Parte 2) -->
+        <div class="slide">
+            <header>
+                <h2>07. Ejercicio 1: El Código (2/2)</h2>
+            </header>
+            <div class="content code-slide">
+                <div class="step">
+                    <p class="code-comment">-- 3. Evitando la División por Cero</p>
+                    <pre><code>        IF v_cantidad = 0 THEN
+            v_promedio_dias := 0;
+        ELSE
+            v_promedio_dias := ROUND(v_total_dias / v_cantidad);
+        END IF;
+        
+        v_ingreso := ROUND(v_valor_dia * v_total_dias);</code></pre>
+                </div>
+                
+                <div class="step mt-1">
+                    <p class="code-comment">-- 4. Clasificación e Inserción</p>
+                    <pre><code>        IF v_cantidad >= 6 THEN v_clas := 'Alta';
+        ELSIF v_cantidad >= 3 THEN v_clas := 'Media';
+        ELSIF v_cantidad >= 1 THEN v_clas := 'Baja';
+        ELSE v_clas := 'Sin Demanda';
+        END IF;
+
+        INSERT INTO RESUMEN_ANUAL_VEHICULO (...) VALUES (...);
+    END LOOP;
+    CLOSE c_vehiculos;
+    COMMIT;
+END;</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: EJERCICIO 2 - EL TEXTO LITERAL -->
+        <div class="slide">
+            <header>
+                <h2>08. Ejercicio 2: El Requerimiento</h2>
+            </header>
+            <div class="content">
+                <p class="step">El segundo bloque nos pide una <strong>Propuesta de Ajuste de Tarifas</strong>. El texto dice:</p>
+                <div class="card mt-2 step border-cyan" style="background: rgba(0, 195, 255, 0.05);">
+                    <h3>📄 Enunciado</h3>
+                    <p class="mt-1" style="font-size: 1.25rem; font-style: italic; line-height: 1.8;">
+                        "Construya un bloque PL/SQL anónimo que, para cada vehículo de VEHICULO_ELECTRICO, determine su clasificación de demanda según la cantidad de arriendos del año 2025, busque en la tabla paramétrica PARAM_AJUSTE_DEMANDA el porcentaje de ajuste correspondiente a esa clasificación, calcule el nuevo valor de arriendo propuesto y la diferencia respecto al valor actual, y determine una observación de gestión. El resultado debe insertarse en AJUSTE_TARIFA_VEHICULO, ordenado por código, pudiendo re-ejecutarse sin duplicar datos."
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: EJERCICIO 2 - ENTENDIENDO EL REQUISITO -->
+        <div class="slide">
+            <header>
+                <h2>09. Ejercicio 2: Desmenuzando el Requisito</h2>
+            </header>
+            <div class="content">
+                <p class="step">Nuevamente, pasemos esto a diseño técnico:</p>
+                <div class="grid-2 mt-1">
+                    <div class="card small step border-purple">
+                        <h4>El Requisito dice...</h4>
+                        <p>"...determine la clasificación de demanda..."</p>
+                        <p>"...busque en la tabla paramétrica el porcentaje..."</p>
+                        <p>"...calcule nuevo valor y determine observación..."</p>
+                    </div>
+                    <div class="card small step highlight-card">
+                        <h4>Tu Cerebro debe procesar...</h4>
+                        <p>👉 Igual que antes: Cursor, Loop, IF/ELSIF.</p>
+                        <p>👉 <strong>¡NO SE HARDCODEA EL %!</strong> Hacemos un SELECT INTO contra la tabla <code>PARAM_AJUSTE_DEMANDA</code>.</p>
+                        <p>👉 Matemáticas <code>valor * (1 + porc/100)</code> y otro IF para la observación ('Subir tarifa', etc).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: EJERCICIO 2 - CONTEXTO -->
+        <div class="slide">
+            <header>
+                <h2>10. Ejercicio 2: El Truco (La Paramétrica)</h2>
+            </header>
+            <div class="content">
+                <div class="grid-2">
+                    <div class="card step">
+                        <h3>¿Por qué Paramétrica?</h3>
+                        <p>El porcentaje de aumento (ej: +12% si es Alta) <strong>no debe escribirse dentro de los IFs</strong> del código fuente.</p>
+                        <p>Debe leerse dinámicamente usando como llave el texto de la clasificación recién calculada.</p>
+                    </div>
+                    <div class="card step highlight-card border-cyan">
+                        <h3>Buenas Prácticas (100%)</h3>
+                        <p><em>Si mañana el negocio cambia el %, un administrador modifica un dato en la tabla y nuestro código sigue funcionando perfecto sin ser reprogramado.</em></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: EJERCICIO 2 - CÓDIGO (1/2) -->
+        <div class="slide">
+            <header>
+                <h2>11. Ejercicio 2: El Código (1/2)</h2>
+            </header>
+            <div class="content code-slide">
+                <div class="step">
+                    <p class="code-comment">-- 1. Base (Similar al ejercicio anterior, cursor más austero)</p>
+                    <pre><code>DECLARE
+    CURSOR c_vehiculos IS 
+        SELECT cod_vehiculo, valor_arriendo_dia FROM VEHICULO_ELECTRICO;
+BEGIN
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE AJUSTE_TARIFA_VEHICULO';
+    
+    OPEN c_vehiculos;
+    LOOP
+        FETCH c_vehiculos INTO v_cod, v_valor_actual;
+        EXIT WHEN c_vehiculos%NOTFOUND;</code></pre>
+                </div>
+                
+                <div class="step mt-1">
+                    <p class="code-comment">-- 2. Clasificación en memoria</p>
+                    <pre><code>        SELECT COUNT(*) INTO v_cantidad FROM ARRIENDO_VEHICULO 
+        WHERE cod_vehiculo = v_cod AND EXTRACT(YEAR FROM fecha_ini_arriendo) = 2025;
+
+        IF v_cantidad >= 6 THEN v_clas := 'Alta';
+        ELSIF v_cantidad >= 3 THEN v_clas := 'Media';
+        ... -- (Igual que antes)
+        END IF;</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: EJERCICIO 2 - CÓDIGO (2/2) -->
+        <div class="slide">
+            <header>
+                <h2>12. Ejercicio 2: El Código (2/2)</h2>
+            </header>
+            <div class="content code-slide">
+                <div class="step">
+                    <p class="code-comment">-- 3. La Lectura Paramétrica (El núcleo de este ejercicio)</p>
+                    <pre><code class="highlight-line">        SELECT porc_ajuste INTO v_porc_ajuste
+        FROM PARAM_AJUSTE_DEMANDA
+        WHERE clasificacion = v_clas; -- Usamos lo que nos dio el IF</code></pre>
+                </div>
+                
+                <div class="step mt-1">
+                    <p class="code-comment">-- 4. Matemáticas y Observación</p>
+                    <pre><code>        v_valor_prop := ROUND(v_valor_actual * (1 + v_porc_ajuste / 100));
+        v_diferencia := v_valor_prop - v_valor_actual;
+
+        IF v_clas = 'Alta' THEN v_obs := 'Subir tarifa';
+        ELSIF v_clas = 'Media' THEN v_obs := 'Mantener / ajuste leve';
+        ELSIF v_clas = 'Baja' THEN v_obs := 'Bajar tarifa';
+        ELSE v_obs := 'Evaluar retiro';
+        END IF;
+
+        INSERT INTO AJUSTE_TARIFA_VEHICULO (...) VALUES (...);
+    END LOOP;
+    ...
+END;</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: RESULTADOS -->
+        <div class="slide">
+            <header>
+                <h2>13. Verificación (¡Funciona!)</h2>
+            </header>
+            <div class="content text-center">
+                <h3 class="step">Ambos bloques han sido validados.</h3>
+                <p class="step">Los datos calculados coinciden fila por fila con el PDF de evaluación.</p>
+                
+                <div class="success-box step mt-2">
+                    <span class="icon">✅</span>
+                    <p>Lectura paramétrica exitosa.</p>
+                    <p>Manejo de nulos implementado (NVL).</p>
+                    <p>Prevención de división por cero.</p>
+                    <p>Arquitectura exigida respetada.</p>
+                </div>
+
+                <div class="step mt-2">
+                    <button class="neon-button" onclick="location.reload()">Reiniciar Presentación</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- UI Elements -->
+    <div class="controls">
+        <button id="prevBtn" class="control-btn" disabled>&larr;</button>
+        <span id="slideCounter" class="counter">1 / 14</span>
+        <button id="nextBtn" class="control-btn">&rarr;</button>
+    </div>
+    
+    <div class="progress-bar-container">
+        <div id="progressBar" class="progress-bar"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulacro PL/SQL - Piezas de Lego</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="presentation">
+        
+        <!-- SLIDE 1: PORTADA -->
+        <div class="slide active">
+            <div class="content-center text-center">
+                <div class="hacker-badge step">PREPARACIÓN EV3</div>
+                <h1 class="glitch step" data-text="Construyendo PL/SQL">Construyendo PL/SQL</h1>
+                <h2 class="step">Metodología "Piezas de Lego"</h2>
+                <p class="subtitle step">Simulacro: Mantenimiento Preventivo</p>
+                <div class="nav-hint step">Presiona [Flecha Derecha] o Espacio para continuar</div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: EL PROBLEMA -->
+        <div class="slide">
+            <header>
+                <h2>01. El Problema (Simulacro)</h2>
+            </header>
+            <div class="content">
+                <p class="step">Imagina que este es el caso que viene en tu prueba:</p>
+                <div class="card mt-2 step border-cyan" style="background: rgba(0, 195, 255, 0.05);">
+                    <h3>📄 Enunciado</h3>
+                    <p class="mt-1" style="font-size: 1.2rem; font-style: italic; line-height: 1.6;">
+                        "Construya un bloque PL/SQL anónimo que analice la flota de la tabla <code>VEHICULO_ELECTRICO</code>. Para cada vehículo, calcule el total de días que fue arrendado durante el año <strong>2024</strong>. Según ese total, determine el 'Estado de Mantenimiento': Si tiene más de 40 días, estado 'Urgente'. Si tiene entre 20 y 40 días, 'Programado'. Si tiene menos de 20 días o no tiene arriendos, 'Óptimo'. Inserte los resultados en la tabla <code>REPORTE_MANTENIMIENTO</code>. Vacíe la tabla al inicio para evitar duplicados."
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: ANÁLISIS -->
+        <div class="slide">
+            <header>
+                <h2>02. Análisis del Problema</h2>
+            </header>
+            <div class="content">
+                <p class="step">Si no sabes por dónde empezar, <strong>divide y vencerás</strong>.</p>
+                <div class="grid-2 mt-2">
+                    <div class="card small step border-pink">
+                        <h4>¿Qué asumo que ya sabes?</h4>
+                        <p>✅ Crear variables en PL/SQL.</p>
+                        <p>✅ Select Into y Operaciones Básicas.</p>
+                        <p>✅ Qué es un IF y un LOOP.</p>
+                        <p>✅ Concepto general de Cursor Explícito.</p>
+                    </div>
+                    <div class="card small step highlight-card border-purple">
+                        <h4>¿Cómo armaremos esto?</h4>
+                        <p>En vez de escribir el bloque PL/SQL de golpe, primero vamos a armar las consultas sueltas (como Legos) y a probarlas <strong>fuera</strong> de PL/SQL.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: PAUSA TÉCNICA - EXTRACT -->
+        <div class="slide">
+            <header>
+                <h2>03. Pausa Técnica: La Función EXTRACT</h2>
+            </header>
+            <div class="content">
+                <p class="step">Para filtrar los arriendos que ocurrieron en el 2024, usaremos <code>EXTRACT</code>. ¿Qué es y para qué sirve?</p>
+                <div class="grid-2 mt-1">
+                    <div class="card small step border-cyan">
+                        <h4>¿Qué hace?</h4>
+                        <p>Extrae una parte específica de un campo de tipo Fecha (como un DATE o TIMESTAMP).</p>
+                        <pre class="mt-1"><code>EXTRACT(parte FROM campo_fecha)</code></pre>
+                        <ul class="mt-1" style="font-size: 1rem;">
+                            <li><strong>YEAR:</strong> Saca el año (Ej: 2024)</li>
+                            <li><strong>MONTH:</strong> Saca el mes (Ej: 12)</li>
+                            <li><strong>DAY:</strong> Saca el día (Ej: 31)</li>
+                        </ul>
+                    </div>
+                    <div class="card small step highlight-card">
+                        <h4>Ejemplos de Casos de Uso</h4>
+                        <pre><code style="font-size: 0.9rem;">-- Cumpleaños en Octubre
+SELECT * FROM empleados 
+WHERE EXTRACT(MONTH FROM fecha_nac) = 10;
+
+-- Arriendos de HOY
+SELECT * FROM arriendo 
+WHERE EXTRACT(DAY FROM fecha_ini) = 
+      EXTRACT(DAY FROM SYSDATE);</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: PIEZA 1 - EL CURSOR -->
+        <div class="slide">
+            <header>
+                <h2>04. Pieza Lego 1: La Base de Datos</h2>
+            </header>
+            <div class="content">
+                <p class="step">El texto dice: <em>"Para cada vehículo de la tabla VEHICULO_ELECTRICO..."</em></p>
+                <div class="card step mt-1 border-purple">
+                    <h3>💡 La Prueba de Fuego (En SQL Developer)</h3>
+                    <p>Antes de meterte a PL/SQL, escribe la query normal. Esta query será nuestro <strong>Cursor Explícito</strong>.</p>
+                    <pre class="mt-1"><code>-- Lego 1: El Catálogo
+SELECT cod_vehiculo, modelo 
+FROM VEHICULO_ELECTRICO;</code></pre>
+                </div>
+                <p class="step mt-2 text-center" style="font-weight: bold; color: var(--accent-pink);">¡Si esta query te arroja error en SQL Developer, ni se te ocurra meterla al PL/SQL todavía!</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: PIEZA 2 - EL CÁLCULO -->
+        <div class="slide">
+            <header>
+                <h2>05. Pieza Lego 2: Matemáticas</h2>
+            </header>
+            <div class="content code-slide">
+                <p class="step">El texto dice: <em>"...calcule el total de días arrendado durante 2024"</em></p>
+                <div class="step mt-1">
+                    <p class="code-comment">-- Lego 2: Probando con un vehículo ficticio ('UW001') y nuestro amigo EXTRACT</p>
+                    <pre><code>SELECT SUM(dias_solicitados)
+FROM ARRIENDO_VEHICULO 
+WHERE cod_vehiculo = 'UW001' 
+AND EXTRACT(YEAR FROM fecha_ini_arriendo) = 2024;</code></pre>
+                </div>
+                <div class="step mt-2 alert warning border-pink">
+                    <strong>Espera un momento...</strong> Esta consulta tiene un problema mortal oculto si el vehículo no fue arrendado.
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: PAUSA TÉCNICA - NVL -->
+        <div class="slide">
+            <header>
+                <h2>06. Pausa Técnica: El Peligro de NULL (NVL)</h2>
+            </header>
+            <div class="content">
+                <p class="step">¿Qué pasa si intentamos sumar los días de un vehículo que <strong>nunca se ha arrendado</strong>?</p>
+                <div class="grid-2 mt-1">
+                    <div class="card small step border-pink">
+                        <h4>El Problema Matemático</h4>
+                        <p>La base de datos no encontrará registros para sumar. Por lo tanto, el resultado de <code>SUM()</code> no es cero, es <strong>NULL</strong> (Vacío/Desconocido).</p>
+                        <p class="mt-1" style="color: var(--accent-pink); font-weight: bold;">NULL + 10 = NULL</p>
+                        <p style="color: var(--accent-pink); font-weight: bold;">NULL / 2 = NULL</p>
+                        <p>¡Cualquier operación matemática con NULL destruye todo tu cálculo y puede colapsar el INSERT!</p>
+                    </div>
+                    <div class="card small step highlight-card border-cyan">
+                        <h4>La Solución: NVL()</h4>
+                        <p><code>NVL(valor_a_revisar, valor_de_reemplazo)</code></p>
+                        <p>Es un escudo. Le dice a Oracle: <em>"Si este cálculo da nulo, cámbialo por un cero para salvar la matemática".</em></p>
+                        <pre class="mt-1"><code>-- Si SUM() da Nulo, escúpeme un 0
+SELECT NVL(SUM(dias), 0) 
+FROM arriendo;</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: PIEZA 3 - LAS REGLAS -->
+        <div class="slide">
+            <header>
+                <h2>07. Pieza Lego 3: Las Reglas</h2>
+            </header>
+            <div class="content">
+                <p class="step">El texto dice: <em>"Más de 40: Urgente. Entre 20 y 40: Programado. Menos de 20 o cero: Óptimo"</em></p>
+                <div class="grid-2 mt-1">
+                    <div class="card step border-purple">
+                        <h3>Lógica en Papel</h3>
+                        <p>Esto NO es SQL, son decisiones lógicas. Esto se maneja con memoria (Variables) e <code>IF / ELSIF</code>.</p>
+                    </div>
+                    <div class="step code-preview">
+                        <pre><code>-- Lego 3: Estructura Mental
+IF v_total_dias > 40 THEN
+    v_estado := 'Urgente';
+ELSIF v_total_dias >= 20 THEN
+    v_estado := 'Programado';
+ELSE
+    v_estado := 'Óptimo';
+END IF;</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: PAUSA TÉCNICA - EXECUTE IMMEDIATE -->
+        <div class="slide">
+            <header>
+                <h2>08. Pausa Técnica: DDL en PL/SQL</h2>
+            </header>
+            <div class="content">
+                <p class="step">El requerimiento dice: <em>"Vacíe la tabla al inicio para evitar duplicados"</em>.</p>
+                <div class="grid-2 mt-1">
+                    <div class="card small step border-purple">
+                        <h4>¿Por qué vaciamos la tabla?</h4>
+                        <p>Para que nuestro bloque sea <strong>"Re-ejecutable"</strong>. Si corremos el código 2 veces seguidas sin vaciar, el <code>INSERT</code> de la segunda vez chocará con los registros de la primera (Error de Clave Primaria).</p>
+                    </div>
+                    <div class="card small step highlight-card border-cyan">
+                        <h4>¿Por qué usamos EXECUTE IMMEDIATE?</h4>
+                        <p>PL/SQL entiende nativamente comandos <strong>DML</strong> (INSERT, UPDATE, DELETE). Pero <code>TRUNCATE</code> es un comando <strong>DDL</strong> (Data Definition Language, altera la estructura).</p>
+                        <p>Para obligar a PL/SQL a ejecutar comandos DDL, debemos empaquetarlos en <strong>SQL Dinámico</strong>:</p>
+                        <pre class="mt-1"><code style="font-size: 0.9rem;">EXECUTE IMMEDIATE 'TRUNCATE TABLE tabla';</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: ENSAMBLAJE 1 -->
+        <div class="slide">
+            <header>
+                <h2>09. Ensamblaje: El Esqueleto</h2>
+            </header>
+            <div class="content code-slide">
+                <p class="step">¡Es hora de juntar los Legos! Empecemos por la zona <code>DECLARE</code>.</p>
+                <div class="step mt-1">
+                    <pre><code>DECLARE
+    -- 1. Ponemos nuestra "Pieza Lego 1" como Cursor
+    CURSOR c_vehiculos IS 
+        SELECT cod_vehiculo, modelo FROM VEHICULO_ELECTRICO;
+        
+    -- 2. Variables para recibir datos del Cursor
+    v_cod    VEHICULO_ELECTRICO.cod_vehiculo%TYPE;
+    v_modelo VEHICULO_ELECTRICO.modelo%TYPE;
+    
+    -- 3. Variables para nuestros cálculos futuros
+    v_total_dias NUMBER(6);
+    v_estado     VARCHAR2(20);
+BEGIN
+    -- 4. Vaciamos la tabla con SQL Dinámico (Requisito)
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE REPORTE_MANTENIMIENTO';
+    
+    -- Continuará...</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: ENSAMBLAJE 2 -->
+        <div class="slide">
+            <header>
+                <h2>10. Ensamblaje: El Motor (Loop)</h2>
+            </header>
+            <div class="content code-slide">
+                <p class="step">Ahora le damos vida al bloque abriendo el cursor y creando el ciclo repetitivo.</p>
+                <div class="step mt-1">
+                    <pre><code>    -- Venimos del DECLARE...
+    
+    OPEN c_vehiculos;
+    LOOP
+        <span class="callout-code">-- Le pasamos el vehículo actual a la memoria RAM</span>
+        FETCH c_vehiculos INTO v_cod, v_modelo;
+        EXIT WHEN c_vehiculos%NOTFOUND;
+        
+        -- Aquí dentro haremos matemáticas por cada vehículo
+        -- ...
+        
+    END LOOP;
+    CLOSE c_vehiculos;
+    
+    COMMIT;
+END;</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: ENSAMBLAJE 3 -->
+        <div class="slide">
+            <header>
+                <h2>11. Ensamblaje: El Cerebro</h2>
+            </header>
+            <div class="content code-slide">
+                <p class="step">Metemos las Piezas 2 y 3 <strong>adentro</strong> del Loop.</p>
+                <div class="step mt-1">
+                    <pre><code>        -- Adentro del LOOP...
+        
+        -- Conectamos la Pieza Lego 2, protegida con NVL y EXTRACT
+        -- Usamos v_cod en vez de 'UW001'
+        SELECT NVL(SUM(dias_solicitados), 0) 
+        INTO v_total_dias 
+        FROM ARRIENDO_VEHICULO 
+        WHERE cod_vehiculo = v_cod 
+        AND EXTRACT(YEAR FROM fecha_ini_arriendo) = 2024;
+        
+        -- Conectamos la Pieza Lego 3 (Decisión lógica)
+        IF v_total_dias > 40 THEN
+            v_estado := 'Urgente';
+        ELSIF v_total_dias >= 20 THEN
+            v_estado := 'Programado';
+        ELSE
+            v_estado := 'Óptimo';
+        END IF;</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: ENSAMBLAJE 4 -->
+        <div class="slide">
+            <header>
+                <h2>12. Ensamblaje: Entrega Final</h2>
+            </header>
+            <div class="content code-slide">
+                <p class="step">El último paso antes de que el Loop vuelva a dar la vuelta: <strong>Guardar</strong>.</p>
+                <div class="step mt-1">
+                    <pre><code>        -- Adentro del LOOP, justo después del IF...
+        
+        INSERT INTO REPORTE_MANTENIMIENTO (
+            cod_vehiculo,
+            modelo,
+            total_dias_2024,
+            estado_mantenimiento
+        ) VALUES (
+            v_cod,
+            v_modelo,
+            v_total_dias,
+            v_estado
+        );
+        
+    END LOOP; -- El ciclo se repite para el siguiente vehículo
+    ...</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: EL CÓDIGO COMPLETO -->
+        <div class="slide">
+            <header>
+                <h2>13. La Obra Maestra (Código Completo)</h2>
+            </header>
+            <div class="content code-slide">
+                <p class="step mb-1">Así se ve tu bloque de código finalizado, ensamblado y listo para compilar.</p>
+                <div class="step">
+                    <pre><code style="font-size: 0.8rem; line-height: 1.4;">DECLARE
+    CURSOR c_vehiculos IS 
+        SELECT cod_vehiculo, modelo FROM VEHICULO_ELECTRICO;
+        
+    v_cod    VEHICULO_ELECTRICO.cod_vehiculo%TYPE;
+    v_modelo VEHICULO_ELECTRICO.modelo%TYPE;
+    v_total_dias NUMBER(6);
+    v_estado     VARCHAR2(20);
+BEGIN
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE REPORTE_MANTENIMIENTO';
+    
+    OPEN c_vehiculos;
+    LOOP
+        FETCH c_vehiculos INTO v_cod, v_modelo;
+        EXIT WHEN c_vehiculos%NOTFOUND;
+        
+        SELECT NVL(SUM(dias_solicitados), 0) INTO v_total_dias 
+        FROM ARRIENDO_VEHICULO 
+        WHERE cod_vehiculo = v_cod AND EXTRACT(YEAR FROM fecha_ini_arriendo) = 2024;
+        
+        IF v_total_dias > 40 THEN v_estado := 'Urgente';
+        ELSIF v_total_dias >= 20 THEN v_estado := 'Programado';
+        ELSE v_estado := 'Óptimo';
+        END IF;
+        
+        INSERT INTO REPORTE_MANTENIMIENTO (cod_vehiculo, modelo, total_dias_2024, estado_mantenimiento)
+        VALUES (v_cod, v_modelo, v_total_dias, v_estado);
+    END LOOP;
+    CLOSE c_vehiculos;
+    
+    COMMIT;
+END;</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 15: RESULTADOS -->
+        <div class="slide">
+            <header>
+                <h2>14. Conclusión del Método</h2>
+            </header>
+            <div class="content text-center">
+                <div class="success-box step mt-2">
+                    <span class="icon">🏆</span>
+                    <p>¡Bloque Anónimo Terminado!</p>
+                    <p>La programación no se escribe de arriba hacia abajo de una sola vez.</p>
+                    <p>Se diseña probando piezas pequeñas (Legos) en SQL puro, entendiendo por qué se usan herramientas como EXTRACT o NVL, y luego se empaquetan en PL/SQL.</p>
+                </div>
+
+                <div class="step mt-2">
+                    <button class="neon-button" onclick="location.reload()">Reiniciar Simulacro</button>
+                    <button class="neon-button" onclick="window.location.href='../index.html'" style="margin-left: 10px; border-color: var(--accent-purple); color: var(--accent-purple);">Volver al Inicio</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- UI Elements -->
+    <div class="controls">
+        <button id="prevBtn" class="control-btn" disabled>&larr;</button>
+        <span id="slideCounter" class="counter">1 / 15</span>
+        <button id="nextBtn" class="control-btn">&rarr;</button>
+    </div>
+    
+    <div class="progress-bar-container">
+        <div id="progressBar" class="progress-bar"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

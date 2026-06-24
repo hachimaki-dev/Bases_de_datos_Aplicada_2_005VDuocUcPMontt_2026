@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activación - Urban Wheels</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Ajustes específicos para que esta presentación se vea un poco distinta (más amarilla/energética) */
+        :root {
+            --accent-pink: #ffb800; /* Reemplazamos pink por ambar/amarillo */
+            --accent-purple: #f59e0b;
+        }
+        .hacker-badge { border-color: var(--accent-pink); color: var(--accent-pink); }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+        
+        <!-- SLIDE 1: PORTADA -->
+        <div class="slide active">
+            <div class="content-center text-center">
+                <div class="hacker-badge step">PASO 1: CALENTAMIENTO</div>
+                <h1 class="glitch step" data-text="Preparando Motores">Preparando Motores</h1>
+                <h2 class="step">Activación de Conocimientos Previos</h2>
+                <p class="subtitle step">Mini-retos antes de programar en serio</p>
+                <div class="nav-hint step">Presiona [Flecha Derecha] o Espacio para continuar</div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: RETO 1 - FUNCIONES DE GRUPO -->
+        <div class="slide">
+            <header>
+                <h2>01. Reto 1: Funciones de Grupo</h2>
+            </header>
+            <div class="content">
+                <p class="step">Para los cálculos matemáticos, debemos diferenciar qué herramienta usar.</p>
+                <div class="grid-2 mt-2">
+                    <div class="card step border-cyan">
+                        <h3>COUNT( ) vs SUM( )</h3>
+                        <p>Imagina que tienes 3 arriendos:</p>
+                        <ul>
+                            <li>Arriendo A: 5 días</li>
+                            <li>Arriendo B: 2 días</li>
+                            <li>Arriendo C: 10 días</li>
+                        </ul>
+                        <p class="mt-1">¿Qué devuelve <code>COUNT(dias)</code>?</p>
+                        <p class="step" style="color: var(--accent-cyan); font-weight: bold;">R: Devuelve 3 (Cuenta las filas).</p>
+                        <p class="mt-1">¿Qué devuelve <code>SUM(dias)</code>?</p>
+                        <p class="step" style="color: var(--accent-pink); font-weight: bold;">R: Devuelve 17 (Suma el contenido).</p>
+                    </div>
+                    <div class="card step highlight-card border-pink">
+                        <h3>La Trampa del Vacio</h3>
+                        <p>¿Qué devuelve <code>SUM(dias)</code> si un vehículo <strong>nunca</strong> ha sido arrendado?</p>
+                        <p class="step" style="color: red; font-weight: bold; font-size: 1.5rem;">¡Devuelve NULL!</p>
+                        <p class="step mt-1">Por eso <strong>SIEMPRE</strong> usa <code>NVL(SUM(dias), 0)</code>. Si es nulo, lo convierte en cero mágico.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: RETO 2 - FECHAS -->
+        <div class="slide">
+            <header>
+                <h2>02. Reto 2: Viaje en el Tiempo</h2>
+            </header>
+            <div class="content">
+                <p class="step">En PL/SQL, las fechas completas son difíciles de igualar. ¿Cómo filtramos solo un año?</p>
+                <div class="card mt-2 step border-purple text-center">
+                    <h3>La navaja suiza: EXTRACT</h3>
+                    <p class="mt-1"><code>EXTRACT (parte FROM tu_fecha)</code></p>
+                </div>
+                
+                <div class="grid-3 mt-2">
+                    <div class="card small step text-center">
+                        <p>Si la fecha es:<br><strong>'15-MAY-2024'</strong></p>
+                    </div>
+                    <div class="card small step text-center border-cyan">
+                        <p><code>EXTRACT(YEAR ...)</code></p>
+                        <p class="mt-1 font-bold" style="font-size: 1.5rem;">2024</p>
+                    </div>
+                    <div class="card small step text-center border-pink">
+                        <p><code>EXTRACT(MONTH ...)</code></p>
+                        <p class="mt-1 font-bold" style="font-size: 1.5rem;">5</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: RETO 3 - JOINS -->
+        <div class="slide">
+            <header>
+                <h2>03. Reto 3: Enlazando Datos (JOIN)</h2>
+            </header>
+            <div class="content">
+                <p class="step">En las pruebas siempre piden "el nombre" de algo, pero tú solo tienes "el ID".</p>
+                <div class="grid-2 mt-1">
+                    <div class="card small step">
+                        <h4>La Tabla Origen</h4>
+                        <p><code>VEHICULO_ELECTRICO</code></p>
+                        <ul>
+                            <li>cod_vehiculo: UW01</li>
+                            <li><strong>id_tipo: 3</strong> ⚠️</li>
+                        </ul>
+                    </div>
+                    <div class="card small step border-purple">
+                        <h4>La Tabla Diccionario</h4>
+                        <p><code>TIPO_VEHICULO</code></p>
+                        <ul>
+                            <li><strong>id_tipo: 3</strong> ⚠️</li>
+                            <li>nombre: 'Sedán Premium'</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="step code-preview mt-1">
+                    <pre><code>-- El puente entre ambas:
+SELECT v.cod_vehiculo, t.nombre_tipo_vehiculo
+FROM VEHICULO_ELECTRICO v 
+JOIN TIPO_VEHICULO t 
+  ON v.id_tipo_vehiculo = t.id_tipo_vehiculo;</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: EL MINI EJERCICIO -->
+        <div class="slide">
+            <header>
+                <h2>04. El Jefe Final (Mini-Reto PL/SQL)</h2>
+            </header>
+            <div class="content">
+                <p class="step">Antes de ir al Simulacro gigante, hagamos un PL/SQL <strong>simplificado al extremo</strong>.</p>
+                <div class="card mt-1 step border-cyan">
+                    <h3>Requerimiento Express</h3>
+                    <p>"Escribe un bloque que calcule el <strong>total general</strong> de días que se arrendaron vehículos en toda la empresa durante el 2024, y muéstralo por pantalla."</p>
+                    <p class="mt-1 text-sm text-gray-400">Restricciones: Sin cursores, sin inserts. Solo 1 variable y DBMS_OUTPUT.</p>
+                </div>
+                
+                <div class="step code-preview mt-1">
+                    <pre><code style="font-size: 0.9rem;">-- Nota: Ejecutar 'SET SERVEROUTPUT ON;' una vez en la sesión para ver mensajes
+
+DECLARE
+    v_gran_total NUMBER;
+BEGIN
+    SELECT NVL(SUM(dias_solicitados), 0) INTO v_gran_total
+    FROM ARRIENDO_VEHICULO
+    WHERE EXTRACT(YEAR FROM fecha_ini_arriendo) = 2024;
+    
+    DBMS_OUTPUT.PUT_LINE('Total de días arrendados en 2024: ' || v_gran_total);
+END;</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: CIERRE -->
+        <div class="slide">
+            <header>
+                <h2>05. ¡Listos para la Acción!</h2>
+            </header>
+            <div class="content text-center">
+                <div class="success-box step mt-2">
+                    <span class="icon">🔥</span>
+                    <p>Motores Calentados</p>
+                    <p>Ya dominas las funciones de grupo, el manejo del tiempo, los joins y la estructura de un bloque básico.</p>
+                </div>
+
+                <div class="step mt-2">
+                    <button class="neon-button" onclick="window.location.href='../index.html'" style="border-color: var(--accent-pink); color: var(--accent-pink);">Volver e Iniciar el Simulacro</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- UI Elements -->
+    <div class="controls">
+        <button id="prevBtn" class="control-btn" disabled>&larr;</button>
+        <span id="slideCounter" class="counter">1 / 6</span>
+        <button id="nextBtn" class="control-btn">&rarr;</button>
+    </div>
+    
+    <div class="progress-bar-container">
+        <div id="progressBar" class="progress-bar"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
