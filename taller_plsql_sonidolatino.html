@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taller PL/SQL — SonidoLatino — Diario de Clases</title>
+    <!-- Configuración Centralizada (Tailwind, Fuentes, CSS) -->
+    <script src="js/config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <style>
+        .toggle-section { transition: all 0.3s ease-out; max-height: 0; opacity: 0; overflow: hidden; }
+        .toggle-section.show { max-height: 1500px; opacity: 1; margin-top: 1rem; }
+        
+        /* Ocultamiento accesible de soluciones */
+        .solution-wrapper { display: none; }
+        body.sol-unlocked .solution-wrapper { display: block; }
+        body.sol-unlocked .solution-placeholder { display: none; }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen bg-slate-50 text-slate-900 pb-20">
+    <app-nav></app-nav>
+
+    <!-- Header Principal -->
+    <header class="max-w-5xl mx-auto px-6 text-center mb-10 pt-6">
+        <div class="inline-block bg-violet-100 px-6 py-2.5 rounded-full text-violet-800 font-extrabold text-base mb-6 border-2 border-violet-200 shadow-sm">
+            Unidad EA2 - Taller Práctico · Módulo 3
+        </div>
+        <h1 class="text-5xl md:text-6xl font-black text-violet-800 mb-6 drop-shadow-sm leading-tight tracking-tight">
+            Taller PL/SQL: SonidoLatino
+        </h1>
+        <p class="text-xl md:text-2xl text-violet-900 bg-white inline-flex items-center gap-3 px-8 py-4 rounded-full shadow-md border-2 border-violet-100 mt-4 font-bold mx-auto justify-center">
+            <i class="fa-solid fa-music text-violet-600 text-2xl"></i> DML Progresivo con Control de Flujo
+        </p>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6">
+        
+        <!-- Caso de Negocio -->
+        <section class="bg-white p-8 md:p-10 rounded-[2rem] border border-slate-200 shadow-sm mb-8">
+            <h2 class="text-3xl font-black text-slate-900 mb-4 flex items-center gap-3">
+                <i class="fa-solid fa-business-time text-violet-600 bg-violet-50 p-2.5 rounded-xl"></i> Caso de Negocio
+            </h2>
+            <p class="text-lg text-slate-700 leading-relaxed mb-6 font-medium">
+                SonidoLatino es una plataforma de streaming especializada en música chilena, andina, pop de los 80 y rock de los 70, 80 y 90. El equipo de datos necesita automatizar tareas de mantenimiento, promociones y reportes mediante PL/SQL. Tu rol es implementar los bloques que resuelvan cada requerimiento.
+            </p>
+
+            <h3 class="text-xl font-bold text-slate-800 mb-4">Estructura de la Base de Datos</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200">
+                    <span class="font-bold text-violet-800 text-lg block mb-2"><i class="fa-solid fa-user-tie mr-2"></i>artistas</span>
+                    <code class="text-sm font-semibold text-slate-700 font-mono">id_artista, nombre, pais, genero, activo</code>
+                </div>
+                <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200">
+                    <span class="font-bold text-violet-800 text-lg block mb-2"><i class="fa-solid fa-compact-disc mr-2"></i>canciones</span>
+                    <code class="text-sm font-semibold text-slate-700 font-mono">id_cancion, titulo, id_artista, anio, duracion_seg, reproducciones, precio_licencia</code>
+                </div>
+                <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200">
+                    <span class="font-bold text-violet-800 text-lg block mb-2"><i class="fa-solid fa-users mr-2"></i>usuarios</span>
+                    <code class="text-sm font-semibold text-slate-700 font-mono">id_usuario, nombre, correo, plan, creditos</code>
+                </div>
+                <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200">
+                    <span class="font-bold text-violet-800 text-lg block mb-2"><i class="fa-solid fa-play-circle mr-2"></i>reproducciones</span>
+                    <code class="text-sm font-semibold text-slate-700 font-mono">id_repro, id_usuario, id_cancion, fecha, completada</code>
+                </div>
+            </div>
+
+            <div class="mt-8">
+                <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-database text-violet-600"></i> Preparación del Entorno (Script de Base de Datos)
+                </h3>
+                <p class="text-sm text-slate-600 mb-4">
+                    Copia y ejecuta el siguiente script en tu cliente Oracle SQL Developer para inicializar la base de datos de SonidoLatino.
+                </p>
+                
+                <div class="bg-slate-900 rounded-3xl overflow-hidden border border-slate-800 shadow-inner">
+                    <div class="bg-slate-950 px-5 py-3 flex justify-between items-center border-b border-slate-800">
+                        <span class="text-gray-400 text-xs font-mono">setup_sonidolatino.sql</span>
+                        <button onclick="copyCode('scriptDB')" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm">
+                            <i class="fa-regular fa-copy mr-2"></i> Copiar Script
+                        </button>
+                    </div>
+                    <pre class="m-0 p-6"><code id="scriptDB" class="language-sql text-sm">-- Limpieza
+DROP TABLE reproducciones CASCADE CONSTRAINTS PURGE;
+DROP TABLE canciones     CASCADE CONSTRAINTS PURGE;
+DROP TABLE artistas      CASCADE CONSTRAINTS PURGE;
+DROP TABLE usuarios      CASCADE CONSTRAINTS PURGE;
+
+CREATE TABLE artistas (
+    id_artista  NUMBER PRIMARY KEY,
+    nombre      VARCHAR2(100) NOT NULL,
+    pais        VARCHAR2(60),
+    genero      VARCHAR2(40),
+    activo      NUMBER(1) DEFAULT 1,
+    CHECK (activo IN (0,1))
+);
+
+CREATE TABLE canciones (
+    id_cancion       NUMBER PRIMARY KEY,
+    titulo           VARCHAR2(150) NOT NULL,
+    id_artista       NUMBER NOT NULL,
+    anio             NUMBER(4),
+    duracion_seg     NUMBER NOT NULL,
+    reproducciones   NUMBER DEFAULT 0,
+    precio_licencia  NUMBER(10,2) DEFAULT 0,
+    FOREIGN KEY (id_artista) REFERENCES artistas(id_artista),
+    CHECK (duracion_seg > 0),
+    CHECK (reproducciones >= 0),
+    CHECK (precio_licencia >= 0)
+);
+
+CREATE TABLE usuarios (
+    id_usuario  NUMBER PRIMARY KEY,
+    nombre      VARCHAR2(100) NOT NULL,
+    correo      VARCHAR2(100) UNIQUE,
+    plan        VARCHAR2(20) DEFAULT 'GRATIS',
+    creditos    NUMBER DEFAULT 0,
+    CHECK (plan IN ('GRATIS','BASICO','PREMIUM'))
+);
+
+CREATE TABLE reproducciones (
+    id_repro    NUMBER PRIMARY KEY,
+    id_usuario  NUMBER NOT NULL,
+    id_cancion  NUMBER NOT NULL,
+    fecha       DATE NOT NULL,
+    completada  NUMBER(1) DEFAULT 1,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario),
+    FOREIGN KEY (id_cancion) REFERENCES canciones(id_cancion),
+    CHECK (completada IN (0,1))
+);
+
+-- Artistas
+INSERT INTO artistas VALUES (10,'Los Jaivas',            'Chile',    'Rock Andino', 1);
+INSERT INTO artistas VALUES (20,'Inti-Illimani',         'Chile',    'Andina',      1);
+INSERT INTO artistas VALUES (30,'Illapu',                'Chile',    'Andina',      1);
+INSERT INTO artistas VALUES (40,'Soda Stereo',           'Argentina','Rock 80-90',  1);
+INSERT INTO artistas VALUES (50,'Los Prisioneros',       'Chile',    'Rock/Pop 80', 1);
+INSERT INTO artistas VALUES (60,'Fleetwood Mac',         'UK/USA',   'Rock 70-80',  0);
+INSERT INTO artistas VALUES (70,'The Police',            'UK',       'Rock 80',     0);
+INSERT INTO artistas VALUES (80,'Los Bunkers',           'Chile',    'Rock 90-00',  1);
+
+-- Canciones
+INSERT INTO canciones VALUES (10,'Todos Juntos',              10,1975,248, 520000,    0);
+INSERT INTO canciones VALUES (20,'Alturas de Machu Picchu',   20,1981,312,  98000,    0);
+INSERT INTO canciones VALUES (30,'El Pueblo Unido',           20,1975,195, 210000,    0);
+INSERT INTO canciones VALUES (40,'El Aparecido',              30,1983,220, 175000,    0);
+INSERT INTO canciones VALUES (50,'De Musica Ligera',          40,1990,234, 890000,15000);
+INSERT INTO canciones VALUES (60,'La Voz de los 80',          50,1984,201, 640000,10000);
+INSERT INTO canciones VALUES (70,'El Baile de los que Sobran',50,1986,228, 980000,12000);
+INSERT INTO canciones VALUES (80,'The Chain',                 60,1977,271, 430000,20000);
+INSERT INTO canciones VALUES (90,'Every Breath You Take',     70,1983,251, 720000,18000);
+INSERT INTO canciones VALUES(100,'Nada de Nada',              80,1999,213, 310000, 5000);
+
+-- Usuarios
+INSERT INTO usuarios VALUES (1,'Valentina Riquelme','val.riq@mail.com', 'PREMIUM',200);
+INSERT INTO usuarios VALUES (2,'Mateo Fuentes',    'mfuentes@mail.com', 'BASICO',  50);
+INSERT INTO usuarios VALUES (3,'Isidora Parra',    'isidora@mail.com',  'GRATIS',   0);
+INSERT INTO usuarios VALUES (4,'Sebastián Lara',   'seba.l@mail.com',   'GRATIS',   0);
+
+-- Reproducciones
+INSERT INTO reproducciones VALUES (1,1,10,DATE '2026-05-01',1);
+INSERT INTO reproducciones VALUES (2,1,50,DATE '2026-05-02',1);
+INSERT INTO reproducciones VALUES (3,2,60,DATE '2026-05-03',1);
+INSERT INTO reproducciones VALUES (4,2,70,DATE '2026-05-04',0);
+INSERT INTO reproducciones VALUES (5,3,80,DATE '2026-05-05',1);
+INSERT INTO reproducciones VALUES (6,1,90,DATE '2026-05-06',1);
+COMMIT;</code></pre>
+            </div>
+        </section>
+
+        <!-- Barra de Desbloqueo de Soluciones -->
+        <section class="mb-10">
+            <div id="unlockBar" class="bg-gradient-to-r from-violet-700 to-indigo-700 text-white rounded-3xl p-6 md:p-8 border-2 border-violet-500 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex items-center gap-4 text-center md:text-left">
+                    <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center shadow-md">
+                        <i id="lockIcon" class="fa-solid fa-lock text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Soluciones del Taller</h3>
+                        <p class="text-violet-200 text-sm font-medium mt-1" id="lockStatus">Las soluciones de código y verificaciones están protegidas. Ingresa la contraseña.</p>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                    <input type="password" id="pwdInput" placeholder="Contraseña de acceso..." class="px-5 py-3 rounded-xl border border-violet-400 bg-white/10 text-white placeholder-violet-300 outline-none w-full sm:w-64 focus:bg-white focus:text-slate-900 transition-all font-bold text-lg" />
+                    <button onclick="checkPwd()" class="w-full sm:w-auto bg-white hover:bg-violet-50 text-violet-800 font-bold px-6 py-3 rounded-xl shadow-md transition-all text-base border-2 border-white">
+                        Desbloquear
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filtros -->
+        <section class="mb-8">
+            <h3 class="text-lg font-bold text-slate-800 mb-4"><i class="fa-solid fa-filter mr-2 text-violet-600"></i>Filtrar desafíos por Operación o Dificultad:</h3>
+            <div class="flex flex-wrap gap-2.5">
+                <button onclick="filterEx('all', this)" class="filter-btn active bg-violet-600 text-white border-violet-600 font-extrabold px-4 py-2 rounded-xl text-sm transition-all shadow-sm border">Todos</button>
+                <button onclick="filterEx('insert', this)" class="filter-btn bg-white hover:bg-slate-100 text-slate-700 border-slate-300 font-bold px-4 py-2 rounded-xl text-sm transition-all border">INSERT</button>
+                <button onclick="filterEx('update', this)" class="filter-btn bg-white hover:bg-slate-100 text-slate-700 border-slate-300 font-bold px-4 py-2 rounded-xl text-sm transition-all border">UPDATE</button>
+                <button onclick="filterEx('delete', this)" class="filter-btn bg-white hover:bg-slate-100 text-slate-700 border-slate-300 font-bold px-4 py-2 rounded-xl text-sm transition-all border">DELETE</button>
+                <button onclick="filterEx('for', this)" class="filter-btn bg-white hover:bg-slate-100 text-slate-700 border-slate-300 font-bold px-4 py-2 rounded-xl text-sm transition-all border">FOR</button>
+                <button onclick="filterEx('while', this)" class="filter-btn bg-white hover:bg-slate-100 text-slate-700 border-slate-300 font-bold px-4 py-2 rounded-xl text-sm transition-all border">WHILE</button>
+                <button onclick="filterEx('inicial', this)" class="filter-btn bg-white hover:bg-slate-100 text-slate-700 border-slate-300 font-bold px-4 py-2 rounded-xl text-sm transition-all border">Inicial</button>
+                <button onclick="filterEx('intermedia', this)" class="filter-btn bg-white hover:bg-slate-100 text-slate-700 border-slate-300 font-bold px-4 py-2 rounded-xl text-sm transition-all border">Intermedia</button>
+                <button onclick="filterEx('avanzada', this)" class="filter-btn bg-white hover:bg-slate-100 text-slate-700 border-slate-300 font-bold px-4 py-2 rounded-xl text-sm transition-all border">Avanzada</button>
+            </div>
+        </section>
+
+        <!-- Listado de Ejercicios -->
+        <section id="exercises" class="space-y-8">
+            
+            <!-- R1 -->
+            <div class="ex-card bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden" data-tags="insert for inicial">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-violet-600 text-white font-extrabold text-sm px-3.5 py-1.5 rounded-xl">Desafío R1</span>
+                        <h3 class="text-2xl font-black text-slate-900">Registro de Nuevo Artista</h3>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="badge-blue text-xs font-bold">INSERT</span>
+                        <span class="badge-green text-xs font-bold">Inicial</span>
+                    </div>
+                </div>
+                <p class="text-lg text-slate-800 leading-relaxed font-semibold mb-4">
+                    <i class="fa-solid fa-bullseye text-violet-600 mr-1.5"></i> OBJETIVO: Registrar un nuevo artista: ID 500, nombre "Congreso", país "Chile", género "Jazz/Fusión", activo (1). Imprimir confirmación por pantalla.
+                </p>
+                <div class="bg-violet-50/70 border-l-4 border-violet-400 p-5 rounded-r-2xl text-slate-700 text-sm font-medium mb-6">
+                    <strong>Pista:</strong> Usa <code>INSERT INTO artistas</code> con valores literales y <code>DBMS_OUTPUT.PUT_LINE</code> para imprimir el mensaje de éxito.
+                </div>
+
+                <!-- Placeholder para bloque bloqueado -->
+                <div class="solution-placeholder bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center cursor-pointer hover:bg-slate-100/70 transition-all" onclick="focusPassword()">
+                    <i class="fa-solid fa-lock text-slate-400 text-3xl mb-2"></i>
+                    <p class="text-slate-600 font-bold">Código de solución protegido</p>
+                    <p class="text-slate-400 text-xs font-medium mt-1">Desbloquéalo arriba ingresando la contraseña del taller.</p>
+                </div>
+
+                <!-- Bloque de solución (Wrapper para mostrar/ocultar) -->
+                <div class="solution-wrapper space-y-6">
+                    <div class="bg-slate-900 rounded-3xl overflow-hidden border border-slate-800">
+                        <div class="bg-slate-950 px-5 py-3 flex justify-between items-center border-b border-slate-800">
+                            <span class="text-gray-400 text-xs font-mono">solucion_r1.sql</span>
+                            <button onclick="copyCode('codeR1')" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm">
+                                <i class="fa-regular fa-copy mr-2"></i> Copiar Solución
+                            </button>
+                        </div>
+                        <pre class="m-0 p-6"><code id="codeR1" class="language-sql text-sm">BEGIN
+    INSERT INTO artistas (id_artista, nombre, pais, genero, activo)
+    VALUES (500, 'Congreso', 'Chile', 'Jazz/Fusion', 1);
+
+    DBMS_OUTPUT.PUT_LINE('Artista ID 500 registrado correctamente.');
+END;
+/</code></pre>
+                    </div>
+
+                    <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl">
+                        <span class="font-extrabold text-emerald-800 text-base block mb-2"><i class="fa-solid fa-magnifying-glass mr-2"></i>Consulta de Verificación:</span>
+                        <code class="text-sm font-bold font-mono text-emerald-900 bg-white/60 px-3 py-1.5 rounded-lg border border-emerald-100 block">SELECT * FROM artistas WHERE id_artista = 500;</code>
+                    </div>
+                </div>
+
+                <div class="mt-6 border-t border-slate-100 pt-6">
+                    <h4 class="font-bold text-slate-800 mb-3 text-base">Preguntas de discusión en parejas:</h4>
+                    <ul class="space-y-2.5">
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Por qué se asigna el ID manualmente en este taller en lugar de usar una secuencia autoincremental?</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Qué restricción de clave o tabla impediría insertar exactamente el mismo ID de artista por segunda vez?</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- R2 -->
+            <div class="ex-card bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden" data-tags="insert for inicial">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-violet-600 text-white font-extrabold text-sm px-3.5 py-1.5 rounded-xl">Desafío R2</span>
+                        <h3 class="text-2xl font-black text-slate-900">Carga Masiva de Canciones Demo</h3>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="badge-blue text-xs font-bold">INSERT + FOR</span>
+                        <span class="badge-green text-xs font-bold">Inicial</span>
+                    </div>
+                </div>
+                <p class="text-lg text-slate-800 leading-relaxed font-semibold mb-4">
+                    <i class="fa-solid fa-bullseye text-violet-600 mr-1.5"></i> OBJETIVO: Cargar 4 canciones de prueba (IDs 501–504) asociadas al artista 500. Todas con duración de 200 segundos, 0 reproducciones y precio_licencia de 1000. El título de cada canción debe tener el formato "Demo Track 1", "Demo Track 2", etc.
+                </p>
+                <div class="bg-violet-50/70 border-l-4 border-violet-400 p-5 rounded-r-2xl text-slate-700 text-sm font-medium mb-6">
+                    <strong>Pista:</strong> Usa un ciclo <code>FOR i IN 1..4</code>. El ID de la canción se calcula como <code>500 + i</code>, y el título se construye concatenando texto con el operador <code>||</code>.
+                </div>
+
+                <div class="solution-placeholder bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center cursor-pointer hover:bg-slate-100/70 transition-all" onclick="focusPassword()">
+                    <i class="fa-solid fa-lock text-slate-400 text-3xl mb-2"></i>
+                    <p class="text-slate-600 font-bold">Código de solución protegido</p>
+                    <p class="text-slate-400 text-xs font-medium mt-1">Desbloquéalo arriba ingresando la contraseña del taller.</p>
+                </div>
+
+                <div class="solution-wrapper space-y-6">
+                    <div class="bg-slate-900 rounded-3xl overflow-hidden border border-slate-800">
+                        <div class="bg-slate-950 px-5 py-3 flex justify-between items-center border-b border-slate-800">
+                            <span class="text-gray-400 text-xs font-mono">solucion_r2.sql</span>
+                            <button onclick="copyCode('codeR2')" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm">
+                                <i class="fa-regular fa-copy mr-2"></i> Copiar Solución
+                            </button>
+                        </div>
+                        <pre class="m-0 p-6"><code id="codeR2" class="language-sql text-sm">DECLARE
+    v_insertadas NUMBER := 0;
+BEGIN
+    FOR i IN 1..4 LOOP
+        INSERT INTO canciones
+            (id_cancion, titulo, id_artista, anio, duracion_seg, reproducciones, precio_licencia)
+        VALUES
+            (500 + i, 'Demo Track ' || i, 500, 2026, 200, 0, 1000);
+        v_insertadas := v_insertadas + 1;
+    END LOOP;
+    DBMS_OUTPUT.PUT_LINE('Canciones demo insertadas: ' || v_insertadas);
+END;
+/</code></pre>
+                    </div>
+
+                    <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl">
+                        <span class="font-extrabold text-emerald-800 text-base block mb-2"><i class="fa-solid fa-magnifying-glass mr-2"></i>Consulta de Verificación:</span>
+                        <code class="text-sm font-bold font-mono text-emerald-900 bg-white/60 px-3 py-1.5 rounded-lg border border-emerald-100 block">SELECT * FROM canciones WHERE id_cancion BETWEEN 501 AND 504;</code>
+                    </div>
+                </div>
+
+                <div class="mt-6 border-t border-slate-100 pt-6">
+                    <h4 class="font-bold text-slate-800 mb-3 text-base">Preguntas de discusión en parejas:</h4>
+                    <ul class="space-y-2.5">
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Qué ventaja tiene usar un ciclo FOR en lugar de escribir 4 instrucciones INSERT individuales?</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Cómo modificarías este bloque de código si quisieras insertar 15 canciones de forma automática?</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- R3 -->
+            <div class="ex-card bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden" data-tags="update inicial">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-violet-600 text-white font-extrabold text-sm px-3.5 py-1.5 rounded-xl">Desafío R3</span>
+                        <h3 class="text-2xl font-black text-slate-900">Descuento de Licencia</h3>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="badge-blue text-xs font-bold">UPDATE</span>
+                        <span class="badge-green text-xs font-bold">Inicial</span>
+                    </div>
+                </div>
+                <p class="text-lg text-slate-800 leading-relaxed font-semibold mb-4">
+                    <i class="fa-solid fa-bullseye text-violet-600 mr-1.5"></i> OBJETIVO: Aplicar un 15 % de descuento al precio de licencia de la canción "De Musica Ligera" (ID 50). Imprimir por pantalla el precio original y el nuevo precio calculado antes de ejecutar la actualización.
+                </p>
+                <div class="bg-violet-50/70 border-l-4 border-violet-400 p-5 rounded-r-2xl text-slate-700 text-sm font-medium mb-6">
+                    <strong>Pista:</strong> Recupera el precio actual de la tabla usando <code>SELECT precio_licencia INTO ...</code>, realiza la operación matemática en PL/SQL y finalmente actualiza la fila.
+                </div>
+
+                <div class="solution-placeholder bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center cursor-pointer hover:bg-slate-100/70 transition-all" onclick="focusPassword()">
+                    <i class="fa-solid fa-lock text-slate-400 text-3xl mb-2"></i>
+                    <p class="text-slate-600 font-bold">Código de solución protegido</p>
+                    <p class="text-slate-400 text-xs font-medium mt-1">Desbloquéalo arriba ingresando la contraseña del taller.</p>
+                </div>
+
+                <div class="solution-wrapper space-y-6">
+                    <div class="bg-slate-900 rounded-3xl overflow-hidden border border-slate-800">
+                        <div class="bg-slate-950 px-5 py-3 flex justify-between items-center border-b border-slate-800">
+                            <span class="text-gray-400 text-xs font-mono">solucion_r3.sql</span>
+                            <button onclick="copyCode('codeR3')" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm">
+                                <i class="fa-regular fa-copy mr-2"></i> Copiar Solución
+                            </button>
+                        </div>
+                        <pre class="m-0 p-6"><code id="codeR3" class="language-sql text-sm">DECLARE
+    v_precio_actual  canciones.precio_licencia%TYPE;
+    v_precio_nuevo   NUMBER(10,2);
+BEGIN
+    SELECT precio_licencia INTO v_precio_actual
+    FROM canciones WHERE id_cancion = 50;
+
+    v_precio_nuevo := v_precio_actual * 0.85;
+
+    UPDATE canciones
+    SET precio_licencia = v_precio_nuevo
+    WHERE id_cancion = 50;
+
+    DBMS_OUTPUT.PUT_LINE('Anterior: ' || v_precio_actual || ' | Nuevo: ' || v_precio_nuevo);
+END;
+/</code></pre>
+                    </div>
+
+                    <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl">
+                        <span class="font-extrabold text-emerald-800 text-base block mb-2"><i class="fa-solid fa-magnifying-glass mr-2"></i>Consulta de Verificación:</span>
+                        <code class="text-sm font-bold font-mono text-emerald-900 bg-white/60 px-3 py-1.5 rounded-lg border border-emerald-100 block">SELECT id_cancion, titulo, precio_licencia FROM canciones WHERE id_cancion = 50;</code>
+                    </div>
+                </div>
+
+                <div class="mt-6 border-t border-slate-100 pt-6">
+                    <h4 class="font-bold text-slate-800 mb-3 text-base">Preguntas de discusión en parejas:</h4>
+                    <ul class="space-y-2.5">
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Por qué es una buena práctica leer el valor actual antes de actualizar, en lugar de aplicar el descuento directamente con una sola consulta UPDATE?</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Qué sucedería si el precio de la licencia es 0 y se aplica esta fórmula de descuento?</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- R4 -->
+            <div class="ex-card bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden" data-tags="update for intermedia">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-violet-600 text-white font-extrabold text-sm px-3.5 py-1.5 rounded-xl">Desafío R4</span>
+                        <h3 class="text-2xl font-black text-slate-900">Reajuste Masivo de Licencias</h3>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="badge-blue text-xs font-bold">UPDATE + FOR + IF</span>
+                        <span class="badge-green text-xs font-bold">Intermedia</span>
+                    </div>
+                </div>
+                <p class="text-lg text-slate-800 leading-relaxed font-semibold mb-4">
+                    <i class="fa-solid fa-bullseye text-violet-600 mr-1.5"></i> OBJETIVO: Recorrer las canciones con IDs 10, 30, 50, 70 y 90 (avanzando de 20 en 20). Si su precio_licencia es igual a 0, actualizarlo a 3000. Imprimir en pantalla el ID procesado y la acción realizada en cada iteración.
+                </p>
+                <div class="bg-violet-50/70 border-l-4 border-violet-400 p-5 rounded-r-2xl text-slate-700 text-sm font-medium mb-6">
+                    <strong>Pista:</strong> Diseña un ciclo <code>FOR i IN 1..5</code> y calcula el ID correspondiente usando la fórmula <code>i * 20</code>. Usa condicionales <code>IF</code> para validar el precio antes de lanzar el <code>UPDATE</code>.
+                </div>
+
+                <div class="solution-placeholder bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center cursor-pointer hover:bg-slate-100/70 transition-all" onclick="focusPassword()">
+                    <i class="fa-solid fa-lock text-slate-400 text-3xl mb-2"></i>
+                    <p class="text-slate-600 font-bold">Código de solución protegido</p>
+                    <p class="text-slate-400 text-xs font-medium mt-1">Desbloquéalo arriba ingresando la contraseña del taller.</p>
+                </div>
+
+                <div class="solution-wrapper space-y-6">
+                    <div class="bg-slate-900 rounded-3xl overflow-hidden border border-slate-800">
+                        <div class="bg-slate-950 px-5 py-3 flex justify-between items-center border-b border-slate-800">
+                            <span class="text-gray-400 text-xs font-mono">solucion_r4.sql</span>
+                            <button onclick="copyCode('codeR4')" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm">
+                                <i class="fa-regular fa-copy mr-2"></i> Copiar Solución
+                            </button>
+                        </div>
+                        <pre class="m-0 p-6"><code id="codeR4" class="language-sql text-sm">DECLARE
+    v_id_cancion NUMBER;
+    v_precio     canciones.precio_licencia%TYPE;
+BEGIN
+    FOR i IN 1..5 LOOP
+        v_id_cancion := i * 20;
+
+        SELECT precio_licencia INTO v_precio
+        FROM canciones WHERE id_cancion = v_id_cancion;
+
+        IF v_precio = 0 THEN
+            UPDATE canciones
+            SET precio_licencia = 3000
+            WHERE id_cancion = v_id_cancion;
+            DBMS_OUTPUT.PUT_LINE('ID ' || v_id_cancion || ': licencia asignada a 3000.');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('ID ' || v_id_cancion || ': ya tiene precio (' || v_precio || ').');
+        END IF;
+    END LOOP;
+END;
+/</code></pre>
+                    </div>
+
+                    <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl">
+                        <span class="font-extrabold text-emerald-800 text-base block mb-2"><i class="fa-solid fa-magnifying-glass mr-2"></i>Consulta de Verificación:</span>
+                        <code class="text-sm font-bold font-mono text-emerald-900 bg-white/60 px-3 py-1.5 rounded-lg border border-emerald-100 block">SELECT id_cancion, titulo, precio_licencia FROM canciones WHERE id_cancion IN (10,30,50,70,90);</code>
+                    </div>
+                </div>
+
+                <div class="mt-6 border-t border-slate-100 pt-6">
+                    <h4 class="font-bold text-slate-800 mb-3 text-base">Preguntas de discusión en parejas:</h4>
+                    <ul class="space-y-2.5">
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Qué excepción levantaría el motor de Oracle si uno de los IDs de canción generados por el ciclo FOR no existiera en la tabla?</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Por qué es recomendable validar primero en PL/SQL antes de disparar actualizaciones de base de datos directamente?</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- R5 -->
+            <div class="ex-card bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden" data-tags="update while intermedia">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-violet-600 text-white font-extrabold text-sm px-3.5 py-1.5 rounded-xl">Desafío R5</span>
+                        <h3 class="text-2xl font-black text-slate-900">Ascenso Automático de Plan de Usuario</h3>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="badge-blue text-xs font-bold">UPDATE + WHILE</span>
+                        <span class="badge-green text-xs font-bold">Intermedia</span>
+                    </div>
+                </div>
+                <p class="text-lg text-slate-800 leading-relaxed font-semibold mb-4">
+                    <i class="fa-solid fa-bullseye text-violet-600 mr-1.5"></i> OBJETIVO: Promover gradualmente el plan del usuario ID 3 (Isidora, actualmente plan 'GRATIS'). Diseñar un ciclo <code>WHILE</code> que ascienda al usuario secuencialmente en el orden 'GRATIS' → 'BASICO' → 'PREMIUM', leyendo el plan directamente de la base de datos en cada iteración del bucle.
+                </p>
+                <div class="bg-violet-50/70 border-l-4 border-violet-400 p-5 rounded-r-2xl text-slate-700 text-sm font-medium mb-6">
+                    <strong>Pista:</strong> Lee el plan inicial antes de entrar al bucle. Dentro del <code>WHILE</code>, aplica el <code>UPDATE</code> y vuelve a ejecutar la consulta <code>SELECT plan INTO ...</code> al final de la iteración para evaluar la condición de parada del bucle.
+                </div>
+
+                <div class="solution-placeholder bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center cursor-pointer hover:bg-slate-100/70 transition-all" onclick="focusPassword()">
+                    <i class="fa-solid fa-lock text-slate-400 text-3xl mb-2"></i>
+                    <p class="text-slate-600 font-bold">Código de solución protegido</p>
+                    <p class="text-slate-400 text-xs font-medium mt-1">Desbloquéalo arriba ingresando la contraseña del taller.</p>
+                </div>
+
+                <div class="solution-wrapper space-y-6">
+                    <div class="bg-slate-900 rounded-3xl overflow-hidden border border-slate-800">
+                        <div class="bg-slate-950 px-5 py-3 flex justify-between items-center border-b border-slate-800">
+                            <span class="text-gray-400 text-xs font-mono">solucion_r5.sql</span>
+                            <button onclick="copyCode('codeR5')" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm">
+                                <i class="fa-regular fa-copy mr-2"></i> Copiar Solución
+                            </button>
+                        </div>
+                        <pre class="m-0 p-6"><code id="codeR5" class="language-sql text-sm">DECLARE
+    v_plan usuarios.plan%TYPE;
+BEGIN
+    SELECT plan INTO v_plan FROM usuarios WHERE id_usuario = 3;
+
+    WHILE v_plan <> 'PREMIUM' LOOP
+        IF v_plan = 'GRATIS' THEN
+            UPDATE usuarios SET plan = 'BASICO' WHERE id_usuario = 3;
+            DBMS_OUTPUT.PUT_LINE('Ascendido a BASICO.');
+        ELSIF v_plan = 'BASICO' THEN
+            UPDATE usuarios SET plan = 'PREMIUM' WHERE id_usuario = 3;
+            DBMS_OUTPUT.PUT_LINE('Ascendido a PREMIUM.');
+        END IF;
+        SELECT plan INTO v_plan FROM usuarios WHERE id_usuario = 3;
+    END LOOP;
+    DBMS_OUTPUT.PUT_LINE('Plan final: ' || v_plan);
+END;
+/</code></pre>
+                    </div>
+
+                    <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl">
+                        <span class="font-extrabold text-emerald-800 text-base block mb-2"><i class="fa-solid fa-magnifying-glass mr-2"></i>Consulta de Verificación:</span>
+                        <code class="text-sm font-bold font-mono text-emerald-900 bg-white/60 px-3 py-1.5 rounded-lg border border-emerald-100 block">SELECT id_usuario, nombre, plan FROM usuarios WHERE id_usuario = 3;</code>
+                    </div>
+                </div>
+
+                <div class="mt-6 border-t border-slate-100 pt-6">
+                    <h4 class="font-bold text-slate-800 mb-3 text-base">Preguntas de discusión en parejas:</h4>
+                    <ul class="space-y-2.5">
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Por qué es fundamental volver a consultar la tabla de la BD antes de finalizar cada ciclo en vez de simplemente cambiar el valor de la variable en memoria?</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Cuántas iteraciones del bucle se ejecutarían si el usuario originalmente ya tuviera el plan 'PREMIUM'?</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- R6 -->
+            <div class="ex-card bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden" data-tags="insert while intermedia">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-violet-600 text-white font-extrabold text-sm px-3.5 py-1.5 rounded-xl">Desafío R6</span>
+                        <h3 class="text-2xl font-black text-slate-900">Simulación de Reproducciones Masivas</h3>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="badge-blue text-xs font-bold">INSERT + WHILE</span>
+                        <span class="badge-green text-xs font-bold">Intermedia</span>
+                    </div>
+                </div>
+                <p class="text-lg text-slate-800 leading-relaxed font-semibold mb-4">
+                    <i class="fa-solid fa-bullseye text-violet-600 mr-1.5"></i> OBJETIVO: Simular que el usuario ID 1 escucha la canción ID 10 de forma consecutiva 4 veces seguidas. Insertar reproducciones con IDs a partir de 500 en un ciclo <code>WHILE</code> que finalice cuando el contador supere a 503. Cada registro debe llevar la fecha del sistema (<code>SYSDATE</code>) y el estado completada = 1.
+                </p>
+                <div class="bg-violet-50/70 border-l-4 border-violet-400 p-5 rounded-r-2xl text-slate-700 text-sm font-medium mb-6">
+                    <strong>Pista:</strong> Declara un contador de IDs que se inicie en 500. La condición del bucle será <code>v_id_repro <= 503</code>. No olvides incrementar el ID en cada paso para evitar un bucle sin fin.
+                </div>
+
+                <div class="solution-placeholder bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center cursor-pointer hover:bg-slate-100/70 transition-all" onclick="focusPassword()">
+                    <i class="fa-solid fa-lock text-slate-400 text-3xl mb-2"></i>
+                    <p class="text-slate-600 font-bold">Código de solución protegido</p>
+                    <p class="text-slate-400 text-xs font-medium mt-1">Desbloquéalo arriba ingresando la contraseña del taller.</p>
+                </div>
+
+                <div class="solution-wrapper space-y-6">
+                    <div class="bg-slate-900 rounded-3xl overflow-hidden border border-slate-800">
+                        <div class="bg-slate-950 px-5 py-3 flex justify-between items-center border-b border-slate-800">
+                            <span class="text-gray-400 text-xs font-mono">solucion_r6.sql</span>
+                            <button onclick="copyCode('codeR6')" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm">
+                                <i class="fa-regular fa-copy mr-2"></i> Copiar Solución
+                            </button>
+                        </div>
+                        <pre class="m-0 p-6"><code id="codeR6" class="language-sql text-sm">DECLARE
+    v_id_repro NUMBER := 500;
+    v_total    NUMBER := 0;
+BEGIN
+    WHILE v_id_repro <= 503 LOOP
+        INSERT INTO reproducciones (id_repro, id_usuario, id_cancion, fecha, completada)
+        VALUES (v_id_repro, 1, 10, SYSDATE, 1);
+
+        v_total    := v_total + 1;
+        v_id_repro := v_id_repro + 1;
+    END LOOP;
+    DBMS_OUTPUT.PUT_LINE('Reproducciones simuladas: ' || v_total);
+END;
+/</code></pre>
+                    </div>
+
+                    <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl">
+                        <span class="font-extrabold text-emerald-800 text-base block mb-2"><i class="fa-solid fa-magnifying-glass mr-2"></i>Consulta de Verificación:</span>
+                        <code class="text-sm font-bold font-mono text-emerald-900 bg-white/60 px-3 py-1.5 rounded-lg border border-emerald-100 block">SELECT * FROM reproducciones WHERE id_repro BETWEEN 500 AND 503;</code>
+                    </div>
+                </div>
+
+                <div class="mt-6 border-t border-slate-100 pt-6">
+                    <h4 class="font-bold text-slate-800 mb-3 text-base">Preguntas de discusión en parejas:</h4>
+                    <ul class="space-y-2.5">
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Qué sucedería si olvidamos la instrucción de incremento de la variable de control <code>v_id_repro</code> dentro del bucle WHILE?</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>En ambientes productivos, ¿cómo asegurarías que el ID de reproducción no colisione con registros existentes sin asignarlo manualmente?</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- R7 -->
+            <div class="ex-card bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden" data-tags="for intermedia">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-violet-600 text-white font-extrabold text-sm px-3.5 py-1.5 rounded-xl">Desafío R7</span>
+                        <h3 class="text-2xl font-black text-slate-900">Ranking Inverso de Reproducciones</h3>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="badge-blue text-xs font-bold">FOR REVERSE</span>
+                        <span class="badge-green text-xs font-bold">Intermedia</span>
+                    </div>
+                </div>
+                <p class="text-lg text-slate-800 leading-relaxed font-semibold mb-4">
+                    <i class="fa-solid fa-bullseye text-violet-600 mr-1.5"></i> OBJETIVO: Leer el volumen de reproducciones de la canción "El Baile de los que Sobran" (ID 70) e imprimir por consola 3 posiciones ficticias de podio en orden descendente ("Posición 3", "Posición 2", "Posición 1").
+                </p>
+                <div class="bg-violet-50/70 border-l-4 border-violet-400 p-5 rounded-r-2xl text-slate-700 text-sm font-medium mb-6">
+                    <strong>Pista:</strong> Obtén el número de reproducciones con una consulta y luego utiliza la sintaxis <code>FOR i IN REVERSE 1..3</code> para desplegar la cuenta regresiva.
+                </div>
+
+                <div class="solution-placeholder bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center cursor-pointer hover:bg-slate-100/70 transition-all" onclick="focusPassword()">
+                    <i class="fa-solid fa-lock text-slate-400 text-3xl mb-2"></i>
+                    <p class="text-slate-600 font-bold">Código de solución protegido</p>
+                    <p class="text-slate-400 text-xs font-medium mt-1">Desbloquéalo arriba ingresando la contraseña del taller.</p>
+                </div>
+
+                <div class="solution-wrapper space-y-6">
+                    <div class="bg-slate-900 rounded-3xl overflow-hidden border border-slate-800">
+                        <div class="bg-slate-950 px-5 py-3 flex justify-between items-center border-b border-slate-800">
+                            <span class="text-gray-400 text-xs font-mono">solucion_r7.sql</span>
+                            <button onclick="copyCode('codeR7')" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm">
+                                <i class="fa-regular fa-copy mr-2"></i> Copiar Solución
+                            </button>
+                        </div>
+                        <pre class="m-0 p-6"><code id="codeR7" class="language-sql text-sm">DECLARE
+    v_repros canciones.reproducciones%TYPE;
+BEGIN
+    SELECT reproducciones INTO v_repros
+    FROM canciones WHERE id_cancion = 70;
+
+    FOR i IN REVERSE 1..3 LOOP
+        DBMS_OUTPUT.PUT_LINE('Posicion ' || i || ' | Reproducciones: ' || v_repros);
+    END LOOP;
+END;
+/</code></pre>
+                    </div>
+
+                    <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl">
+                        <span class="font-extrabold text-emerald-800 text-base block mb-2"><i class="fa-solid fa-magnifying-glass mr-2"></i>Consulta de Verificación:</span>
+                        <code class="text-sm font-bold font-mono text-emerald-900 bg-white/60 px-3 py-1.5 rounded-lg border border-emerald-100 block">SELECT id_cancion, titulo, reproducciones FROM canciones WHERE id_cancion = 70;</code>
+                    </div>
+                </div>
+
+                <div class="mt-6 border-t border-slate-100 pt-6">
+                    <h4 class="font-bold text-slate-800 mb-3 text-base">Preguntas de discusión en parejas:</h4>
+                    <ul class="space-y-2.5">
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿En qué tipo de lógicas algorítmicas de base de datos resulta más práctico contar al revés usando FOR REVERSE?</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Qué mostraría la consola si el contador de reproducciones de la canción consultada estuviera en 0?</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- R8 -->
+            <div class="ex-card bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden" data-tags="update for intermedia">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-violet-600 text-white font-extrabold text-sm px-3.5 py-1.5 rounded-xl">Desafío R8</span>
+                        <h3 class="text-2xl font-black text-slate-900">Créditos por Fidelidad</h3>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="badge-blue text-xs font-bold">UPDATE + FOR + IF</span>
+                        <span class="badge-green text-xs font-bold">Intermedia</span>
+                    </div>
+                </div>
+                <p class="text-lg text-slate-800 leading-relaxed font-semibold mb-4">
+                    <i class="fa-solid fa-bullseye text-violet-600 mr-1.5"></i> OBJETIVO: Recorrer de forma secuencial los usuarios con IDs del 1 al 4. Si su plan es 'PREMIUM', sumar 100 créditos. Si su plan es 'BASICO', sumar 25 créditos. Si es 'GRATIS', no realizar modificaciones. Imprimir por pantalla el nombre y la acción de reajuste realizada.
+                </p>
+                <div class="bg-violet-50/70 border-l-4 border-violet-400 p-5 rounded-r-2xl text-slate-700 text-sm font-medium mb-6">
+                    <strong>Pista:</strong> Emplea un bucle <code>FOR i IN 1..4</code>. En cada pasada, lee el nombre y el plan actual, y luego determina el reajuste en créditos utilizando estructuras condicionales <code>IF-ELSIF-ELSE</code>.
+                </div>
+
+                <div class="solution-placeholder bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center cursor-pointer hover:bg-slate-100/70 transition-all" onclick="focusPassword()">
+                    <i class="fa-solid fa-lock text-slate-400 text-3xl mb-2"></i>
+                    <p class="text-slate-600 font-bold">Código de solución protegido</p>
+                    <p class="text-slate-400 text-xs font-medium mt-1">Desbloquéalo arriba ingresando la contraseña del taller.</p>
+                </div>
+
+                <div class="solution-wrapper space-y-6">
+                    <div class="bg-slate-900 rounded-3xl overflow-hidden border border-slate-800">
+                        <div class="bg-slate-950 px-5 py-3 flex justify-between items-center border-b border-slate-800">
+                            <span class="text-gray-400 text-xs font-mono">solucion_r8.sql</span>
+                            <button onclick="copyCode('codeR8')" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm">
+                                <i class="fa-regular fa-copy mr-2"></i> Copiar Solución
+                            </button>
+                        </div>
+                        <pre class="m-0 p-6"><code id="codeR8" class="language-sql text-sm">DECLARE
+    v_plan   usuarios.plan%TYPE;
+    v_nombre usuarios.nombre%TYPE;
+BEGIN
+    FOR i IN 1..4 LOOP
+        SELECT nombre, plan INTO v_nombre, v_plan
+        FROM usuarios WHERE id_usuario = i;
+
+        IF v_plan = 'PREMIUM' THEN
+            UPDATE usuarios SET creditos = creditos + 100 WHERE id_usuario = i;
+            DBMS_OUTPUT.PUT_LINE(v_nombre || ' (PREMIUM): +100 creditos.');
+        ELSIF v_plan = 'BASICO' THEN
+            UPDATE usuarios SET creditos = creditos + 25  WHERE id_usuario = i;
+            DBMS_OUTPUT.PUT_LINE(v_nombre || ' (BASICO): +25 creditos.');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE(v_nombre || ' (GRATIS): sin cambios.');
+        END IF;
+    END LOOP;
+END;
+/</code></pre>
+                    </div>
+
+                    <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl">
+                        <span class="font-extrabold text-emerald-800 text-base block mb-2"><i class="fa-solid fa-magnifying-glass mr-2"></i>Consulta de Verificación:</span>
+                        <code class="text-sm font-bold font-mono text-emerald-900 bg-white/60 px-3 py-1.5 rounded-lg border border-emerald-100 block">SELECT id_usuario, nombre, plan, creditos FROM usuarios;</code>
+                    </div>
+                </div>
+
+                <div class="mt-6 border-t border-slate-100 pt-6">
+                    <h4 class="font-bold text-slate-800 mb-3 text-base">Preguntas de discusión en parejas:</h4>
+                    <ul class="space-y-2.5">
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Qué excepción lanzaría Oracle si el id_usuario 3 no existiera en la tabla intermedia durante el ciclo?</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Cómo acotarías la lógica si los créditos acumulados no pudieran sobrepasar un límite de 300 puntos?</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- R9 -->
+            <div class="ex-card bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden" data-tags="delete for inicial">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-violet-600 text-white font-extrabold text-sm px-3.5 py-1.5 rounded-xl">Desafío R9</span>
+                        <h3 class="text-2xl font-black text-slate-900">Limpieza de Canciones Demo</h3>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="badge-blue text-xs font-bold">DELETE + FOR</span>
+                        <span class="badge-green text-xs font-bold">Inicial</span>
+                    </div>
+                </div>
+                <p class="text-lg text-slate-800 leading-relaxed font-semibold mb-4">
+                    <i class="fa-solid fa-bullseye text-violet-600 mr-1.5"></i> OBJETIVO: Eliminar las 4 canciones demostrativas que fueron insertadas en el desafío R2 (IDs 501–504) mediante un bucle <code>FOR</code>. Imprimir en consola la cantidad total de filas borradas al concluir el procedimiento.
+                </p>
+                <div class="bg-violet-50/70 border-l-4 border-violet-400 p-5 rounded-r-2xl text-slate-700 text-sm font-medium mb-6">
+                    <strong>Pista:</strong> Itera con <code>FOR i IN 501..504</code> y ejecuta la orden <code>DELETE FROM canciones</code> aplicando el filtro del ID iterado.
+                </div>
+
+                <div class="solution-placeholder bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center cursor-pointer hover:bg-slate-100/70 transition-all" onclick="focusPassword()">
+                    <i class="fa-solid fa-lock text-slate-400 text-3xl mb-2"></i>
+                    <p class="text-slate-600 font-bold">Código de solución protegido</p>
+                    <p class="text-slate-400 text-xs font-medium mt-1">Desbloquéalo arriba ingresando la contraseña del taller.</p>
+                </div>
+
+                <div class="solution-wrapper space-y-6">
+                    <div class="bg-slate-900 rounded-3xl overflow-hidden border border-slate-800">
+                        <div class="bg-slate-950 px-5 py-3 flex justify-between items-center border-b border-slate-800">
+                            <span class="text-gray-400 text-xs font-mono">solucion_r9.sql</span>
+                            <button onclick="copyCode('codeR9')" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm">
+                                <i class="fa-regular fa-copy mr-2"></i> Copiar Solución
+                            </button>
+                        </div>
+                        <pre class="m-0 p-6"><code id="codeR9" class="language-sql text-sm">DECLARE
+    v_borradas NUMBER := 0;
+BEGIN
+    FOR i IN 501..504 LOOP
+        DELETE FROM canciones WHERE id_cancion = i;
+        v_borradas := v_borradas + 1;
+    END LOOP;
+    DBMS_OUTPUT.PUT_LINE('Canciones demo eliminadas: ' || v_borradas);
+END;
+/</code></pre>
+                    </div>
+
+                    <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl">
+                        <span class="font-extrabold text-emerald-800 text-base block mb-2"><i class="fa-solid fa-magnifying-glass mr-2"></i>Consulta de Verificación:</span>
+                        <code class="text-sm font-bold font-mono text-emerald-900 bg-white/60 px-3 py-1.5 rounded-lg border border-emerald-100 block">SELECT * FROM canciones WHERE id_cancion BETWEEN 501 AND 504; -- Debe retornar 0 filas</code>
+                    </div>
+                </div>
+
+                <div class="mt-6 border-t border-slate-100 pt-6">
+                    <h4 class="font-bold text-slate-800 mb-3 text-base">Preguntas de discusión en parejas:</h4>
+                    <ul class="space-y-2.5">
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Qué restricción de clave foránea en la base de datos abortaría la eliminación de canciones si ya tuvieran reproducciones enlazadas?</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Por qué es recomendable utilizar un contador para imprimir filas afectadas en lugar de usar <code>SQL%ROWCOUNT</code> cuando barremos fila por fila dentro de un ciclo?</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- R10 -->
+            <div class="ex-card bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden" data-tags="update while avanzada">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-violet-600 text-white font-extrabold text-sm px-3.5 py-1.5 rounded-xl">Desafío R10</span>
+                        <h3 class="text-2xl font-black text-slate-900">Desactivar Artistas sin Licencias Activas</h3>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="badge-blue text-xs font-bold">UPDATE + WHILE + IF</span>
+                        <span class="badge-green text-xs font-bold">Avanzada</span>
+                    </div>
+                </div>
+                <p class="text-lg text-slate-800 leading-relaxed font-semibold mb-4">
+                    <i class="fa-solid fa-bullseye text-violet-600 mr-1.5"></i> OBJETIVO: Recorrer secuencialmente los artistas con IDs 60, 70 y 80 en incrementos de 10 usando un ciclo <code>WHILE</code>. Si el artista no posee ninguna canción asociada que tenga un <code>precio_licencia</code> mayor a 0, actualizar su estado a inactivo (<code>activo = 0</code>). Imprimir el nombre del artista y la acción realizada.
+                </p>
+                <div class="bg-violet-50/70 border-l-4 border-violet-400 p-5 rounded-r-2xl text-slate-700 text-sm font-medium mb-6">
+                    <strong>Pista:</strong> Inicializa el contador del ciclo en 60. Para cada artista, realiza un <code>COUNT(*)</code> de sus canciones con <code>precio_licencia > 0</code>. Utiliza condicionales para determinar si ejecutas la desactivación.
+                </div>
+
+                <div class="solution-placeholder bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center cursor-pointer hover:bg-slate-100/70 transition-all" onclick="focusPassword()">
+                    <i class="fa-solid fa-lock text-slate-400 text-3xl mb-2"></i>
+                    <p class="text-slate-600 font-bold">Código de solución protegido</p>
+                    <p class="text-slate-400 text-xs font-medium mt-1">Desbloquéalo arriba ingresando la contraseña del taller.</p>
+                </div>
+
+                <div class="solution-wrapper space-y-6">
+                    <div class="bg-slate-900 rounded-3xl overflow-hidden border border-slate-800">
+                        <div class="bg-slate-950 px-5 py-3 flex justify-between items-center border-b border-slate-800">
+                            <span class="text-gray-400 text-xs font-mono">solucion_r10.sql</span>
+                            <button onclick="copyCode('codeR10')" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm">
+                                <i class="fa-regular fa-copy mr-2"></i> Copiar Solución
+                            </button>
+                        </div>
+                        <pre class="m-0 p-6"><code id="codeR10" class="language-sql text-sm">DECLARE
+    v_id     NUMBER := 60;
+    v_nombre artistas.nombre%TYPE;
+    v_cnt    NUMBER;
+BEGIN
+    WHILE v_id <= 80 LOOP
+        SELECT nombre INTO v_nombre
+        FROM artistas WHERE id_artista = v_id;
+
+        SELECT COUNT(*) INTO v_cnt
+        FROM canciones
+        WHERE id_artista = v_id AND precio_licencia > 0;
+
+        IF v_cnt = 0 THEN
+            UPDATE artistas SET activo = 0 WHERE id_artista = v_id;
+            DBMS_OUTPUT.PUT_LINE(v_nombre || ': desactivado (sin licencias activas).');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE(v_nombre || ': activo (' || v_cnt || ' canciones con licencia).');
+        END IF;
+
+        v_id := v_id + 10;
+    END LOOP;
+END;
+/</code></pre>
+                    </div>
+
+                    <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl">
+                        <span class="font-extrabold text-emerald-800 text-base block mb-2"><i class="fa-solid fa-magnifying-glass mr-2"></i>Consulta de Verificación:</span>
+                        <code class="text-sm font-bold font-mono text-emerald-900 bg-white/60 px-3 py-1.5 rounded-lg border border-emerald-100 block">SELECT id_artista, nombre, activo FROM artistas WHERE id_artista IN (60,70,80);</code>
+                    </div>
+                </div>
+
+                <div class="mt-6 border-t border-slate-100 pt-6">
+                    <h4 class="font-bold text-slate-800 mb-3 text-base">Preguntas de discusión en parejas:</h4>
+                    <ul class="space-y-2.5">
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Por qué se prefiere un cambio de estado en una columna lógica (soft delete) en lugar de borrar por completo la fila usando <code>DELETE</code>?</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-slate-700 text-sm font-medium">
+                            <i class="fa-solid fa-circle-question text-violet-500 mt-1"></i>
+                            <span>¿Qué problema surgiría si alguno de los IDs del ciclo no existiera dentro de la tabla de artistas?</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Reto Bonus -->
+        <section class="bg-violet-900 text-white p-8 md:p-10 rounded-[2.5rem] shadow-xl mt-12 border-2 border-violet-500 relative overflow-hidden">
+            <div class="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-violet-800/50 z-0"></div>
+            <div class="relative z-10">
+                <span class="badge-pink bg-pink-500 text-white border-pink-400 font-extrabold text-xs mb-4">RETO INTEGRADO BONUS</span>
+                <h2 class="text-3xl font-black mb-4"><i class="fa-solid fa-fire-flame-curved mr-2 text-yellow-300"></i>Simulación de Ventas de Licencias</h2>
+                <p class="text-lg text-violet-100 leading-relaxed mb-6 font-medium">
+                    La plataforma requiere simular la venta consecutiva de licencias para la canción "El Baile de los que Sobran" (ID 70). Cada venta debe:
+                </p>
+                <ol class="list-decimal pl-6 space-y-3 text-base text-violet-100 font-semibold mb-6">
+                    <li>Descontar 1 reproducción del registro de la canción en la tabla <code>canciones</code> (UPDATE).</li>
+                    <li>Insertar una nueva fila de log en la tabla <code>reproducciones</code> (asociada al usuario ID 2, completada = 1, fecha actual) con un ID de reproducción autoincremental que comience en 600 (INSERT).</li>
+                    <li>El ciclo <code>WHILE</code> debe continuar ejecutando simulaciones mientras el total de reproducciones de la canción en la base de datos sea mayor a 5.</li>
+                </ol>
+                <div class="bg-violet-950/80 border border-violet-700 p-5 rounded-2xl">
+                    <h4 class="font-bold text-yellow-300 text-base mb-2">Desafío para discusión en clases:</h4>
+                    <ol class="list-decimal pl-5 space-y-2 text-sm text-violet-200 font-medium">
+                        <li>¿Cómo estructurarías la actualización de la variable de condición de control en PL/SQL para garantizar que el bucle WHILE finalice correctamente y no se cuelgue en un bucle infinito?</li>
+                        <li>¿Qué volumen mínimo de reproducciones debe registrar la canción antes de arrancar la prueba para que la simulación se ejecute exactamente 3 veces?</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resumen -->
+        <section class="bg-white p-8 md:p-10 rounded-[2.5rem] border border-slate-200 shadow-sm mt-12">
+            <h2 class="text-3xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                <i class="fa-solid fa-list-check text-violet-600 bg-violet-50 p-2.5 rounded-xl"></i> Resumen del Taller
+            </h2>
+            <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                <table class="w-full text-left border-collapse text-base">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-900 border-b border-slate-200">
+                            <th class="p-4 font-extrabold">ID</th>
+                            <th class="p-4 font-extrabold">Título de Desafío</th>
+                            <th class="p-4 font-extrabold">Operación SQL</th>
+                            <th class="p-4 font-extrabold">Estructura</th>
+                            <th class="p-4 font-extrabold">Nivel</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-slate-700 font-medium">
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="p-4 font-bold">R1</td>
+                            <td class="p-4">Registro de nuevo artista</td>
+                            <td class="p-4"><span class="badge-blue text-xs">INSERT</span></td>
+                            <td class="p-4 text-slate-500">Bloque Secuencial</td>
+                            <td class="p-4"><span class="badge-green text-xs">Inicial</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="p-4 font-bold">R2</td>
+                            <td class="p-4">Carga masiva de canciones demo</td>
+                            <td class="p-4"><span class="badge-blue text-xs">INSERT</span></td>
+                            <td class="p-4 text-slate-500">Ciclo FOR</td>
+                            <td class="p-4"><span class="badge-green text-xs">Inicial</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="p-4 font-bold">R3</td>
+                            <td class="p-4">Descuento de licencia</td>
+                            <td class="p-4"><span class="badge-blue text-xs">UPDATE</span></td>
+                            <td class="p-4 text-slate-500">Bloque Secuencial</td>
+                            <td class="p-4"><span class="badge-green text-xs">Inicial</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="p-4 font-bold">R4</td>
+                            <td class="p-4">Reajuste masivo de licencias</td>
+                            <td class="p-4"><span class="badge-blue text-xs">UPDATE</span></td>
+                            <td class="p-4 text-slate-500">FOR + IF</td>
+                            <td class="p-4"><span class="badge-purple text-xs">Intermedia</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="p-4 font-bold">R5</td>
+                            <td class="p-4">Ascenso de plan de usuario</td>
+                            <td class="p-4"><span class="badge-blue text-xs">UPDATE</span></td>
+                            <td class="p-4 text-slate-500">Ciclo WHILE</td>
+                            <td class="p-4"><span class="badge-purple text-xs">Intermedia</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="p-4 font-bold">R6</td>
+                            <td class="p-4">Simulación de reproducciones</td>
+                            <td class="p-4"><span class="badge-blue text-xs">INSERT</span></td>
+                            <td class="p-4 text-slate-500">Ciclo WHILE</td>
+                            <td class="p-4"><span class="badge-purple text-xs">Intermedia</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="p-4 font-bold">R7</td>
+                            <td class="p-4">Ranking inverso</td>
+                            <td class="p-4"><span class="badge-blue text-xs">SELECT</span></td>
+                            <td class="p-4 text-slate-500">FOR REVERSE</td>
+                            <td class="p-4"><span class="badge-purple text-xs">Intermedia</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="p-4 font-bold">R8</td>
+                            <td class="p-4">Créditos por fidelidad</td>
+                            <td class="p-4"><span class="badge-blue text-xs">UPDATE</span></td>
+                            <td class="p-4 text-slate-500">FOR + IF</td>
+                            <td class="p-4"><span class="badge-purple text-xs">Intermedia</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="p-4 font-bold">R9</td>
+                            <td class="p-4">Limpieza de canciones demo</td>
+                            <td class="p-4"><span class="badge-blue text-xs">DELETE</span></td>
+                            <td class="p-4 text-slate-500">Ciclo FOR</td>
+                            <td class="p-4"><span class="badge-green text-xs">Inicial</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="p-4 font-bold">R10</td>
+                            <td class="p-4">Desactivar artistas</td>
+                            <td class="p-4"><span class="badge-blue text-xs">UPDATE</span></td>
+                            <td class="p-4 text-slate-500">WHILE + IF</td>
+                            <td class="p-4"><span class="badge-pink text-xs">Avanzada</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-right text-xs text-slate-400 mt-4 font-medium">SonidoLatino · Módulo 3 PL/SQL · 2026</p>
+        </section>
+
+    </main>
+
+    <app-footer></app-footer>
+
+    <script src="js/components.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+
+    <script>
+    function toggleVisibility(id) {
+        const el = document.getElementById(id);
+        if (el.classList.contains('show')) {
+            el.classList.remove('show');
+        } else {
+            el.classList.add('show');
+        }
+    }
+
+    function checkPwd() {
+        const input = document.getElementById('pwdInput');
+        const status = document.getElementById('lockStatus');
+        const lockIcon = document.getElementById('lockIcon');
+        const unlockBar = document.getElementById('unlockBar');
+
+        if (input.value === 'hachimaki-dev') {
+            document.body.classList.add('sol-unlocked');
+            
+            // Estilos del banner desbloqueado
+            unlockBar.classList.remove('from-violet-700', 'to-indigo-700', 'border-violet-500');
+            unlockBar.classList.add('from-emerald-700', 'to-teal-700', 'border-emerald-500');
+            
+            lockIcon.className = 'fa-solid fa-lock-open text-white text-2xl';
+            status.textContent = '¡Acceso Correcto! Las soluciones ahora están visibles en el taller.';
+            status.classList.remove('text-violet-200');
+            status.classList.add('text-emerald-100');
+            
+            // Ocultar caja de password e inputs
+            input.parentNode.style.display = 'none';
+        } else {
+            input.style.outline = '3px solid #F43F5E';
+            status.textContent = 'Contraseña incorrecta. Inténtalo de nuevo.';
+            status.classList.remove('text-violet-200');
+            status.classList.add('text-rose-200');
+            setTimeout(() => { 
+                input.style.outline = ''; 
+            }, 1500);
+        }
+    }
+
+    // Permitir presionar Enter para desbloquear
+    document.getElementById('pwdInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') checkPwd();
+    });
+
+    function focusPassword() {
+        document.getElementById('pwdInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('pwdInput').focus();
+    }
+
+    function filterEx(tag, btn) {
+        // Estilos de botones de filtro
+        document.querySelectorAll('.filter-btn').forEach(b => {
+            b.classList.remove('active', 'bg-violet-600', 'text-white', 'border-violet-600', 'font-extrabold');
+            b.classList.add('bg-white', 'hover:bg-slate-100', 'text-slate-700', 'border-slate-300', 'font-bold');
+        });
+        
+        btn.classList.add('active', 'bg-violet-600', 'text-white', 'border-violet-600', 'font-extrabold');
+        btn.classList.remove('bg-white', 'hover:bg-slate-100', 'text-slate-700', 'border-slate-300', 'font-bold');
+
+        document.querySelectorAll('.ex-card').forEach(card => {
+            const tags = card.dataset.tags || '';
+            if (tag === 'all' || tags.includes(tag)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    function copyCode(elementId) {
+        const text = document.getElementById(elementId).innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            alert('¡Código copiado al portapapeles!');
+        });
+    }
+    </script>
+</body>
+</html>

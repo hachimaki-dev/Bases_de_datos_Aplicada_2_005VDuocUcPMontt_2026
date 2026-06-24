@@ -21,14 +21,31 @@
         </header>
 
         <main>
-            <!-- Unidad EA2 (Activa) -->
+            <!-- Unidad EA3 (Activa) -->
             <section class="mb-16">
-                <h2 class="text-4xl font-extrabold text-orange-500 mb-8 drop-shadow-sm flex items-center">
-                    <i class="fa-solid fa-rocket mr-4 text-3xl bg-orange-100 p-3 rounded-2xl"></i> Unidad EA2: Modificación de Datos
+                <h2 class="text-4xl font-extrabold text-violet-500 mb-8 drop-shadow-sm flex items-center">
+                    <i class="fa-solid fa-code mr-4 text-3xl bg-violet-100 p-3 rounded-2xl"></i> Unidad EA3: Programación PL/SQL
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                    <entry-card v-for="entry in ea2Entries" :key="entry.id" :entry="entry"></entry-card>
+                    <entry-card v-for="entry in ea3Entries" :key="entry.id" :entry="entry"></entry-card>
                 </div>
+            </section>
+
+            <!-- Unidad EA2 (Acordeón) -->
+            <section class="mt-20">
+                <details class="group bg-white rounded-3xl shadow-md border-2 border-orange-200 overflow-hidden [&_summary::-webkit-details-marker]:hidden">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-8 text-2xl text-orange-700 hover:bg-orange-50 transition-colors">
+                        <span class="flex items-center"><i class="fa-solid fa-rocket mr-4 text-orange-500 bg-orange-100 p-3 rounded-2xl"></i> Unidad EA2: Modificación de Datos y Seguridad</span>
+                        <span class="transition group-open:rotate-180 bg-orange-100 p-3 rounded-full flex items-center justify-center w-12 h-12">
+                            <i class="fa-solid fa-chevron-down text-orange-600"></i>
+                        </span>
+                    </summary>
+                    <div class="p-8 md:p-10 bg-orange-50/50 border-t-2 border-orange-100">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                            <entry-card v-for="entry in ea2Entries" :key="entry.id" :entry="entry"></entry-card>
+                        </div>
+                    </div>
+                </details>
             </section>
 
             <!-- Unidad EA1 (Acordeón de Clases Anteriores) -->
@@ -163,10 +180,13 @@
             },
             computed: {
                 ea1Entries() {
-                    return this.rawEntries.filter(e => e.unit !== 'EA2').sort((a, b) => new Date(b.date) - new Date(a.date));
+                    return this.rawEntries.filter(e => e.unit !== 'EA2' && e.unit !== 'EA3').sort((a, b) => new Date(b.date) - new Date(a.date));
                 },
                 ea2Entries() {
                     return this.rawEntries.filter(e => e.unit === 'EA2').sort((a, b) => new Date(b.date) - new Date(a.date));
+                },
+                ea3Entries() {
+                    return this.rawEntries.filter(e => e.unit === 'EA3').sort((a, b) => new Date(b.date) - new Date(a.date));
                 }
             }
         }).mount('#app');

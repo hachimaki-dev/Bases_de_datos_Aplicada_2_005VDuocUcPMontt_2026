@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación Interactiva: Ciclos y DML - PL/SQL</title>
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="js/config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <style>
+        .slide-container {
+            min-height: calc(100vh - 200px);
+        }
+        pre[class*="language-"] {
+            border-radius: 1.5rem !important;
+            margin: 1.5rem 0 !important;
+            padding: 1.5rem !important;
+            overflow-x: auto !important;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+            font-size: 1.25rem !important;
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Kahoot styles */
+        .kahoot-btn {
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 0 0 rgba(0,0,0,0.25);
+        }
+        .kahoot-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 0 rgba(0,0,0,0.25);
+        }
+    </style>
+</head>
+<body class="font-sans antialiased bg-slate-900 text-slate-100 min-h-screen pb-10 flex flex-col justify-between">
+
+    <div id="app" class="flex-grow flex flex-col justify-between max-w-6xl mx-auto px-6 w-full" tabindex="0" @keydown="handleKeydown">
+        
+        <!-- Navbar superior de la presentación -->
+        <header class="py-6 flex items-center justify-between border-b border-slate-800">
+            <div class="flex items-center gap-4">
+                <a href="index.html" class="inline-flex items-center text-emerald-400 hover:text-emerald-300 font-bold transition-all text-base bg-slate-800 px-4 py-2 rounded-full border border-slate-700">
+                    <i class="fa-solid fa-arrow-left mr-2"></i> Volver
+                </a>
+                <span class="text-slate-500 font-bold font-mono">EA2 - PRESENTACIÓN INTERACTIVA</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="bg-emerald-500/20 text-emerald-300 font-bold px-3 py-1 rounded-lg text-sm border border-emerald-500/30">
+                    DIAPOSITIVA {{ currentIndex + 1 }} / {{ slides.length }}
+                </span>
+            </div>
+        </header>
+
+        <!-- Contenido principal de la Slide -->
+        <main class="slide-container flex items-center justify-center py-10 w-full">
+            
+            <!-- SLIDE TIPO TITLE -->
+            <div v-if="currentSlide.type === 'title'" class="w-full text-center py-12 fade-in">
+                <div class="inline-block bg-emerald-500/10 px-6 py-2.5 rounded-full text-emerald-300 font-bold text-lg mb-6 border border-emerald-500/30">
+                    Clase de Apoyo: Taller de Ciclos y DML
+                </div>
+                <h1 class="text-6xl md:text-7xl font-black text-white mb-6 tracking-tight leading-tight">
+                    {{ currentSlide.title }}
+                </h1>
+                <p class="text-3xl text-slate-300 max-w-3xl mx-auto leading-relaxed mb-12 font-medium" v-html="currentSlide.subtitle"></p>
+                <div class="flex items-center justify-center gap-6 text-slate-400 text-2xl font-bold">
+                    <span><i class="fa-solid fa-keyboard mr-2 text-emerald-400"></i> Usa Flechas Izq / Der</span>
+                    <span>•</span>
+                    <span><i class="fa-solid fa-user-group mr-2 text-emerald-400"></i> Aprendizaje Activo</span>
+                </div>
+            </div>
+
+            <!-- SLIDE TIPO DB_SETUP -->
+            <div v-else-if="currentSlide.type === 'db_setup'" class="w-full bg-slate-800/80 p-12 rounded-[3rem] border-2 border-slate-700 shadow-2xl backdrop-blur-md fade-in text-left">
+                <h2 class="text-5xl font-extrabold text-white mb-6 border-b border-slate-700 pb-4 flex items-center gap-4">
+                    <i class="fa-solid fa-database text-emerald-400"></i> Base de Datos de Pruebas: Tienda
+                </h2>
+                <p class="text-2xl text-slate-300 mb-6 font-medium">Usaremos este esquema simplificado para todos los ejercicios:</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 text-lg">
+                    <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700">
+                        <strong class="text-emerald-400 block mb-2"><i class="fa-solid fa-users mr-1"></i> clientes</strong>
+                        <ul class="text-sm text-slate-400 list-disc pl-4 space-y-1">
+                            <li>id_cliente (PK)</li>
+                            <li>nombre</li>
+                            <li>correo</li>
+                            <li>tipo_cliente</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700">
+                        <strong class="text-emerald-400 block mb-2"><i class="fa-solid fa-box mr-1"></i> productos</strong>
+                        <ul class="text-sm text-slate-400 list-disc pl-4 space-y-1">
+                            <li>id_producto (PK)</li>
+                            <li>nombre</li>
+                            <li>precio</li>
+                            <li>stock</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700">
+                        <strong class="text-emerald-400 block mb-2"><i class="fa-solid fa-receipt mr-1"></i> pedidos</strong>
+                        <ul class="text-sm text-slate-400 list-disc pl-4 space-y-1">
+                            <li>id_pedido (PK)</li>
+                            <li>id_cliente (FK)</li>
+                            <li>fecha</li>
+                            <li>total, estado</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700">
+                        <strong class="text-emerald-400 block mb-2"><i class="fa-solid fa-list mr-1"></i> detalles_pedidos</strong>
+                        <ul class="text-sm text-slate-400 list-disc pl-4 space-y-1">
+                            <li>id_detalle (PK)</li>
+                            <li>id_pedido (FK)</li>
+                            <li>id_producto (FK)</li>
+                            <li>cantidad, precio_u</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center bg-slate-950 p-6 rounded-2xl border border-slate-800">
+                    <div>
+                        <span class="text-amber-400 font-bold block mb-1 text-sm"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Recordatorio Clave</span>
+                        <p class="text-slate-300 text-sm">El script de inicialización completo está disponible en la pestaña <strong>Setup BD</strong> del Taller.</p>
+                    </div>
+                    <button @click="copyDbScript" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black px-6 py-3 rounded-full text-base transition-all">
+                        {{ copyBtnText }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- SLIDE TIPO CONTENT (Teoría / Explicación DUA) -->
+            <div v-else-if="currentSlide.type === 'content'" class="w-full bg-slate-800/80 p-16 rounded-[3rem] border-2 border-slate-700 shadow-2xl backdrop-blur-md fade-in text-left">
+                <div class="flex items-center mb-10 border-b border-slate-700 pb-6">
+                    <div class="bg-emerald-500/20 p-5 rounded-3xl mr-6 border border-emerald-500/30">
+                        <i :class="['fa-solid text-6xl text-emerald-400', currentSlide.icon || 'fa-info-circle']"></i>
+                    </div>
+                    <h2 class="text-5xl font-extrabold text-white tracking-tight">{{ currentSlide.title }}</h2>
+                </div>
+                <div class="text-3xl text-slate-200 leading-[1.6] font-medium" v-html="currentSlide.html"></div>
+                
+                <div v-if="currentSlide.extraInfo" class="mt-8 bg-slate-900/50 p-6 rounded-2xl border-l-4 border-amber-500 text-lg text-slate-300">
+                    <span class="font-bold text-amber-400 block mb-1"><i class="fa-solid fa-circle-exclamation mr-2"></i> Pauta de Buenas Prácticas:</span>
+                    <p v-html="currentSlide.extraInfo"></p>
+                </div>
+            </div>
+
+            <!-- SLIDE TIPO CODE (Para proyectar y programar) -->
+            <div v-else-if="currentSlide.type === 'code'" class="w-full text-left fade-in">
+                <div class="text-center mb-8">
+                    <h2 class="text-5xl font-bold text-emerald-400 mb-3 flex items-center justify-center gap-4">
+                        <i class="fa-solid fa-laptop-code text-5xl"></i> Código de Ejemplo
+                    </h2>
+                    <p class="text-2xl text-slate-300 font-medium">{{ currentSlide.subtitle }}</p>
+                </div>
+                <div class="w-full relative group">
+                    <div class="absolute -inset-2 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-[3rem] blur-xl opacity-25 group-hover:opacity-40 transition duration-500"></div>
+                    
+                    <div class="relative bg-slate-950 rounded-[2.5rem] border-2 border-slate-700 overflow-hidden shadow-2xl">
+                        <div class="px-8 py-4 bg-slate-900 flex justify-between items-center">
+                            <div class="flex gap-2">
+                                <div class="w-4 h-4 rounded-full bg-rose-500"></div>
+                                <div class="w-4 h-4 rounded-full bg-amber-500"></div>
+                                <div class="w-4 h-4 rounded-full bg-emerald-500"></div>
+                            </div>
+                            <div class="text-slate-400 font-mono text-lg tracking-widest">{{ currentSlide.title }}</div>
+                        </div>
+                        <pre><code class="language-sql">{{ currentSlide.sql }}</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE TIPO KAHOOT (Actividad de Cierre / Pregunta de Feedback) -->
+            <div v-else-if="currentSlide.type === 'closing_activity'" class="w-full bg-slate-800/80 p-16 rounded-[3rem] border-2 border-slate-700 shadow-2xl backdrop-blur-md fade-in text-left">
+                <div class="flex items-center mb-10 border-b border-slate-700 pb-6">
+                    <div class="bg-amber-500/25 p-5 rounded-3xl mr-6 border border-amber-500/40">
+                        <i class="fa-solid fa-circle-question text-6xl text-amber-400"></i>
+                    </div>
+                    <h2 class="text-5xl font-extrabold text-white tracking-tight">Pregunta Interactiva</h2>
+                </div>
+
+                <div class="text-3xl text-slate-200 leading-normal font-bold mb-10" v-html="currentSlide.question"></div>
+
+                <!-- Opciones Kahoot Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                    <button v-for="(opt, idx) in currentSlide.options" 
+                            :key="idx" 
+                            @click="selectKahootOption(idx)"
+                            :disabled="currentSlide.answered"
+                            class="kahoot-btn flex items-center gap-6 p-8 rounded-2xl border-b-[6px] text-white font-extrabold text-2xl text-left cursor-pointer transition-all disabled:cursor-not-allowed"
+                            :class="[
+                                opt.colorClass,
+                                currentSlide.answered && opt.isCorrect ? 'ring-4 ring-white scale-[1.02]' : '',
+                                currentSlide.answered && !opt.isCorrect && currentSlide.selectedIdx === idx ? 'opacity-40 line-through' : '',
+                                currentSlide.answered && !opt.isCorrect && currentSlide.selectedIdx !== idx ? 'opacity-20' : ''
+                            ]">
+                        <span class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center shadow-inner">
+                            <i :class="['fa-solid text-xl', opt.shape]"></i>
+                        </span>
+                        <span>{{ opt.text }}</span>
+                    </button>
+                </div>
+
+                <!-- Retroalimentación -->
+                <transition name="fade">
+                    <div v-if="currentSlide.answered" class="p-6 bg-slate-900 border-2 border-slate-700 rounded-2xl">
+                        <h4 class="text-2xl font-bold text-white mb-2">
+                            <span v-if="currentSlide.options[currentSlide.selectedIdx].isCorrect" class="text-emerald-400"><i class="fa-solid fa-square-check mr-2"></i>¡Respuesta Correcta!</span>
+                            <span v-else class="text-rose-400"><i class="fa-solid fa-circle-xmark mr-2"></i>Respuesta Incorrecta</span>
+                        </h4>
+                        <p class="text-xl text-slate-300 leading-relaxed" v-html="currentSlide.explanation"></p>
+                    </div>
+                </transition>
+            </div>
+
+        </main>
+
+        <!-- Barra inferior de navegación de diapositiva -->
+        <footer class="py-6 flex items-center justify-between border-t border-slate-800">
+            <button @click="prev" :disabled="currentIndex === 0" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-3 rounded-full border border-slate-700 transition disabled:opacity-30 disabled:cursor-not-allowed text-lg flex items-center">
+                <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
+            </button>
+            
+            <!-- Indicador de Progreso Visual -->
+            <div class="flex-grow max-w-md mx-8 bg-slate-850 h-3.5 rounded-full overflow-hidden border border-slate-700">
+                <div class="bg-emerald-500 h-full transition-all duration-300" :style="{ width: progressPercentage + '%' }"></div>
+            </div>
+
+            <button @click="next" :disabled="currentIndex === slides.length - 1" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black px-6 py-3 rounded-full shadow-lg transition disabled:opacity-30 disabled:cursor-not-allowed text-lg flex items-center">
+                Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
+            </button>
+        </footer>
+
+    </div>
+
+    <!-- PrismJS para renderizado estático de código -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+
+    <!-- Vue 3 App Logic -->
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentIndex: 0,
+                    copyBtnText: 'Copiar Script',
+                    dbScript: `DROP TABLE detalles_pedidos CASCADE CONSTRAINTS PURGE;
+DROP TABLE pedidos CASCADE CONSTRAINTS PURGE;
+DROP TABLE productos CASCADE CONSTRAINTS PURGE;
+DROP TABLE clientes CASCADE CONSTRAINTS PURGE;
+
+CREATE TABLE clientes (
+    id_cliente NUMBER PRIMARY KEY,
+    nombre VARCHAR2(100) NOT NULL,
+    correo VARCHAR2(100) UNIQUE,
+    tipo_cliente VARCHAR2(20) DEFAULT 'REGULAR',
+    CHECK (tipo_cliente IN ('REGULAR', 'VIP', 'EMPRESA'))
+);
+
+CREATE TABLE productos (
+    id_producto NUMBER PRIMARY KEY,
+    nombre VARCHAR2(100) NOT NULL,
+    precio NUMBER(10,2) NOT NULL,
+    stock NUMBER NOT NULL,
+    CHECK (precio >= 0),
+    CHECK (stock >= 0)
+);
+
+CREATE TABLE pedidos (
+    id_pedido NUMBER PRIMARY KEY,
+    id_cliente NUMBER NOT NULL,
+    fecha DATE NOT NULL,
+    total NUMBER(10,2) DEFAULT 0,
+    estado VARCHAR2(20) DEFAULT 'PENDIENTE',
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),
+    CHECK (estado IN ('PENDIENTE', 'PROCESANDO', 'ENVIADO', 'ENTREGADO', 'CANCELADO')),
+    CHECK (total >= 0)
+);
+
+CREATE TABLE detalles_pedidos (
+    id_detalle NUMBER PRIMARY KEY,
+    id_pedido NUMBER NOT NULL,
+    id_producto NUMBER NOT NULL,
+    cantidad NUMBER NOT NULL,
+    precio_unitario NUMBER(10,2) NOT NULL,
+    FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido),
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
+    CHECK (cantidad > 0),
+    CHECK (precio_unitario >= 0)
+);
+
+INSERT INTO clientes VALUES (1, 'Ana Torres', 'ana.torres@tienda.com', 'VIP');
+INSERT INTO clientes VALUES (2, 'Luis Rojas', 'luis.rojas@tienda.com', 'REGULAR');
+INSERT INTO clientes VALUES (3, 'Mika Tanaka', 'mika.tanaka@tienda.com', 'REGULAR');
+INSERT INTO clientes VALUES (4, 'Kevin Diaz', 'kevin.diaz@tienda.com', 'EMPRESA');
+
+INSERT INTO productos VALUES (10, 'Mouse Gamer', 25000.00, 15);
+INSERT INTO productos VALUES (20, 'Teclado Mecánico', 45000.00, 3);
+INSERT INTO productos VALUES (30, 'Monitor 24"', 120000.00, 8);
+INSERT INTO productos VALUES (40, 'Audífonos Inalámbricos', 35000.00, 0);
+
+INSERT INTO pedidos VALUES (100, 1, DATE '2026-05-10', 95000.00, 'ENTREGADO');
+INSERT INTO pedidos VALUES (101, 2, DATE '2026-05-12', 25000.00, 'PROCESANDO');
+INSERT INTO pedidos VALUES (102, 3, DATE '2026-06-01', 0.00, 'PENDIENTE');
+
+INSERT INTO detalles_pedidos VALUES (1, 100, 10, 2, 25000.00);
+INSERT INTO detalles_pedidos VALUES (2, 100, 20, 1, 45000.00);
+INSERT INTO detalles_pedidos VALUES (3, 101, 10, 1, 25000.00);
+
+COMMIT;`,
+                    slides: [
+                        {
+                            type: 'title',
+                            title: 'Ciclos en PL/SQL: Automatizando el Negocio',
+                            subtitle: 'Aprende qué son, para qué sirven, cómo se estructuran y cómo sacarles provecho real en la Base de Datos.'
+                        },
+                        {
+                            type: 'closing_activity',
+                            question: 'Activación: ¿Qué palabra reservada de PL/SQL es OBLIGATORIA para guardar el resultado de un SELECT dentro de una variable?',
+                            options: [
+                                { text: 'SAVE AS', colorClass: 'bg-[#e21b3c] border-[#b0102b]', shape: 'fa-play fa-rotate-270', isCorrect: false },
+                                { text: 'INTO', colorClass: 'bg-[#1368ce] border-[#0a4891]', shape: 'fa-square fa-rotate-45', isCorrect: true },
+                                { text: 'STORE IN', colorClass: 'bg-[#d89e00] border-[#9c7200]', shape: 'fa-circle', isCorrect: false },
+                                { text: 'ASSIGN TO', colorClass: 'bg-[#26890c] border-[#1b6108]', shape: 'fa-square', isCorrect: false }
+                            ],
+                            explanation: '¡Exacto! Todo bloque PL/SQL que lea datos de una tabla debe usar la cláusula INTO (ej: SELECT precio INTO v_precio FROM productos).',
+                            answered: false,
+                            selectedIdx: null
+                        },
+                        {
+                            type: 'db_setup'
+                        },
+                        {
+                            type: 'content',
+                            title: '¿Qué es un Ciclo y para qué sirve?',
+                            icon: 'fa-gears',
+                            html: `<p class="mb-6">Un <strong>ciclo (o bucle)</strong> permite a la base de datos repetir una serie de instrucciones lógicas de forma automática, sin que tengas que escribir el mismo código cientos de veces.</p>
+                                   <div class="bg-slate-900/60 p-6 rounded-2xl border border-slate-700 mt-8">
+                                       <h4 class="text-2xl font-bold text-emerald-400 mb-4"><i class="fa-solid fa-briefcase mr-2"></i> Casos de Uso Reales en Empresas:</h4>
+                                       <ul class="list-disc pl-8 space-y-3 text-xl text-slate-300">
+                                           <li>Generar e insertar cobros mensuales automáticos para miles de clientes.</li>
+                                           <li>Aplicar un 20% de descuento masivo a productos que expiran pronto.</li>
+                                           <li>Enviar alertas al sistema por cada producto que llegue a stock crítico.</li>
+                                           <li>Crear reportes diarios de ventas iterando sobre los pedidos del día.</li>
+                                       </ul>
+                                   </div>`,
+                            extraInfo: 'La gran ventaja de procesar ciclos directamente en PL/SQL (del lado del servidor) es que ahorras enormes cantidades de tráfico de red en comparación a si trajeras los datos a Java/Python, los iteraras allá, y los volvieras a enviar a la BD.'
+                        },
+                        {
+                            type: 'content',
+                            title: 'Estructura 1: El Ciclo FOR',
+                            icon: 'fa-arrow-down-1-9',
+                            html: `<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                       <div>
+                                           <h4 class="text-2xl font-bold text-emerald-400 mb-4">¿Cuándo usarlo?</h4>
+                                           <p class="text-xl text-slate-300 leading-relaxed">Úsalo cuando sepas <strong>EXACTAMENTE</strong> cuántas veces quieres repetir la acción. Por ejemplo: procesar datos de los 12 meses del año, o calcular las 6 cuotas de un pago.</p>
+                                       </div>
+                                       <div>
+                                           <h4 class="text-2xl font-bold text-amber-400 mb-4">La Estructura</h4>
+                                           <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 text-lg font-mono text-slate-300">
+                                               <span class="text-emerald-400">FOR</span> <span class="text-blue-300">contador</span> <span class="text-emerald-400">IN</span> inicio..fin <span class="text-emerald-400">LOOP</span><br>
+                                               &nbsp;&nbsp;-- Instrucciones a repetir;<br>
+                                               <span class="text-emerald-400">END LOOP;</span>
+                                           </div>
+                                       </div>
+                                   </div>`,
+                            extraInfo: '<strong>Tip de oro:</strong> El <code>contador</code> del FOR (la letra "i" comúnmente) se declara automáticamente, ¡NO lo pongas en tu sección DECLARE! Además, avanza solo en cada vuelta de 1 en 1.'
+                        },
+                        {
+                            type: 'code',
+                            title: 'Caso de Uso FOR: Proyección de Cuotas',
+                            subtitle: 'Dividir el pago total del Pedido N° 100 iterando un rango específico de meses (3 a 6).',
+                            sql: `DECLARE
+    v_total pedidos.total%TYPE;
+    v_cuota NUMBER(10,2);
+BEGIN
+    -- Obtenemos el total del pedido 100 de la BD ($95.000)
+    SELECT total INTO v_total 
+    FROM pedidos 
+    WHERE id_pedido = 100;
+    
+    -- Simulamos opciones de pago usando un ciclo fijo de 3 a 6 meses
+    FOR i IN 3..6 LOOP
+        v_cuota := v_total / i;
+        DBMS_OUTPUT.PUT_LINE('Si paga en ' || i || ' cuotas: $' || ROUND(v_cuota, 0) || ' mensual.');
+    END LOOP;
+END;
+/`
+                        },
+                        {
+                            type: 'content',
+                            title: 'Estructura 2: El Ciclo WHILE',
+                            icon: 'fa-clock-rotate-left',
+                            html: `<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                       <div>
+                                           <h4 class="text-2xl font-bold text-emerald-400 mb-4">¿Cuándo usarlo?</h4>
+                                           <p class="text-xl text-slate-300 leading-relaxed">Úsalo cuando <strong>NO SEPAS</strong> cuántas veces repetirás la acción, pero sabes bajo qué condición de negocio debes detenerte. Ej: <em>"Aplica la rebaja mientras el precio sea mayor al costo base"</em>.</p>
+                                       </div>
+                                       <div>
+                                           <h4 class="text-2xl font-bold text-amber-400 mb-4">La Estructura</h4>
+                                           <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 text-lg font-mono text-slate-300">
+                                               <span class="text-emerald-400">WHILE</span> <span class="text-fuchsia-400">condicion_sea_verdadera</span> <span class="text-emerald-400">LOOP</span><br>
+                                               &nbsp;&nbsp;-- Instrucciones;<br>
+                                               &nbsp;&nbsp;<span class="text-amber-300 text-sm">-- ¡CRÍTICO: Modifica la variable que se evalúa en la condición!</span><br>
+                                               <span class="text-emerald-400">END LOOP;</span>
+                                           </div>
+                                       </div>
+                                   </div>`,
+                            extraInfo: 'A diferencia del FOR, en el WHILE <strong>tú</strong> eres responsable de actualizar la variable de control dentro del bucle. Si te olvidas, el bucle será infinito y colapsarás la sesión.'
+                        },
+                        {
+                            type: 'code',
+                            title: 'Caso de Uso WHILE: Liquidación Automática',
+                            subtitle: 'Rebaja mensual de precio controlada por una barrera de costo.',
+                            sql: `DECLARE
+    v_precio productos.precio%TYPE;
+    v_mes NUMBER := 1;
+BEGIN
+    SELECT precio INTO v_precio 
+    FROM productos 
+    WHERE id_producto = 20; -- Teclado Mecánico cuesta $45.000
+    
+    -- Condición: Seguir rebajando MIENTRAS el precio sea mayor al costo base ($25.000)
+    WHILE v_precio > 25000 LOOP
+        v_precio := v_precio - 5000; -- <- ACTUALIZAMOS LA VARIABLE (Evita bucle infinito)
+        DBMS_OUTPUT.PUT_LINE('Mes ' || v_mes || ' de liquidación: Nuevo precio $' || v_precio);
+        v_mes := v_mes + 1;
+    END LOOP;
+END;
+/`
+                        },
+                        {
+                            type: 'content',
+                            title: 'Agregando DML a la Ecuación',
+                            icon: 'fa-database',
+                            html: `<p class="mb-6 text-2xl text-slate-300">El verdadero poder de PL/SQL se desata al combinar los ciclos con sentencias de manipulación de datos (<strong>INSERT</strong>, <strong>UPDATE</strong>, <strong>DELETE</strong>).</p>
+                                   <div class="bg-slate-900/60 p-8 rounded-2xl border-l-8 border-emerald-500 mt-8 flex flex-col md:flex-row gap-8 items-center">
+                                       <div class="flex-grow">
+                                           <h4 class="text-3xl font-bold text-emerald-400 mb-2">Precaución con los Datos</h4>
+                                           <p class="text-xl text-slate-300">Cuando usamos ciclos para hacer DML masivos, un error lógico podría duplicar o modificar miles de registros incorrectamente.</p>
+                                           <p class="text-xl text-amber-400 font-bold mt-4">¡Verifica siempre tus condiciones (WHERE) y asegúrate de no violar las restricciones de integridad (Primary/Foreign Keys)!</p>
+                                       </div>
+                                       <div class="text-7xl text-amber-500">
+                                            <i class="fa-solid fa-triangle-exclamation"></i>
+                                       </div>
+                                   </div>`
+                        },
+                        {
+                            type: 'code',
+                            title: 'Caso de Uso DML + FOR: Registros Masivos',
+                            subtitle: 'Insertando usuarios de auditoría usando un ciclo FOR e IDs controlados.',
+                            sql: `DECLARE
+    v_id_prod NUMBER;
+    v_nombre VARCHAR2(100);
+    v_contador NUMBER := 0;
+BEGIN
+    -- Sabemos que queremos exactamente 3 registros
+    FOR i IN 1..3 LOOP
+        v_id_prod := 200 + i; -- Genera IDs 201, 202, 203 (evita chocar con la BD)
+        v_nombre := 'Producto Demo ' || i;
+        
+        -- Ejecutamos la inserción en cada vuelta
+        INSERT INTO productos (id_producto, nombre, precio, stock)
+        VALUES (v_id_prod, v_nombre, 5000, 10);
+        
+        -- Contamos manualmente las inserciones
+        v_contador := v_contador + 1;
+    END LOOP;
+    
+    DBMS_OUTPUT.PUT_LINE('Total productos de prueba creados: ' || v_contador);
+END;
+/`
+                        },
+                        {
+                            type: 'code',
+                            title: 'Caso de Uso DML + WHILE: Reabastecimiento',
+                            subtitle: 'Usando WHILE para reponer stock de varios productos progresivamente.',
+                            sql: `DECLARE
+    v_id NUMBER := 10;
+BEGIN
+    -- Reponemos de a 5 unidades a los productos del 10 al 40
+    WHILE v_id <= 40 LOOP
+        UPDATE productos
+        SET stock = stock + 5
+        WHERE id_producto = v_id;
+        
+        DBMS_OUTPUT.PUT_LINE('Repuesto producto con ID ' || v_id);
+        
+        -- Los IDs en nuestra base Tienda avanzan de 10 en 10
+        v_id := v_id + 10;
+    END LOOP;
+END;
+/`
+                        },
+                        {
+                            type: 'closing_activity',
+                            question: '¿Qué precaución es la más crítica al ejecutar UPDATEs o DELETEs dentro de un ciclo?',
+                            options: [
+                                { text: 'Poner el tipo de variable', colorClass: 'bg-[#e21b3c] border-[#b0102b]', shape: 'fa-play fa-rotate-270', isCorrect: false },
+                                { text: 'Usar correctamente la cláusula WHERE', colorClass: 'bg-[#1368ce] border-[#0a4891]', shape: 'fa-square fa-rotate-45', isCorrect: true },
+                                { text: 'Declarar el contador en DECLARE', colorClass: 'bg-[#d89e00] border-[#9c7200]', shape: 'fa-circle', isCorrect: false },
+                                { text: 'Usar el mismo nombre en la BD', colorClass: 'bg-[#26890c] border-[#1b6108]', shape: 'fa-square', isCorrect: false }
+                            ],
+                            explanation: 'Omitir o codificar mal un WHERE dentro de un UPDATE o DELETE en un ciclo causaría que TODOS los registros de la tabla se modifiquen o eliminen accidentalmente en cada iteración.',
+                            answered: false,
+                            selectedIdx: null
+                        },
+                        {
+                            type: 'closing_activity',
+                            question: 'Si solo te interesan las condiciones dinámicas y el número de iteraciones es desconocido, ¿qué ciclo debes elegir?',
+                            options: [
+                                { text: 'FOR', colorClass: 'bg-[#e21b3c] border-[#b0102b]', shape: 'fa-play fa-rotate-270', isCorrect: false },
+                                { text: 'FOR REVERSE', colorClass: 'bg-[#1368ce] border-[#0a4891]', shape: 'fa-square fa-rotate-45', isCorrect: false },
+                                { text: 'WHILE', colorClass: 'bg-[#d89e00] border-[#9c7200]', shape: 'fa-circle', isCorrect: true },
+                                { text: 'Ninguno de los anteriores', colorClass: 'bg-[#26890c] border-[#1b6108]', shape: 'fa-square', isCorrect: false }
+                            ],
+                            explanation: 'El ciclo <code>WHILE</code> se basa exclusivamente en una condición (ej: MIENTRAS deuda > 0). El FOR, por el contrario, requiere un rango de números predeterminado de inicio y fin.',
+                            answered: false,
+                            selectedIdx: null
+                        },
+                        {
+                            type: 'content',
+                            title: 'Ejercicio Rápido 1: Limpieza de Clientes',
+                            icon: 'fa-user-slash',
+                            html: `<div class="bg-slate-900/60 p-6 rounded-2xl border border-slate-700">
+                                       <h4 class="text-2xl font-bold text-emerald-400 mb-4"><i class="fa-solid fa-code mr-2"></i> El Desafío:</h4>
+                                       <p class="text-xl text-slate-300 leading-relaxed mb-6">Se ha insertado por error una serie de clientes de prueba. Escribe un bloque anónimo que use un <strong>Ciclo FOR</strong> (desde el ID 200 al 203) para hacer un <code>DELETE</code> sobre la tabla clientes e imprimir cuántos registros borró sumando +1 a una variable contadora.</p>
+                                       <p class="text-amber-400 text-sm"><em>Pista: Recuerda usar la condición WHERE id_cliente = i dentro del ciclo.</em></p>
+                                   </div>`
+                        },
+                        {
+                            type: 'content',
+                            title: 'Ejercicio Rápido 2: Aumento General',
+                            icon: 'fa-arrow-trend-up',
+                            html: `<div class="bg-slate-900/60 p-6 rounded-2xl border border-slate-700">
+                                       <h4 class="text-2xl font-bold text-emerald-400 mb-4"><i class="fa-solid fa-code mr-2"></i> El Desafío:</h4>
+                                       <p class="text-xl text-slate-300 leading-relaxed mb-6">Debido a la inflación, necesitamos subir el precio de todos los productos en un 5% (multiplicar precio por 1.05). Usa un bucle <strong>WHILE</strong> que empiece en el ID 10 y termine en el ID 40 (avanzando de 10 en 10) para actualizar cada producto progresivamente.</p>
+                                       <p class="text-amber-400 text-sm"><em>Pista: No olvides sumar 10 a la variable controladora al final del bucle para no causar un ciclo infinito.</em></p>
+                                   </div>`
+                        },
+                        {
+                            type: 'title',
+                            title: '¡Manos a la Obra!',
+                            subtitle: 'Abre la guía de taller `taller-plsql.html` y ponte a prueba con los ejercicios del Módulo 2, 3 e intenta resolver los retos lógicos en parejas. 🚀'
+                        }
+                    ]
+                };
+            },
+            computed: {
+                currentSlide() {
+                    return this.slides[this.currentIndex];
+                },
+                progressPercentage() {
+                    return ((this.currentIndex + 1) / this.slides.length) * 100;
+                }
+            },
+            methods: {
+                selectKahootOption(idx) {
+                    this.currentSlide.answered = true;
+                    this.currentSlide.selectedIdx = idx;
+                },
+                next() {
+                    if (this.currentIndex < this.slides.length - 1) {
+                        this.currentIndex++;
+                        this.highlightCode();
+                    }
+                },
+                prev() {
+                    if (this.currentIndex > 0) {
+                        this.currentIndex--;
+                        this.highlightCode();
+                    }
+                },
+                handleKeydown(e) {
+                    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === ' ') this.next();
+                    else if (e.key === 'ArrowLeft' || e.key === 'a') this.prev();
+                },
+                highlightCode() {
+                    this.$nextTick(() => {
+                        Prism.highlightAll();
+                    });
+                },
+                copyDbScript() {
+                    navigator.clipboard.writeText(this.dbScript).then(() => {
+                        this.copyBtnText = '¡Copiado al Portapapeles!';
+                        setTimeout(() => this.copyBtnText = 'Copiar Script', 3000);
+                    });
+                }
+            },
+            mounted() {
+                this.$el.focus();
+                this.highlightCode();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
