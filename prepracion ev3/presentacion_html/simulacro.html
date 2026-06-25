@@ -60,10 +60,29 @@
             </div>
         </div>
 
-        <!-- SLIDE 4: PAUSA TÉCNICA - EXTRACT -->
+        <!-- SLIDE 4: PREPARACIÓN -->
         <div class="slide">
             <header>
-                <h2>03. Pausa Técnica: La Función EXTRACT</h2>
+                <h2>03. Preparando el Entorno</h2>
+            </header>
+            <div class="content">
+                <p class="step">Antes de empezar a programar, nota que el ejercicio nos pide insertar en la tabla <code>REPORTE_MANTENIMIENTO</code>, pero esta tabla <strong>no existe</strong> en nuestra base de datos. ¡Tenemos que crearla!</p>
+                <div class="card mt-2 step border-cyan">
+                    <h3>🛠️ Creación de la Tabla (Ejecuta esto en SQL Developer)</h3>
+                    <pre class="mt-1"><code>CREATE TABLE REPORTE_MANTENIMIENTO (
+    cod_vehiculo VARCHAR2(20),
+    modelo VARCHAR2(100),
+    total_dias_2024 NUMBER(6),
+    estado_mantenimiento VARCHAR2(20)
+);</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: PAUSA TÉCNICA - EXTRACT -->
+        <div class="slide">
+            <header>
+                <h2>04. Pausa Técnica: La Función EXTRACT</h2>
             </header>
             <div class="content">
                 <p class="step">Para filtrar los arriendos que ocurrieron en el 2024, usaremos <code>EXTRACT</code>. ¿Qué es y para qué sirve?</p>
@@ -93,10 +112,10 @@ WHERE EXTRACT(DAY FROM fecha_ini) =
             </div>
         </div>
 
-        <!-- SLIDE 5: PIEZA 1 - EL CURSOR -->
+        <!-- SLIDE 6: PIEZA 1 - EL CURSOR -->
         <div class="slide">
             <header>
-                <h2>04. Pieza Lego 1: La Base de Datos</h2>
+                <h2>05. Pieza Lego 1: La Base de Datos</h2>
             </header>
             <div class="content">
                 <p class="step">El texto dice: <em>"Para cada vehículo de la tabla VEHICULO_ELECTRICO..."</em></p>
@@ -111,10 +130,10 @@ FROM VEHICULO_ELECTRICO;</code></pre>
             </div>
         </div>
 
-        <!-- SLIDE 6: PIEZA 2 - EL CÁLCULO -->
+        <!-- SLIDE 7: PIEZA 2 - EL CÁLCULO -->
         <div class="slide">
             <header>
-                <h2>05. Pieza Lego 2: Matemáticas</h2>
+                <h2>06. Pieza Lego 2: Matemáticas</h2>
             </header>
             <div class="content code-slide">
                 <p class="step">El texto dice: <em>"...calcule el total de días arrendado durante 2024"</em></p>
@@ -131,10 +150,10 @@ AND EXTRACT(YEAR FROM fecha_ini_arriendo) = 2024;</code></pre>
             </div>
         </div>
 
-        <!-- SLIDE 7: PAUSA TÉCNICA - NVL -->
+        <!-- SLIDE 8: PAUSA TÉCNICA - NVL -->
         <div class="slide">
             <header>
-                <h2>06. Pausa Técnica: El Peligro de NULL (NVL)</h2>
+                <h2>07. Pausa Técnica: El Peligro de NULL (NVL)</h2>
             </header>
             <div class="content">
                 <p class="step">¿Qué pasa si intentamos sumar los días de un vehículo que <strong>nunca se ha arrendado</strong>?</p>
@@ -158,10 +177,10 @@ FROM arriendo;</code></pre>
             </div>
         </div>
 
-        <!-- SLIDE 8: PIEZA 3 - LAS REGLAS -->
+        <!-- SLIDE 9: PIEZA 3 - LAS REGLAS -->
         <div class="slide">
             <header>
-                <h2>07. Pieza Lego 3: Las Reglas</h2>
+                <h2>08. Pieza Lego 3: Las Reglas</h2>
             </header>
             <div class="content">
                 <p class="step">El texto dice: <em>"Más de 40: Urgente. Entre 20 y 40: Programado. Menos de 20 o cero: Óptimo"</em></p>
@@ -184,10 +203,10 @@ END IF;</code></pre>
             </div>
         </div>
 
-        <!-- SLIDE 9: PAUSA TÉCNICA - EXECUTE IMMEDIATE -->
+        <!-- SLIDE 10: PAUSA TÉCNICA - EXECUTE IMMEDIATE -->
         <div class="slide">
             <header>
-                <h2>08. Pausa Técnica: DDL en PL/SQL</h2>
+                <h2>09. Pausa Técnica: DDL en PL/SQL</h2>
             </header>
             <div class="content">
                 <p class="step">El requerimiento dice: <em>"Vacíe la tabla al inicio para evitar duplicados"</em>.</p>
@@ -206,10 +225,10 @@ END IF;</code></pre>
             </div>
         </div>
 
-        <!-- SLIDE 10: ENSAMBLAJE 1 -->
+        <!-- SLIDE 11: ENSAMBLAJE 1 -->
         <div class="slide">
             <header>
-                <h2>09. Ensamblaje: El Esqueleto</h2>
+                <h2>10. Ensamblaje: El Esqueleto</h2>
             </header>
             <div class="content code-slide">
                 <p class="step">¡Es hora de juntar los Legos! Empecemos por la zona <code>DECLARE</code>.</p>
@@ -235,10 +254,10 @@ BEGIN
             </div>
         </div>
 
-        <!-- SLIDE 11: ENSAMBLAJE 2 -->
+        <!-- SLIDE 12: ENSAMBLAJE 2 -->
         <div class="slide">
             <header>
-                <h2>10. Ensamblaje: El Motor (Loop)</h2>
+                <h2>11. Ensamblaje: El Motor (Loop)</h2>
             </header>
             <div class="content code-slide">
                 <p class="step">Ahora le damos vida al bloque abriendo el cursor y creando el ciclo repetitivo.</p>
@@ -263,10 +282,10 @@ END;</code></pre>
             </div>
         </div>
 
-        <!-- SLIDE 12: ENSAMBLAJE 3 -->
+        <!-- SLIDE 13: ENSAMBLAJE 3 -->
         <div class="slide">
             <header>
-                <h2>11. Ensamblaje: El Cerebro</h2>
+                <h2>12. Ensamblaje: El Cerebro</h2>
             </header>
             <div class="content code-slide">
                 <p class="step">Metemos las Piezas 2 y 3 <strong>adentro</strong> del Loop.</p>
@@ -293,10 +312,10 @@ END;</code></pre>
             </div>
         </div>
 
-        <!-- SLIDE 13: ENSAMBLAJE 4 -->
+        <!-- SLIDE 14: ENSAMBLAJE 4 -->
         <div class="slide">
             <header>
-                <h2>12. Ensamblaje: Entrega Final</h2>
+                <h2>13. Ensamblaje: Entrega Final</h2>
             </header>
             <div class="content code-slide">
                 <p class="step">El último paso antes de que el Loop vuelva a dar la vuelta: <strong>Guardar</strong>.</p>
@@ -321,10 +340,10 @@ END;</code></pre>
             </div>
         </div>
 
-        <!-- SLIDE 14: EL CÓDIGO COMPLETO -->
+        <!-- SLIDE 15: EL CÓDIGO COMPLETO -->
         <div class="slide">
             <header>
-                <h2>13. La Obra Maestra (Código Completo)</h2>
+                <h2>14. La Obra Maestra (Código Completo)</h2>
             </header>
             <div class="content code-slide">
                 <p class="step mb-1">Así se ve tu bloque de código finalizado, ensamblado y listo para compilar.</p>
@@ -365,10 +384,10 @@ END;</code></pre>
             </div>
         </div>
 
-        <!-- SLIDE 15: RESULTADOS -->
+        <!-- SLIDE 16: RESULTADOS -->
         <div class="slide">
             <header>
-                <h2>14. Conclusión del Método</h2>
+                <h2>15. Conclusión del Método</h2>
             </header>
             <div class="content text-center">
                 <div class="success-box step mt-2">
@@ -390,7 +409,7 @@ END;</code></pre>
     <!-- UI Elements -->
     <div class="controls">
         <button id="prevBtn" class="control-btn" disabled>&larr;</button>
-        <span id="slideCounter" class="counter">1 / 15</span>
+        <span id="slideCounter" class="counter">1 / 16</span>
         <button id="nextBtn" class="control-btn">&rarr;</button>
     </div>
     
