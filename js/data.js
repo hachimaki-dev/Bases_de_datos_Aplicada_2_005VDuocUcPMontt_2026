@@ -6,6 +6,28 @@
 const appData = {
     entries: [
         {
+            id: 'evaluacion-urbanwheels',
+            unit: 'EA3',
+            type: 'hero',
+            href: 'evaluacion_urban_wheels.html',
+            colSpan: 2,
+            date: '2026-07-04T08:00:00',
+            dateText: '4 Jul 2026',
+            tag: 'EVALUACIÓN FORMATIVA', tagIcon: 'fa-clipboard-check text-green-300',
+            badge: 'Test PL/SQL',
+            title: 'Test Práctico:<br>Urban Wheels LTDA',
+            description: 'Pon a prueba tus conocimientos de PL/SQL con este test interactivo. Abarca cursores, variables, control de flujo y operaciones DML. ¡Si respondes todo bien, obtienes 10 décimas de bonificación!',
+            btnText: 'Iniciar Evaluación', btnIcon: 'fa-play',
+            theme: {
+                outerBorder: 'border-green-400', outerBg: 'bg-slate-900', bg: 'bg-gradient-to-r from-slate-900 to-green-900',
+                innerBg: 'bg-transparent text-white', circle1: 'bg-green-500/20', circle2: 'bg-emerald-500/20',
+                tagBox: 'bg-green-900/50 text-green-200 border-green-700 backdrop-blur-sm', tagText: 'text-green-200', badgeTheme: 'bg-green-600 text-white border-green-400 font-mono text-sm shadow-inner',
+                title: 'text-white', desc: 'text-green-100', btn: 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 w-full justify-center text-white shadow-lg border border-green-400/50',
+                iconShadow: 'drop-shadow-[0_0_15px_rgba(74,222,128,0.6)]'
+            },
+            icon: 'fa-list-check', iconContainer: 'bg-green-900/40 border-green-500/30', iconColor: 'text-green-400'
+        },
+        {
             id: 'activacion-ev3',
             unit: 'EA3',
             type: 'hero',

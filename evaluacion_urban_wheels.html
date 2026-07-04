@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación PL/SQL - URBAN WHEELS</title>
+    <style>
+        :root {
+            --primary: #1a56db;
+            --bg: #f3f4f6;
+            --text: #1f2937;
+            --border: #d1d5db;
+            --success: #059669;
+            --error: #dc2626;
+            --white: #ffffff;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--white);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+        }
+        h1 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+        h2, h3 {
+            color: var(--primary);
+        }
+        .context-box {
+            background-color: #ebf5ff;
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 0 4px 4px 0;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .pregunta {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background-color: #f9fafb;
+        }
+        .pregunta h3 {
+            margin-top: 0;
+            font-size: 1.1em;
+        }
+        .opcion {
+            display: block;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .opcion input {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 15px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn:hover {
+            background-color: #1e40af;
+        }
+        .btn-submit {
+            background-color: var(--success);
+        }
+        .btn-submit:hover {
+            background-color: #047857;
+        }
+        input:disabled, textarea:disabled {
+            background-color: #e5e7eb;
+            cursor: not-allowed;
+        }
+        #resumen-resultados {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border: 2px solid var(--success);
+            border-radius: 6px;
+            background: #f0fff4;
+        }
+        /* Estilos para bloques de código PL/SQL */
+        .codigo-bloque {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            padding: 16px 20px;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre;
+            margin-bottom: 15px;
+            border: 1px solid #334155;
+        }
+        .seccion-separador {
+            margin: 40px 0 25px 0;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #1e40af, #1a56db);
+            color: white;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .seccion-separador h2 {
+            color: white;
+            margin: 0 0 5px 0;
+            font-size: 1.2em;
+        }
+        .seccion-separador p {
+            margin: 0;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        .bloque-header {
+            background-color: #dbeafe;
+            border: 1px solid #93c5fd;
+            padding: 10px 15px;
+            border-radius: 6px 6px 0 0;
+            margin-bottom: 0;
+            font-weight: 600;
+            color: #1e40af;
+        }
+        .pregunta.con-bloque {
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            margin-top: 0;
+        }
+        /* Media query para pantallas angostas (celulares) */
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.3em;
+            }
+            .pregunta {
+                padding: 12px;
+            }
+            .codigo-bloque {
+                font-size: 11px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="pantalla-bloqueada" class="container" style="display: none; text-align: center;">
+        <h2 style="color: var(--error);">Acceso Bloqueado</h2>
+        <p>Ya registraste un intento en este navegador. Si crees que es un error, contacta al docente.</p>
+    </div>
+
+    <div id="pantalla-inicial" class="container">
+        <h1>Evaluación de PL/SQL</h1>
+        <p>Por favor ingresa tus datos para comenzar la evaluación.</p>
+        
+        <div class="form-group">
+            <label for="nombre">Nombre completo:</label>
+            <input type="text" id="nombre" placeholder="Ej: Juan Pérez">
+        </div>
+        <div class="form-group">
+            <label for="rut">RUT:</label>
+            <input type="text" id="rut" placeholder="Ej: 12345678-9">
+        </div>
+        
+        <button id="btn-comenzar" class="btn">Comenzar prueba</button>
+    </div>
+
+    <div id="pantalla-prueba" class="container" style="display: none;">
+        <h1>Evaluación de PL/SQL - URBAN WHEELS LTDA.</h1>
+        
+        <div class="context-box">
+            <h3>Contexto del Caso:</h3>
+            <p>Es la base de datos de <strong>URBAN WHEELS LTDA.</strong>, empresa de arriendo de vehículos eléctricos. Tablas relevantes:</p>
+            <ul>
+                <li><strong>VEHICULO_ELECTRICO</strong> (cod_vehiculo VARCHAR2(8) PK, color, modelo, autonomia_km, anio_fab, valor_arriendo_dia NUMBER(7), valor_garantia_dia, id_tipo_vehiculo, id_fabricante)</li>
+                <li><strong>ARRIENDO_VEHICULO</strong> (id_arriendo NUMBER(7) PK, cod_vehiculo, numrun_cli, fecha_ini_arriendo DATE, dias_solicitados NUMBER(6), fecha_devolucion DATE)</li>
+                <li><strong>RESUMEN_ANUAL_VEHICULO</strong> (cod_vehiculo, anno_proceso, tipo_vehiculo, modelo, cantidad_arriendos, total_dias, promedio_dias, ingreso_arriendo, clasificacion_demanda)</li>
+            </ul>
+        </div>
+        
+        <div id="contenedor-preguntas"></div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <button id="btn-terminar" class="btn btn-submit">Terminar y entregar</button>
+        </div>
+        
+        <div id="resumen-resultados">
+            <h3 style="color: var(--success); margin-top: 0;">Resultados</h3>
+            <p><strong>Porcentaje obtenido:</strong> <span id="res-porcentaje"></span>%</p>
+            <p><strong>Décimas obtenidas:</strong> <span id="res-nota" style="font-weight: bold; font-size: 1.2em;"></span></p>
+            <p id="res-bonificacion" style="display: none; color: var(--primary); font-weight: bold; font-size: 1.1em;">
+                ✨ ¡Felicidades! Al obtener puntaje perfecto, has ganado el máximo de 10 décimas.
+            </p>
+            <p><small>* Las décimas de las preguntas abiertas pueden ajustarse tras la revisión manual del docente.</small></p>
+            <p style="margin-top: 15px; color: #065f46;">
+                Se ha descargado un archivo de texto con tus respuestas. 
+                <strong>Debes enviar este archivo a tu docente para la evaluación oficial.</strong>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // CONFIGURACIÓN PARA EL DOCENTE
+        // =========================================================================
+        
+        // Clave para guardar en localStorage e impedir intentos múltiples
+        const LOCAL_STORAGE_KEY = "urbanwheels_intento_iniciado";
+
+        // Función para calcular las décimas (mínimo 2, máximo 10)
+        function calcularDecimas(porcentaje) {
+            // Mapeo lineal: 0% = 2 décimas, 100% = 10 décimas
+            return Math.round(2 + (porcentaje / 100) * 8);
+        }
+
+        // Definición de las preguntas (Banco de preguntas)
+        const bancoPreguntas = [
+            {
+                id: 1,
+                tipo: 'alternativa',
+                texto: 'En PL/SQL, ¿qué sentencia se usa para insertar UNA sola fila en una tabla?',
+                opciones: [
+                    'a) INSERT ALL',
+                    'b) INSERT INTO ... VALUES (...)',
+                    'c) INSERT MANY',
+                    'd) BULK INSERT'
+                ],
+                correcta: 1 // Índice de la respuesta correcta (empieza en 0)
+            },
+            {
+                id: 2,
+                tipo: 'vf',
+                texto: 'La sentencia "INSERT INTO ... SELECT ..." permite insertar múltiples filas en una tabla a partir del resultado de una consulta.',
+                opciones: ['Verdadero', 'Falso'],
+                correcta: 0 // 0 = Verdadero, 1 = Falso
+            },
+            {
+                id: 3,
+                tipo: 'alternativa',
+                texto: '¿Cuál es la diferencia principal entre un INSERT de una fila y un INSERT INTO...SELECT de varias filas?',
+                opciones: [
+                    'a) No hay diferencia',
+                    'b) El segundo requiere que la tabla destino esté vacía',
+                    'c) El segundo inserta tantas filas como retorne la consulta SELECT',
+                    'd) El primero no permite VARCHAR2'
+                ],
+                correcta: 2
+            },
+            {
+                id: 4,
+                tipo: 'vf',
+                texto: 'Un cursor explícito en PL/SQL se debe abrir (OPEN), recorrer (FETCH) y cerrar (CLOSE) manualmente.',
+                opciones: ['Verdadero', 'Falso'],
+                correcta: 0
+            },
+            {
+                id: 5,
+                tipo: 'alternativa',
+                texto: '¿Qué ventaja tiene declarar una variable con %TYPE, por ejemplo "v_valor VEHICULO_ELECTRICO.valor_arriendo_dia%TYPE"?',
+                opciones: [
+                    'a) Es más rápido de ejecutar',
+                    'b) La variable hereda automáticamente el tipo de dato de la columna, evitando errores si esta cambia',
+                    'c) Permite guardar varias filas',
+                    'd) Convierte automáticamente el dato a VARCHAR2'
+                ],
+                correcta: 1
+            },
+            {
+                id: 6,
+                tipo: 'abierta',
+                texto: 'Explica con tus palabras para qué sirve un cursor explícito en PL/SQL y da un ejemplo de una situación donde lo usarías con los datos de URBAN WHEELS.',
+                palabrasClave: ["cursor", "recorrer", "filas", "consulta", "fila por fila", "select", "vehículo", "arriendo"],
+                // Con 4 de 8 palabras clave el estudiante obtiene el 100%. Debajo de 4, es proporcional (ej: 2/4 = 50%).
+                // Ajuste este valor según la exigencia deseada.
+                minMatchesParaTotal: 4
+            },
+            {
+                id: 7,
+                tipo: 'alternativa',
+                texto: '¿Cuál de estos es un tipo de dato numérico válido en Oracle PL/SQL?',
+                opciones: [
+                    'a) NUMBER',
+                    'b) INTEGER8',
+                    'c) FLOATNUM',
+                    'd) DECIMALTYPE'
+                ],
+                correcta: 0
+            },
+            {
+                id: 8,
+                tipo: 'vf',
+                texto: 'VARCHAR2 se usa para almacenar texto de largo variable, mientras que DATE se usa para almacenar fechas.',
+                opciones: ['Verdadero', 'Falso'],
+                correcta: 0
+            },
+            {
+                id: 9,
+                tipo: 'alternativa',
+                texto: '¿Cuál es la estructura correcta de una condición IF con dos alternativas posibles en PL/SQL?',
+                opciones: [
+                    'a) IF condicion THEN ... ELSE ... END IF;',
+                    'b) IF condicion { ... } ELSE { ... }',
+                    'c) WHEN condicion THEN ...',
+                    'd) IF condicion DO ... END'
+                ],
+                correcta: 0
+            },
+            {
+                id: 10,
+                tipo: 'alternativa',
+                texto: 'Si necesitas clasificar la demanda de un vehículo en "Alta", "Media", "Baja" o "Sin Demanda" según la cantidad de arriendos, ¿qué estructura de control es más adecuada?',
+                opciones: [
+                    'a) LOOP simple sin condición',
+                    'b) IF/ELSIF/ELSE o CASE',
+                    'c) INSERT anidado',
+                    'd) Un cursor con parámetro'
+                ],
+                correcta: 1
+            },
+            {
+                id: 11,
+                tipo: 'vf',
+                texto: 'Un bucle FOR en PL/SQL que recorre un cursor cierra el cursor automáticamente al terminar.',
+                opciones: ['Verdadero', 'Falso'],
+                correcta: 0
+            },
+            {
+                id: 12,
+                tipo: 'abierta',
+                texto: 'Menciona al menos dos tipos de bucles (loops) que existen en PL/SQL y explica brevemente cuándo usarías cada uno.',
+                palabrasClave: ["for", "while", "loop", "básico", "cursor", "condición", "repetir", "recorrer"],
+                // Con 4 de 8 palabras clave el estudiante obtiene el 100%. Debajo de 4, es proporcional.
+                minMatchesParaTotal: 4
+            },
+            {
+                id: 13,
+                tipo: 'abierta',
+                texto: '[Opinión] Según lo que aprendiste con el caso URBAN WHEELS, ¿qué parte del proceso (cursores, INSERT, IF/ELSE, loops) te pareció más difícil de entender y por qué?',
+                palabrasClave: ["cursor", "insert", "if", "loop", "variable", "difícil", "entender", "practica"],
+                minMatchesParaTotal: 1 // Con solo mencionar 1 palabra relacionada al tema, se le da puntaje completo
+            },
+
+            // =================================================================
+            // SECCIÓN: ANÁLISIS DE BLOQUES ANÓNIMOS PL/SQL
+            // 5 bloques con 2 preguntas cada uno (preguntas 14 a 23)
+            // =================================================================
+
+            // ---------- BLOQUE 1: Variables y SELECT INTO ----------
+            {
+                id: 14,
+                tipo: 'alternativa',
+                seccionNueva: true, // Marca para insertar separador visual antes de esta pregunta
+                codigoBloque: `DECLARE\n    v_modelo VEHICULO_ELECTRICO.modelo%TYPE;\n    v_valor  VEHICULO_ELECTRICO.valor_arriendo_dia%TYPE;\nBEGIN\n    SELECT modelo, valor_arriendo_dia\n    INTO v_modelo, v_valor\n    FROM VEHICULO_ELECTRICO\n    WHERE cod_vehiculo = 'VE001';\n\n    DBMS_OUTPUT.PUT_LINE('Modelo: ' || v_modelo || ' - Valor diario: $' || v_valor);\nEND;`,
+                bloqueNum: 1,
+                texto: '¿Qué hace la sentencia SELECT ... INTO en este bloque?',
+                opciones: [
+                    'a) Crea una nueva tabla con los datos seleccionados',
+                    'b) Guarda los valores de modelo y valor_arriendo_dia en las variables v_modelo y v_valor',
+                    'c) Inserta una fila en la tabla VEHICULO_ELECTRICO',
+                    'd) Muestra los datos directamente en pantalla sin usar variables'
+                ],
+                correcta: 1
+            },
+            {
+                id: 15,
+                tipo: 'vf',
+                bloqueNum: 1, // Pertenece al mismo bloque (no repite el código)
+                texto: 'Si el vehículo con código "VE001" no existe en la tabla, este bloque generará un error (excepción NO_DATA_FOUND).',
+                opciones: ['Verdadero', 'Falso'],
+                correcta: 0 // Verdadero: SELECT INTO lanza NO_DATA_FOUND si no encuentra filas
+            },
+
+            // ---------- BLOQUE 2: Cursor con FOR LOOP ----------
+            {
+                id: 16,
+                tipo: 'alternativa',
+                codigoBloque: `DECLARE\n    CURSOR c_vehiculos IS\n        SELECT cod_vehiculo, modelo, valor_arriendo_dia\n        FROM VEHICULO_ELECTRICO\n        WHERE valor_arriendo_dia > 50000;\nBEGIN\n    FOR reg IN c_vehiculos LOOP\n        DBMS_OUTPUT.PUT_LINE(reg.cod_vehiculo || ' - ' || reg.modelo);\n    END LOOP;\nEND;`,
+                bloqueNum: 2,
+                texto: '¿Qué vehículos mostrará este bloque por pantalla?',
+                opciones: [
+                    'a) Todos los vehículos de la tabla',
+                    'b) Solo los vehículos con valor_arriendo_dia mayor a 50000',
+                    'c) Solo el primer vehículo de la tabla',
+                    'd) Los vehículos que no tienen arriendos'
+                ],
+                correcta: 1
+            },
+            {
+                id: 17,
+                tipo: 'vf',
+                bloqueNum: 2,
+                texto: 'En este bloque, el cursor se abre, recorre y cierra automáticamente gracias al FOR ... LOOP, sin necesidad de usar OPEN, FETCH ni CLOSE.',
+                opciones: ['Verdadero', 'Falso'],
+                correcta: 0 // Verdadero
+            },
+
+            // ---------- BLOQUE 3: IF/ELSIF para clasificación ----------
+            {
+                id: 18,
+                tipo: 'alternativa',
+                codigoBloque: `DECLARE\n    v_dias NUMBER;\n    v_clasificacion VARCHAR2(20);\nBEGIN\n    SELECT dias_solicitados INTO v_dias\n    FROM ARRIENDO_VEHICULO\n    WHERE id_arriendo = 1001;\n\n    IF v_dias >= 30 THEN\n        v_clasificacion := 'Largo plazo';\n    ELSIF v_dias >= 7 THEN\n        v_clasificacion := 'Mediano plazo';\n    ELSE\n        v_clasificacion := 'Corto plazo';\n    END IF;\n\n    DBMS_OUTPUT.PUT_LINE('Clasificación: ' || v_clasificacion);\nEND;`,
+                bloqueNum: 3,
+                texto: 'Si el arriendo 1001 tiene dias_solicitados = 15, ¿qué clasificación se le asignará?',
+                opciones: [
+                    'a) Largo plazo',
+                    'b) Mediano plazo',
+                    'c) Corto plazo',
+                    'd) No se le asigna ninguna clasificación'
+                ],
+                correcta: 1 // 15 >= 7 → Mediano plazo
+            },
+            {
+                id: 19,
+                tipo: 'alternativa',
+                bloqueNum: 3,
+                texto: 'Si el arriendo 1001 tiene dias_solicitados = 3, ¿qué clasificación se le asignará?',
+                opciones: [
+                    'a) Largo plazo',
+                    'b) Mediano plazo',
+                    'c) Corto plazo',
+                    'd) El bloque dará error porque 3 es muy bajo'
+                ],
+                correcta: 2 // 3 < 7 → ELSE → Corto plazo
+            },
+
+            // ---------- BLOQUE 4: INSERT INTO ... SELECT ----------
+            {
+                id: 20,
+                tipo: 'alternativa',
+                codigoBloque: `BEGIN\n    INSERT INTO RESUMEN_ANUAL_VEHICULO\n        (cod_vehiculo, anno_proceso, cantidad_arriendos, total_dias)\n    SELECT\n        v.cod_vehiculo,\n        2026,\n        COUNT(a.id_arriendo),\n        NVL(SUM(a.dias_solicitados), 0)\n    FROM VEHICULO_ELECTRICO v\n    LEFT JOIN ARRIENDO_VEHICULO a\n        ON v.cod_vehiculo = a.cod_vehiculo\n    GROUP BY v.cod_vehiculo;\n\n    COMMIT;\nEND;`,
+                bloqueNum: 4,
+                texto: '¿Qué hace la función NVL(SUM(a.dias_solicitados), 0) en este bloque?',
+                opciones: [
+                    'a) Suma los días y si el resultado es 0, lo convierte en NULL',
+                    'b) Si la suma resulta NULL (porque no hay arriendos), la reemplaza por 0',
+                    'c) Cuenta la cantidad de arriendos del vehículo',
+                    'd) Elimina los valores nulos de la tabla'
+                ],
+                correcta: 1
+            },
+            {
+                id: 21,
+                tipo: 'vf',
+                bloqueNum: 4,
+                texto: 'Este bloque insertará una fila en RESUMEN_ANUAL_VEHICULO por cada vehículo que exista en VEHICULO_ELECTRICO, incluso si ese vehículo no tiene arriendos.',
+                opciones: ['Verdadero', 'Falso'],
+                correcta: 0 // Verdadero: el LEFT JOIN incluye vehículos sin arriendos
+            },
+
+            // ---------- BLOQUE 5: Cursor con LOOP básico y acumuladores ----------
+            {
+                id: 22,
+                tipo: 'alternativa',
+                codigoBloque: `DECLARE\n    CURSOR c_arriendos IS\n        SELECT dias_solicitados\n        FROM ARRIENDO_VEHICULO\n        WHERE cod_vehiculo = 'VE003';\n    v_reg       c_arriendos%ROWTYPE;\n    v_total_dias NUMBER := 0;\n    v_contador   NUMBER := 0;\nBEGIN\n    OPEN c_arriendos;\n    LOOP\n        FETCH c_arriendos INTO v_reg;\n        EXIT WHEN c_arriendos%NOTFOUND;\n        v_total_dias := v_total_dias + v_reg.dias_solicitados;\n        v_contador := v_contador + 1;\n    END LOOP;\n    CLOSE c_arriendos;\n\n    DBMS_OUTPUT.PUT_LINE('Total arriendos: ' || v_contador);\n    DBMS_OUTPUT.PUT_LINE('Total días: ' || v_total_dias);\nEND;`,
+                bloqueNum: 5,
+                texto: '¿Para qué sirve la línea EXIT WHEN c_arriendos%NOTFOUND en este bloque?',
+                opciones: [
+                    'a) Para cerrar el cursor cuando termina',
+                    'b) Para salir del LOOP cuando ya no quedan más filas por leer',
+                    'c) Para eliminar las filas que no se encontraron',
+                    'd) Para ignorar errores durante el FETCH'
+                ],
+                correcta: 1
+            },
+            {
+                id: 23,
+                tipo: 'vf',
+                bloqueNum: 5,
+                texto: 'Si el vehículo "VE003" no tiene ningún arriendo registrado, las variables v_total_dias y v_contador quedarán en 0 al finalizar el bloque.',
+                opciones: ['Verdadero', 'Falso'],
+                correcta: 0 // Verdadero: el LOOP no ejecutará ninguna iteración, ambas quedan en 0
+            }
+        ];
+
+        // =========================================================================
+        // LÓGICA DE LA APLICACIÓN
+        // =========================================================================
+
+        let estudianteNombre = "";
+        let estudianteRut = "";
+
+        // Control de intento al cargar la página
+        window.onload = function() {
+            if (localStorage.getItem(LOCAL_STORAGE_KEY)) {
+                document.getElementById("pantalla-inicial").style.display = "none";
+                document.getElementById("pantalla-bloqueada").style.display = "block";
+            }
+        };
+
+        // Evento para comenzar la prueba
+        document.getElementById("btn-comenzar").addEventListener("click", function() {
+            estudianteNombre = document.getElementById("nombre").value.trim();
+            estudianteRut = document.getElementById("rut").value.trim();
+
+            if (!estudianteNombre || !estudianteRut) {
+                alert("Por favor, ingresa tu Nombre y RUT para comenzar.");
+                return;
+            }
+
+            // Marcar intento en localStorage
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
+                nombre: estudianteNombre,
+                rut: estudianteRut,
+                inicio: new Date().toISOString()
+            }));
+
+            // Cambiar de pantalla
+            document.getElementById("pantalla-inicial").style.display = "none";
+            document.getElementById("pantalla-prueba").style.display = "block";
+
+            renderizarPreguntas();
+        });
+
+        // Generar HTML de las preguntas
+        // Soporta: alternativas, V/F, abiertas, y bloques de código PL/SQL
+        function renderizarPreguntas() {
+            const contenedor = document.getElementById("contenedor-preguntas");
+            contenedor.innerHTML = "";
+
+            bancoPreguntas.forEach((q, index) => {
+                const numPregunta = index + 1;
+
+                // Si esta pregunta marca el inicio de la sección de bloques anónimos, insertar separador
+                if (q.seccionNueva) {
+                    contenedor.innerHTML += `
+                        <div class="seccion-separador">
+                            <h2>Análisis de Bloques Anónimos PL/SQL</h2>
+                            <p>Lee cada bloque de código y responde las preguntas asociadas.</p>
+                        </div>
+                    `;
+                }
+
+                // Si la pregunta tiene un bloque de código asociado, mostrarlo antes
+                if (q.codigoBloque) {
+                    contenedor.innerHTML += `
+                        <div class="bloque-header">Bloque Anónimo ${q.bloqueNum}</div>
+                        <div class="codigo-bloque">${q.codigoBloque}</div>
+                    `;
+                }
+
+                let extraClass = q.codigoBloque ? '' : '';
+                let html = `<div class="pregunta" id="pregunta-${q.id}">`;
+                html += `<h3>Pregunta ${numPregunta}</h3>`;
+                html += `<p>${q.texto}</p>`;
+
+                if (q.tipo === 'alternativa' || q.tipo === 'vf') {
+                    q.opciones.forEach((opcion, opIndex) => {
+                        html += `
+                            <label class="opcion">
+                                <input type="radio" name="respuesta-${q.id}" value="${opIndex}">
+                                ${opcion}
+                            </label>
+                        `;
+                    });
+                } else if (q.tipo === 'abierta') {
+                    html += `
+                        <textarea name="respuesta-${q.id}" placeholder="Escribe tu respuesta aquí..."></textarea>
+                    `;
+                }
+
+                html += `</div>`;
+                contenedor.innerHTML += html;
+            });
+        }
+
+        // Función para normalizar texto (quitar tildes y pasar a minúsculas para matching)
+        function normalizarTexto(texto) {
+            return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        }
+
+        // Evento de entrega final
+        document.getElementById("btn-terminar").addEventListener("click", function() {
+            // 1. Validar que todas las preguntas fueron respondidas
+            let todasRespondidas = true;
+            let preguntasFaltantes = [];
+
+            bancoPreguntas.forEach((q, index) => {
+                if (q.tipo === 'alternativa' || q.tipo === 'vf') {
+                    const opciones = document.getElementsByName(`respuesta-${q.id}`);
+                    let respondida = false;
+                    for (let op of opciones) {
+                        if (op.checked) respondida = true;
+                    }
+                    if (!respondida) {
+                        todasRespondidas = false;
+                        preguntasFaltantes.push(index + 1);
+                    }
+                } else if (q.tipo === 'abierta') {
+                    const textarea = document.getElementsByName(`respuesta-${q.id}`)[0];
+                    if (!textarea.value.trim()) {
+                        todasRespondidas = false;
+                        preguntasFaltantes.push(index + 1);
+                    }
+                }
+            });
+
+            if (!todasRespondidas) {
+                alert(`Te faltan por responder las siguientes preguntas: ${preguntasFaltantes.join(", ")}`);
+                return;
+            }
+
+            if (!confirm("¿Estás seguro de terminar y entregar la prueba? No podrás modificar tus respuestas posteriormente.")) {
+                return;
+            }
+
+            // ---------------------------------------------------------------
+            // 2. CORRECCIÓN AUTOMÁTICA Y GENERACIÓN DE REPORTE TXT
+            // ---------------------------------------------------------------
+            // Cada pregunta vale 1.0 punto (todas ponderan igual).
+            // - Cerradas (alternativas/V-F): 1.0 si correcta, 0.0 si incorrecta.
+            // - Abiertas: puntaje proporcional basado en cuántas palabras clave
+            //   del array 'palabrasClave' aparecen en la respuesta del estudiante.
+            //   Si el alumno iguala o supera 'minMatchesParaTotal', obtiene 1.0.
+            //   Si no, obtiene (matches / minMatchesParaTotal), ej: 2/4 = 0.5.
+            // ---------------------------------------------------------------
+            let puntajeTotal = 0;
+            const maxPuntaje = bancoPreguntas.length; // 13 preguntas, cada una vale 1 punto
+            
+            let reporteTxt = `=======================================================\n`;
+            reporteTxt += ` EVALUACIÓN PL/SQL - URBAN WHEELS\n`;
+            reporteTxt += `=======================================================\n`;
+            reporteTxt += `Nombre: ${estudianteNombre}\n`;
+            reporteTxt += `RUT: ${estudianteRut}\n`;
+            reporteTxt += `Fecha y Hora: ${new Date().toLocaleString()}\n\n`;
+            reporteTxt += `DETALLE DE PREGUNTAS:\n`;
+            reporteTxt += `-------------------------------------------------------\n\n`;
+
+            bancoPreguntas.forEach((q, index) => {
+                let num = index + 1;
+                reporteTxt += `Pregunta ${num}: ${q.texto}\n`;
+                
+                if (q.tipo === 'alternativa' || q.tipo === 'vf') {
+                    const opciones = document.getElementsByName(`respuesta-${q.id}`);
+                    let respuestaAlumnoIndex = -1;
+                    for (let i = 0; i < opciones.length; i++) {
+                        if (opciones[i].checked) {
+                            respuestaAlumnoIndex = i;
+                            break;
+                        }
+                    }
+                    
+                    const textoRespuestaAlumno = q.opciones[respuestaAlumnoIndex];
+                    const textoRespuestaCorrecta = q.opciones[q.correcta];
+                    
+                    reporteTxt += `Tu respuesta: ${textoRespuestaAlumno}\n`;
+                    
+                    if (respuestaAlumnoIndex === q.correcta) {
+                        puntajeTotal += 1;
+                        reporteTxt += `Resultado: CORRECTA (1.0 / 1.0 pts)\n\n`;
+                    } else {
+                        reporteTxt += `Respuesta Correcta Esperada: ${textoRespuestaCorrecta}\n`;
+                        reporteTxt += `Resultado: INCORRECTA (0.0 / 1.0 pts)\n\n`;
+                    }
+
+                } else if (q.tipo === 'abierta') {
+                    const textarea = document.getElementsByName(`respuesta-${q.id}`)[0];
+                    const respuestaAlumno = textarea.value.trim();
+                    // Normalizar: quitar tildes y pasar a minúsculas para hacer matching flexible
+                    const textoNormalizado = normalizarTexto(respuestaAlumno);
+                    
+                    // Contar cuántas palabras/frases clave aparecen en la respuesta
+                    let matches = 0;
+                    let palabrasEncontradas = [];
+                    q.palabrasClave.forEach(kw => {
+                        const kwNorm = normalizarTexto(kw);
+                        // includes() busca la keyword como substring, funciona con frases multipalabra
+                        if (textoNormalizado.includes(kwNorm)) {
+                            matches++;
+                            palabrasEncontradas.push(kw);
+                        }
+                    });
+                    
+                    // Cálculo de puntaje proporcional:
+                    // Si matches >= minMatchesParaTotal → 1.0 (puntaje completo)
+                    // Si matches < minMatchesParaTotal → matches / minMatchesParaTotal (proporcional)
+                    // Ejemplo: minMatchesParaTotal=4, matches=2 → 0.5 puntos
+                    // Para ajustar la exigencia, cambie 'minMatchesParaTotal' en el banco de preguntas.
+                    let puntajePregunta = 0;
+                    if (matches >= q.minMatchesParaTotal) {
+                        puntajePregunta = 1;
+                    } else {
+                        puntajePregunta = matches / q.minMatchesParaTotal;
+                    }
+                    
+                    puntajeTotal += puntajePregunta;
+
+                    reporteTxt += `Tu respuesta: "${respuestaAlumno}"\n`;
+                    reporteTxt += `Palabras clave esperadas: ${q.palabrasClave.join(", ")}\n`;
+                    reporteTxt += `Palabras clave encontradas (${matches}): ${palabrasEncontradas.length > 0 ? palabrasEncontradas.join(", ") : "Ninguna"}\n`;
+                    
+                    if (puntajePregunta === 1) {
+                        reporteTxt += `Resultado: CORRECTA (${puntajePregunta.toFixed(2)} / 1.0 pts)\n\n`;
+                    } else if (puntajePregunta > 0) {
+                        reporteTxt += `Resultado: PARCIAL (${puntajePregunta.toFixed(2)} / 1.0 pts)\n\n`;
+                    } else {
+                        reporteTxt += `Resultado: INCORRECTA (0.00 / 1.0 pts)\n\n`;
+                    }
+                }
+            });
+
+            // ---------------------------------------------------------------
+            // 3. CÁLCULOS FINALES Y ASIGNACIÓN DE DÉCIMAS
+            // ---------------------------------------------------------------
+            // Se usa Math.floor() en vez de Math.round() para el porcentaje.
+            const porcentajeFinal = Math.floor((puntajeTotal / maxPuntaje) * 100);
+            const decimasFinales = calcularDecimas(porcentajeFinal);
+
+            reporteTxt += `=======================================================\n`;
+            reporteTxt += ` RESUMEN FINAL\n`;
+            reporteTxt += `=======================================================\n`;
+            reporteTxt += `Puntaje Obtenido: ${puntajeTotal.toFixed(2)} de ${maxPuntaje}\n`;
+            reporteTxt += `Porcentaje: ${porcentajeFinal}%\n`;
+            reporteTxt += `DÉCIMAS ASIGNADAS: ${decimasFinales}\n`;
+            
+            // Lógica de bonificación por puntaje perfecto (100%)
+            if (porcentajeFinal === 100) {
+                reporteTxt += `¡FELICIDADES! Puntaje Perfecto = Máximo de 10 décimas.\n`;
+            }
+            
+            reporteTxt += `=======================================================\n`;
+
+            // 4. Actualizar interfaz
+            document.getElementById("btn-terminar").style.display = "none";
+            document.getElementById("resumen-resultados").style.display = "block";
+            document.getElementById("res-porcentaje").innerText = porcentajeFinal;
+            document.getElementById("res-nota").innerText = decimasFinales;
+            
+            if (porcentajeFinal === 100) {
+                document.getElementById("res-bonificacion").style.display = "block";
+            }
+
+            // Deshabilitar todos los inputs y textareas para evitar cambios
+            const todosInputs = document.querySelectorAll("input, textarea");
+            todosInputs.forEach(input => input.disabled = true);
+
+            // ---------------------------------------------------------------
+            // 5. DESCARGAR ARCHIVO TXT AUTOMÁTICAMENTE
+            // ---------------------------------------------------------------
+            // Se genera un Blob de texto plano y se fuerza la descarga.
+            // El nombre del archivo se sanitiza para evitar caracteres inválidos
+            // (tildes, eñes, etc.) que podrían causar problemas en algunos SO.
+            const blob = new Blob([reporteTxt], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            
+            // Formatear fecha para el nombre del archivo (ej: 2026-07-04)
+            const fechaFormat = new Date().toISOString().split('T')[0]; 
+            // Sanitizar nombre: quitar tildes, pasar a minúsculas, reemplazar caracteres no alfanuméricos por _
+            const nombreLimpio = normalizarTexto(estudianteNombre).replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_');
+            
+            a.href = url;
+            a.download = `prueba_urbanwheels_${nombreLimpio}_${fechaFormat}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>
